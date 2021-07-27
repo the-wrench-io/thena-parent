@@ -14,8 +14,9 @@
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>thena-object-repo</module>
-		<module>thena-object-repo-mongodb</module>
+		<module>thena-docdb-api</module>
+		<module>thena-docdb-mongo</module>
+		<module>thena-re-backend</module>
 	</modules>
 
 </project>
