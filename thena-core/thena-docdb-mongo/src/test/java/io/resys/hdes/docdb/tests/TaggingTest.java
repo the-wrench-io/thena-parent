@@ -29,13 +29,13 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.resys.hdes.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.hdes.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.hdes.docdb.api.actions.RepoActions.RepoResult;
-import io.resys.hdes.docdb.api.actions.RepoActions.RepoStatus;
-import io.resys.hdes.docdb.api.actions.TagActions.TagResult;
-import io.resys.hdes.docdb.api.actions.TagActions.TagStatus;
 import io.resys.hdes.docdb.tests.config.MongoDbConfig;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
+import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
+import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.TagActions.TagResult;
+import io.resys.thena.docdb.api.actions.TagActions.TagStatus;
 
 
 public class TaggingTest extends MongoDbConfig {

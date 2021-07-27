@@ -45,13 +45,13 @@ import de.flapdoodle.embed.mongo.distribution.Version;
 import de.flapdoodle.embed.process.runtime.Network;
 import io.quarkus.mongodb.impl.ReactiveMongoClientImpl;
 import io.quarkus.mongodb.reactive.ReactiveMongoClient;
-import io.resys.hdes.docdb.api.DocDB;
-import io.resys.hdes.docdb.api.models.Diff;
-import io.resys.hdes.docdb.api.models.Repo;
-import io.resys.hdes.docdb.spi.ClientState;
-import io.resys.hdes.docdb.spi.DocDBCodecProvider;
-import io.resys.hdes.docdb.spi.DocDBFactory;
-import io.resys.hdes.docdb.spi.DocDBPrettyPrinter;
+import io.resys.thena.docdb.api.DocDB;
+import io.resys.thena.docdb.api.models.Diff;
+import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.spi.ClientState;
+import io.resys.thena.docdb.spi.DocDBCodecProvider;
+import io.resys.thena.docdb.spi.DocDBFactory;
+import io.resys.thena.docdb.spi.DocDBPrettyPrinter;
 
 public abstract class MongoDbConfig {
   private static final MongodStarter starter = MongodStarter.getDefaultInstance();

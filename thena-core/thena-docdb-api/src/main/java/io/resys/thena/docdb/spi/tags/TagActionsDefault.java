@@ -1,10 +1,10 @@
-package io.resys.hdes.resource.editor.spi.mongodb;
+package io.resys.thena.docdb.spi.tags;
 
 /*-
  * #%L
- * hdes-storage-mongodb
+ * thena-docdb-api
  * %%
- * Copyright (C) 2020 Copyright 2020 ReSys OÜ
+ * Copyright (C) 2021 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,25 @@ package io.resys.hdes.resource.editor.spi.mongodb;
  * #L%
  */
 
-import org.bson.codecs.Codec;
-import org.bson.codecs.configuration.CodecProvider;
-import org.bson.codecs.configuration.CodecRegistry;
+import io.resys.thena.docdb.api.actions.TagActions;
+import io.resys.thena.docdb.spi.ClientState;
 
-import io.resys.thena.docdb.spi.DocDBCodecProvider;
+public class TagActionsDefault implements TagActions {
 
-public class ReCodeProvider extends DocDBCodecProvider implements CodecProvider {
+  private final ClientState state;
+  
+  public TagActionsDefault(ClientState state) {
+    super();
+    this.state = state;
+  }
 
   @Override
-  public <T> Codec<T> get(Class<T> clazz, CodecRegistry registry)  {
-    Codec<T> result = super.get(clazz, registry);
-    if(result != null) {
-      return result;
-    }
-    
-    
-    
-    return null;
+  public TagBuilder create() {
+    return new CreateTagBuilder(state);
+  }
+
+  @Override
+  public TagQuery query() {
+    return new AnyTagQuery(state);
   }
 }
