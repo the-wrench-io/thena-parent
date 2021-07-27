@@ -1,1 +1,1 @@
-# hdes-thena
+# Thena
