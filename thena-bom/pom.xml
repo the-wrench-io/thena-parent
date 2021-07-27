@@ -14,17 +14,17 @@
 
       <dependency>
         <groupId>io.resys.hdes</groupId>
-        <artifactId>hdes-storage</artifactId>
+        <artifactId>thena-storage</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>io.resys.hdes</groupId>
-        <artifactId>hdes-object-repo</artifactId>
+        <artifactId>thena-object-repo</artifactId>
         <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>io.resys.hdes</groupId>
-        <artifactId>hdes-object-repo-mongodb</artifactId>
+        <artifactId>thena-object-repo-mongodb</artifactId>
         <version>${project.version}</version>
       </dependency>
 

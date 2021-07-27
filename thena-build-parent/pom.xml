@@ -3,11 +3,11 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.resys.hdes</groupId>
-    <artifactId>hdes</artifactId>
+    <artifactId>thena</artifactId>
     <version>999-SNAPSHOT</version>
   </parent>
 
-  <artifactId>hdes-build-parent</artifactId>
+  <artifactId>thena-build-parent</artifactId>
   <packaging>pom</packaging>
 
   <properties>
@@ -154,7 +154,7 @@
     
       <dependency>
         <groupId>io.resys.hdes</groupId>
-        <artifactId>hdes-bom</artifactId>
+        <artifactId>thena-bom</artifactId>
         <version>${project.version}</version>
         <type>pom</type>
         <scope>import</scope>

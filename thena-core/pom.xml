@@ -5,17 +5,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>io.resys.hdes</groupId>
-		<artifactId>hdes-build-parent</artifactId>
+		<artifactId>thena-build-parent</artifactId>
 		<version>999-SNAPSHOT</version>
-		<relativePath>../hdes-build-parent/pom.xml</relativePath>
+		<relativePath>../thena-build-parent/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>hdes-core</artifactId>
+	<artifactId>thena-core</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>hdes-object-repo</module>
-		<module>hdes-object-repo-mongodb</module>
+		<module>thena-object-repo</module>
+		<module>thena-object-repo-mongodb</module>
 	</modules>
 
 </project>

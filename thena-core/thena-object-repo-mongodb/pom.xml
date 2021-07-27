@@ -2,16 +2,16 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.resys.hdes</groupId>
-    <artifactId>hdes-dev-tools</artifactId>
+    <artifactId>thena-core</artifactId>
     <version>999-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
-  <artifactId>hdes-object-repo-mongodb</artifactId>
+  <artifactId>thena-object-repo-mongodb</artifactId>
 
   <dependencies>
     <dependency>
       <groupId>io.resys.hdes</groupId>
-      <artifactId>hdes-object-repo</artifactId>
+      <artifactId>thena-object-repo</artifactId>
     </dependency>
     <dependency>
       <groupId>org.immutables</groupId>
