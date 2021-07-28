@@ -11,7 +11,7 @@ if [[ "${last_release_commit_hash}" = "${GITHUB_SHA}" ]]; then
 fi
 
 echo "Import GPG key"
-echo "$GPG_KEY" | base64 -d > private.key
+echo "$GPG_KEY" > private.key
 gpg --batch --import ./private.key 
 rm ./private.key
 echo "JAVA_HOME '$JAVA_HOME'"
@@ -41,7 +41,7 @@ mvn -version
 git checkout ${branch}
 mvn versions:set -DnewVersion=${RELEASE_VERSION}
 git commit -am "Release: ${RELEASE_VERSION}"
-mvn clean deploy -Phdes-release --settings hdes-build-parent/ci-maven-settings.xml
+mvn clean deploy -Phdes-release --settings thena-build-parent/ci-maven-settings.xml
 mvn versions:set -DnewVersion=${PROJECT_VERSION}
 git commit -am "Release: ${RELEASE_VERSION}"
 git push
