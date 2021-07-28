@@ -55,6 +55,7 @@ public interface CommitActions {
   interface HeadCommitBuilder {
     HeadCommitBuilder id(String headGid); // head GID to what to append
     HeadCommitBuilder parent(String parentCommit); // for validations
+    HeadCommitBuilder parentIsLatest();
     HeadCommitBuilder head(String repoId, String headName); // head GID to what to append
     HeadCommitBuilder append(String name, String blob);
     HeadCommitBuilder remove(String name);

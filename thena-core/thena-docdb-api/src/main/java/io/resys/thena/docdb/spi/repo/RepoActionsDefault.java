@@ -34,8 +34,7 @@ public class RepoActionsDefault implements RepoActions {
 
   @Override
   public QueryBuilder query() {
-    // TODO Auto-generated method stub
-    return null;
+    return new RepoQueryBuilder(state);
   }
 
   @Override

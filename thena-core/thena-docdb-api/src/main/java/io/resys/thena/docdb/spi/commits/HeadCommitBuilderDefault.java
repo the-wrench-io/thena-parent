@@ -55,6 +55,7 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
   private String author;
   private String message;
   private String parentCommit;
+  private Boolean parentIsLatest;
 
   public HeadCommitBuilderDefault(ClientState state, ObjectsActions objectsActions) {
     super();
@@ -166,7 +167,7 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
     
     
     // No parent commit defined for existing head
-    if(state.getObjects() != null && parentCommit == null) {
+    if(state.getObjects() != null && parentCommit == null && !Boolean.TRUE.equals(this.parentIsLatest)) {
       return (CommitResult) ImmutableCommitResult.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
@@ -183,7 +184,8 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
     
     // Wrong parent commit
     if(state.getObjects() != null && parentCommit != null && 
-        !parentCommit.equals(state.getObjects().getRef().getCommit())) {
+        !parentCommit.equals(state.getObjects().getRef().getCommit()) &&
+        !Boolean.TRUE.equals(this.parentIsLatest)) {
       
       final var text = new StringBuilder()
         .append("Commit to head: '").append(headName).append("'")
@@ -231,5 +233,10 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
     }
     return CommitStatus.ERROR;
     
+  }
+  @Override
+  public HeadCommitBuilder parentIsLatest() {
+    this.parentIsLatest = true;
+    return this;
   }
 }
