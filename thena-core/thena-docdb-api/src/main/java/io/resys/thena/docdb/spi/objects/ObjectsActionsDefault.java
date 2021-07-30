@@ -44,4 +44,8 @@ public class ObjectsActionsDefault implements ObjectsActions {
   public CommitStateBuilder commitState() {
     return new CommitStateBuilderDefault(state);
   }
+  @Override
+  public BlobStateBuilder blobState() {
+    return new BlobStateBuilderDefault(state);
+  }
 }
