@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
@@ -43,7 +44,6 @@ import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
-import io.smallrye.mutiny.Multi;
 
 public class CommitVisitor {
   
@@ -169,9 +169,9 @@ public class CommitVisitor {
   }
   
   private void visitAppend(Map<String, String> newBlobs) {
-    List<RedundentHashedBlob> hashed = Multi.createFrom().items(newBlobs.entrySet().stream())
-      .onItem().transform(this::visitAppendEntry)
-      .collectItems().asList().await().indefinitely();
+    List<RedundentHashedBlob> hashed = newBlobs.entrySet().stream()
+      .map(this::visitAppendEntry)
+      .collect(Collectors.toList());
     
     for(RedundentHashedBlob entry : hashed) {
       logger
