@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi.mongo;
 
+import java.util.List;
+
 /*-
  * #%L
  * thena-docdb-mongo
@@ -46,6 +48,15 @@ public class MongoBlobQuery implements BlobQuery {
         .getCollection(ctx.getBlobs(), Blob.class)
         .find(Filters.eq(BlobCodec.ID, blobId))
         .collectItems().first();
+  }
+  @Override
+  public Uni<List<Blob>> id(List<String> blobId) {
+    final var ctx = wrapper.getNames();
+    return this.wrapper.getClient()
+        .getDatabase(ctx.getDb())
+        .getCollection(ctx.getBlobs(), Blob.class)
+        .find(Filters.in(BlobCodec.ID, blobId))
+        .collectItems().asList();
   }
   @Override
   public Multi<Blob> find() {

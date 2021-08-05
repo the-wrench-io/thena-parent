@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi;
 
+import java.util.List;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -46,6 +48,8 @@ public interface ClientQuery {
   
   interface BlobQuery {
     Uni<Blob> id(String blobId);
+    Uni<List<Blob>> id(List<String> blobId);
+    
     Multi<Blob> find();
     Multi<Blob> find(Tree tree);
   }

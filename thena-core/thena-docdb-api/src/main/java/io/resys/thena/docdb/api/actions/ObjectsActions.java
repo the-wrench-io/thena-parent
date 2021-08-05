@@ -45,8 +45,10 @@ public interface ObjectsActions {
   interface BlobStateBuilder {
     BlobStateBuilder repo(String repoName);
     BlobStateBuilder anyId(String refOrCommitOrTag);
+    BlobStateBuilder blobNames(List<String> blobName);
     BlobStateBuilder blobName(String blobName);
-    Uni<ObjectsResult<BlobObjects>> build();
+    Uni<ObjectsResult<BlobObject>> get();
+    Uni<ObjectsResult<BlobObjects>> list();
   }
   
   // build world state
@@ -91,12 +93,21 @@ public interface ObjectsActions {
   }
   
   @Value.Immutable
-  interface BlobObjects {
+  interface BlobObject {
     Repo getRepo();
 // TODO::    Ref getRef();
     Commit getCommit();
     Tree getTree();
     Blob getBlob();
+  }
+
+  @Value.Immutable
+  interface BlobObjects {
+    Repo getRepo();
+// TODO::    Ref getRef();
+    Commit getCommit();
+    Tree getTree();
+    List<Blob> getBlob();
   }
   
   enum ObjectsStatus {
