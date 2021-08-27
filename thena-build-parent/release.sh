@@ -57,3 +57,4 @@ mvn clean deploy -Pthena-release --settings thena-build-parent/ci-maven-settings
 mvn versions:set -DnewVersion=${PROJECT_VERSION}
 git commit -am "Release: ${RELEASE_VERSION}"
 git push
+git push origin ${RELEASE_VERSION}
