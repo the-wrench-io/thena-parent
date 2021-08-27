@@ -29,14 +29,15 @@ import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Objects;
-import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.Repo;
 import io.smallrye.mutiny.Uni;
 
 public interface ObjectsActions {
+  
   RepoStateBuilder repoState();
   RefStateBuilder refState();
   CommitStateBuilder commitState();

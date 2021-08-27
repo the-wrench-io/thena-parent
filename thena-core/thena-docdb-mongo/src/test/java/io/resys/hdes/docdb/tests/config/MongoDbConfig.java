@@ -48,6 +48,7 @@ import io.quarkus.mongodb.reactive.ReactiveMongoClient;
 import io.resys.thena.docdb.api.DocDB;
 import io.resys.thena.docdb.api.models.Diff;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBCodecProvider;
 import io.resys.thena.docdb.spi.DocDBFactory;
@@ -118,7 +119,7 @@ public abstract class MongoDbConfig {
   }
 
   public ClientState createState() {
-    final var ctx = DocDBFactory.names("junit");
+    final var ctx = ClientCollections.defaults("junit");
     return DocDBFactory.state(ctx, mongo);
   }
 

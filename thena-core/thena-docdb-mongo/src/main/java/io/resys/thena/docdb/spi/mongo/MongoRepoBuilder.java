@@ -86,4 +86,12 @@ public class MongoRepoBuilder implements RepoBuilder {
         .find();
   }
 
+  @Override
+  public Uni<Void> create() {
+    final var ctx = names;
+    return client
+        .getDatabase(ctx.getDb())
+        .createCollection(ctx.getRepos());
+  }
+
 }

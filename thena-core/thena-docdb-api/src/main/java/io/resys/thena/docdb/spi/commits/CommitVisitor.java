@@ -130,7 +130,7 @@ public class CommitVisitor {
     final Commit commitTemplate = ImmutableCommit.builder()
       .id("commit-template")
       .author(input.getCommitAuthor())
-      .message(input.getCommitAuthor())
+      .message(input.getCommitMessage())
       .dateTime(LocalDateTime.now())
       .parent(parent)
       .tree(tree.getId())

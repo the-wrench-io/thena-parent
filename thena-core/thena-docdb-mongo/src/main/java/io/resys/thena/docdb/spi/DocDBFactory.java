@@ -97,18 +97,6 @@ public class DocDBFactory {
     };
   }
   
-  public static ClientCollections names(String db) {
-    return ImmutableClientCollections.builder()
-        .db(db)
-        .repos("repos")
-        .refs("refs")
-        .tags("tags")
-        .blobs("blobs")
-        .trees("trees")
-        .commits("commits")
-        .build();
-  }
-  
   public static class Builder {
     private ReactiveMongoClient client;
     private String db = "docdb";
@@ -126,7 +114,7 @@ public class DocDBFactory {
       RepoAssert.notNull(client, () -> "client must be defined!");
       RepoAssert.notNull(db, () -> "db must be defined!");
       
-      final var ctx = names(db);
+      final var ctx = ClientCollections.defaults(db);
       return new DocDBDefault(state(ctx, client));
     }
   }

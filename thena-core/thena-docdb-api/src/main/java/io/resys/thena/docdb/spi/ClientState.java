@@ -38,6 +38,7 @@ public interface ClientState {
   Uni<ClientRepoState> withRepo(String repoNameOrId);
   
   interface RepoBuilder {
+    Uni<Void> create();
     Uni<Repo> getByName(String name);
     Uni<Repo> getByNameOrId(String nameOrId);
     Multi<Repo> find();

@@ -32,6 +32,7 @@ public abstract class ClientCollections {
   public abstract String getTags();
   public abstract String getBlobs();
   public abstract String getTrees();
+  public abstract String getTreeItems();
   public abstract String getCommits();
   
   public ClientCollections toRepo(Repo repo) {
@@ -39,11 +40,25 @@ public abstract class ClientCollections {
     return ImmutableClientCollections.builder()
         .db(this.getDb())
         .repos(this.getRepos())
-        .refs(    prefix + "_" + this.getRefs())
-        .tags(    prefix + "_" + this.getTags())
-        .blobs(   prefix + "_" + this.getBlobs())
-        .trees(   prefix + "_" + this.getTrees())
-        .commits( prefix + "_" + this.getCommits())
+        .refs(      prefix + this.getRefs())
+        .tags(      prefix + this.getTags())
+        .blobs(     prefix + this.getBlobs())
+        .trees(     prefix + this.getTrees())
+        .treeItems( prefix + this.getTreeItems())
+        .commits(   prefix + this.getCommits())
+        .build();
+  }
+  
+  public static ClientCollections defaults(String db) {
+    return ImmutableClientCollections.builder()
+        .db(db == null ? "docdb" : db)
+        .repos("repos")
+        .refs("refs")
+        .tags("tags")
+        .blobs("blobs")
+        .trees("trees")
+        .treeItems("treeItems")
+        .commits("commits")
         .build();
   }
 }

@@ -24,6 +24,12 @@
 				<artifactId>thena-docdb-mongo</artifactId>
 				<version>${project.version}</version>
 			</dependency>
+      <dependency>
+        <groupId>io.resys.hdes</groupId>
+        <artifactId>thena-docdb-pgsql</artifactId>
+        <version>${project.version}</version>
+      </dependency>      
+      
 			<dependency>
 				<groupId>io.resys.hdes</groupId>
 				<artifactId>thena-re-backend</artifactId>

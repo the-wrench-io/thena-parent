@@ -73,7 +73,7 @@ public class RepoCreateBuilder implements RepoActions.CreateBuilder {
               .id(Identifiers.uuid())
               .rev(Identifiers.uuid())
               .name(name)
-              .prefix((allRepos.size() + 10) + "_")
+              .prefix("nested_" + (allRepos.size() + 10) + "_")
               .build();
           
           return state.repos().insert(newRepo)
