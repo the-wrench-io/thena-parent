@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi.sql.defaults;
 
+import java.util.ArrayList;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -20,16 +22,20 @@ package io.resys.thena.docdb.spi.sql.defaults;
  * #L%
  */
 
+import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.sql.ImmutableSql;
 import io.resys.thena.docdb.spi.sql.ImmutableSqlTuple;
+import io.resys.thena.docdb.spi.sql.ImmutableSqlTupleList;
 import io.resys.thena.docdb.spi.sql.SqlBuilder.BlobSqlBuilder;
 import io.resys.thena.docdb.spi.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTuple;
+import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTupleList;
 import io.vertx.mutiny.sqlclient.Tuple;
 
 public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
@@ -71,13 +77,27 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple findByIds(List<String> blobId) {
+  public SqlTuple findByIds(Collection<String> blobId) {
+    StringBuilder params = new StringBuilder();
+    List<String> tuple = new ArrayList<>();
+    
+    int index = 1;
+    for(final var id : blobId) {
+      if(params.length() == 0) {
+        params.append(" WHERE ");
+      } else {
+        params.append(" OR ");
+      }
+      params.append(" id = $").append(index++);
+      tuple.add(id);
+    }
+    
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("SELECT * FROM ").append(options.getBlobs())
-        .append(" WHERE id IN(?1)")
+        .append(params.toString())
         .build())
-        .props(Tuple.of(blobId))
+        .props(Tuple.from(tuple))
         .build();
   }
   @Override
@@ -99,9 +119,23 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getBlobs())
-        .append("(id, value) VALUES($1, $2)")
+        .append(" (id, value) VALUES($1, $2)")
+        .append(" ON CONFLICT (id) DO NOTHING")
         .build())
         .props(Tuple.of(blob.getId(), blob.getValue()))
+        .build();
+  }
+  @Override
+  public SqlTupleList insertAll(Collection<Blob> blobs) {
+    return ImmutableSqlTupleList.builder()
+        .value(new SqlStatement()
+        .append("INSERT INTO ").append(options.getBlobs())
+        .append(" (id, value) VALUES($1, $2)")
+        .append(" ON CONFLICT (id) DO NOTHING")
+        .build())
+        .props(blobs.stream()
+            .map(v -> Tuple.of(v.getId(), v.getValue()))
+            .collect(Collectors.toList()))
         .build();
   }
 }

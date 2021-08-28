@@ -70,7 +70,7 @@ public class DefaultTreeSqlBuilder implements TreeSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTrees())
-        .append("(id) VALUES($1)")
+        .append(" (id) VALUES($1)")
         .build())
         .props(Tuple.of(tree.getId()))
         .build();

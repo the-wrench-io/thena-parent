@@ -25,8 +25,8 @@ import com.mongodb.client.model.Filters;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.spi.ClientQuery.DeleteResult;
 import io.resys.thena.docdb.spi.ClientQuery.TagQuery;
-import io.resys.thena.docdb.spi.codec.TagCodec;
 import io.resys.thena.docdb.spi.ImmutableDeleteResult;
+import io.resys.thena.docdb.spi.codec.TagCodec;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
@@ -55,7 +55,7 @@ public class MongoTagQuery implements TagQuery {
   }
   @Override
   public Uni<Tag> get() {
-    return find().collectItems().first();
+    return find().collect().first();
   }
   @Override
   public Multi<Tag> find() {

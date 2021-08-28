@@ -96,7 +96,7 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getCommits())
-        .append("(id, datetime, author, message, tree, parent, merge) VALUES($1, $2, $3, $4, $5, $6, $7)")
+        .append(" (id, datetime, author, message, tree, parent, merge) VALUES($1, $2, $3, $4, $5, $6, $7)")
         .build())
         .props(Tuple.from(Arrays.asList(
             commit.getId(), commit.getDateTime().toString(), commit.getAuthor(), commit.getMessage(), 

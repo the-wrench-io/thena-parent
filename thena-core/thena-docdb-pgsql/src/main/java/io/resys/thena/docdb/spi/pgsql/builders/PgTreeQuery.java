@@ -71,6 +71,8 @@ public class PgTreeQuery implements TreeQuery {
         .execute()
         .onItem()
         .transformToMulti((RowSet<Tree> rowset) -> Multi.createFrom().iterable(rowset))
+        .onItem().transformToUni((Tree tree) -> id(tree.getId()))
+        .concatenate()
         .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'TREE'!", e));
   }
 }

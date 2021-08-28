@@ -96,7 +96,7 @@ public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTreeItems())
-        .append("(name, blob, tree) VALUES($1, $2, $3)")
+        .append(" (name, blob, tree) VALUES($1, $2, $3)")
         .build())
         .props(Tuple.of(item.getName(), item.getBlob(), tree.getId()))
         .build();
@@ -106,7 +106,7 @@ public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
     return ImmutableSqlTupleList.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTreeItems())
-        .append("(name, blob, tree) VALUES($1, $2, $3)")
+        .append(" (name, blob, tree) VALUES($1, $2, $3)")
         .build())
         .props(item.getValues().values().stream()
             .map(v -> Tuple.of(v.getName(), v.getBlob(), item.getId()))

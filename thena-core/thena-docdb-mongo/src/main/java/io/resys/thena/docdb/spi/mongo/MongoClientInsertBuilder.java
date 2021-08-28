@@ -35,6 +35,10 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ImmutableInsertResult;
 import io.resys.thena.docdb.spi.ImmutableUpsertResult;
 import io.resys.thena.docdb.spi.codec.RefCodec;
+import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutput;
+import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutputStatus;
+import io.resys.thena.docdb.spi.commits.ImmutableCommitOutput;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 public class MongoClientInsertBuilder implements ClientInsertBuilder {
@@ -110,7 +114,7 @@ public class MongoClientInsertBuilder implements ClientInsertBuilder {
     .getDatabase(ctx.getDb())
     .getCollection(ctx.getRefs(), Ref.class)
     .find(Filters.eq(RefCodec.NAME, ref.getName()))
-    .collectItems().first().onItem()
+    .collect().first().onItem()
     .transformToUni(item -> {
       if(item == null) {
         return createRef(ref, commit);
@@ -286,5 +290,71 @@ public class MongoClientInsertBuilder implements ClientInsertBuilder {
                 .build())
             .build());
   }
+
+  @Override
+  public Uni<CommitOutput> output(CommitOutput output) {
+    
+    // save blobs
+    return Multi.createFrom().items(output.getBlobs().stream())
+    .onItem().transformToUni(blob -> blob(blob))
+    .merge().collect().asList()
+    .onItem().transform(upserts -> {
+      final var result = ImmutableCommitOutput.builder()
+          .from(output)
+          .status(CommitOutputStatus.OK);
+      upserts.forEach(blob -> result.addMessages(blob.getMessage()));
+      return (CommitOutput) result.build();
+    })
+    
+    // save tree
+    .onItem().transformToUni(current -> tree(current.getTree())
+      .onItem().transform(upsert -> (CommitOutput) ImmutableCommitOutput.builder()
+        .from(current)
+        .status(visitStatus(upsert))
+        .addMessages(upsert.getMessage())
+        .build())
+    )
+    
+    // save commit
+    .onItem().transformToUni(current -> {
+      if(current.getStatus() == CommitOutputStatus.OK) {
+        return commit(current.getCommit())
+            .onItem().transform(upsert -> (CommitOutput) ImmutableCommitOutput.builder()
+              .from(current)
+              .status(visitStatus(upsert))
+              .addMessages(upsert.getMessage())
+              .build());
+      }
+      return Uni.createFrom().item(current);
+    })
+    
+    // save ref
+    .onItem().transformToUni(current -> {      
+      if(current.getStatus() == CommitOutputStatus.OK) {
+        return ref(output.getRef(), output.getCommit())
+            .onItem().transform(upsert -> transformRef(upsert, current));
+      }
+      return Uni.createFrom().item(current);
+    });
+  }
   
+  private CommitOutput transformRef(UpsertResult upsert, CommitOutput current) {
+    return (CommitOutput) ImmutableCommitOutput.builder()
+        .from(current)
+        .status(visitStatus(upsert))
+        .addMessages(upsert.getMessage())
+        .build();
+  }  
+  
+  private CommitOutputStatus visitStatus(UpsertResult upsert) {
+    if(upsert.getStatus() == UpsertStatus.OK) {
+      return CommitOutputStatus.OK;
+    } else if(upsert.getStatus() == UpsertStatus.DUPLICATE) {
+      return CommitOutputStatus.EMPTY;
+    } else if(upsert.getStatus() == UpsertStatus.CONFLICT) {
+      return CommitOutputStatus.CONFLICT;
+    }
+    return CommitOutputStatus.ERROR;
+    
+  }
 }

@@ -97,7 +97,7 @@ public class PgBlobQuery implements BlobQuery {
     final var sql = sqlBuilder.blobs().findByTree(tree);
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
-        .execute()
+        .execute(sql.getProps())
         .onItem()
         .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
         .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'BLOB' by tree: " + tree.getId() + "!", e));

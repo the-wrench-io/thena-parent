@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi.sql;
 
+import java.util.Collection;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -57,9 +59,10 @@ public interface SqlBuilder {
   interface BlobSqlBuilder {
     Sql create();
     SqlTuple getById(String blobId);
-    SqlTuple findByIds(List<String> blobId);
+    SqlTuple findByIds(Collection<String> blobId);
     SqlTuple findByTree(Tree tree);
     SqlTuple insertOne(Blob blob);
+    SqlTupleList insertAll(Collection<Blob> blobs);
     Sql findAll();
   }
   

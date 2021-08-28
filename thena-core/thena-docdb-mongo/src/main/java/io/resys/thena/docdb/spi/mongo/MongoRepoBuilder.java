@@ -50,7 +50,7 @@ public class MongoRepoBuilder implements RepoBuilder {
         .getCollection(ctx.getRepos(), Repo.class)
         .find(Filters.or(
             Filters.eq(RepoCodec.NAME, name)))
-        .collectItems()
+        .collect()
         .first();
   }
 
@@ -63,7 +63,7 @@ public class MongoRepoBuilder implements RepoBuilder {
         .find(Filters.or(
             Filters.eq(RepoCodec.ID, nameOrId),
             Filters.eq(RepoCodec.NAME, nameOrId)))
-        .collectItems()
+        .collect()
         .first();
   }
 

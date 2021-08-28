@@ -105,7 +105,7 @@ public class DefaultTagSqlBuilder implements TagSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTags())
-        .append("(id, commit, datetime, author, message) VALUES($1, $2, $3, $4, $5)")
+        .append(" (id, commit, datetime, author, message) VALUES($1, $2, $3, $4, $5)")
         .build())
         .props(Tuple.of(newTag.getName(), newTag.getCommit(), newTag.getDateTime().toString(), newTag.getAuthor(), newTag.getMessage()))
         .build();

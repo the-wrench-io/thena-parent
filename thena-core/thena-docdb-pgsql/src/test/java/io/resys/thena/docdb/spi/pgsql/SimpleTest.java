@@ -71,6 +71,7 @@ public class SimpleTest extends DbTestTemplate {
       .head("project-x", "main")
       .message("first commit!")
       .build()
+      .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
 
     LOGGER.debug("created commit {}", commit_0);
@@ -80,7 +81,7 @@ public class SimpleTest extends DbTestTemplate {
   
   
   @Test
-  public void crateRepoWithTwoCommits() {
+  public void createRepoWithTwoCommits() {
     // create project
     RepoResult repo = getClient().repo().create()
         .name("project-xy")
@@ -98,6 +99,7 @@ public class SimpleTest extends DbTestTemplate {
       .author("same vimes")
       .message("first commit!")
       .build()
+      .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
 
     LOGGER.debug("created commit 0 {}", commit_0);
@@ -114,6 +116,7 @@ public class SimpleTest extends DbTestTemplate {
       .author("same vimes")
       .message("second commit!")
       .build()
+      .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
     
     LOGGER.debug("created commit 1 {}", commit_1);

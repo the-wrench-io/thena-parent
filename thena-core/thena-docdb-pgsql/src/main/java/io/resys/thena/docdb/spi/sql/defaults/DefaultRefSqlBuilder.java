@@ -108,7 +108,7 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getRefs())
-        .append("(name, commit) VALUES($1, $2)")
+        .append(" (name, commit) VALUES($1, $2)")
         .build())
         .props(Tuple.of(ref.getName(), ref.getCommit()))
         .build();
@@ -119,8 +119,8 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("UPDATE ").append(options.getRefs())
-        .append("SET commit = $1")
-        .append("WHERE name = $2 AND commit = $3")
+        .append(" SET commit = $1")
+        .append(" WHERE name = $2 AND commit = $3")
         .build())
         .props(Tuple.of(ref.getCommit(), ref.getName(), commit.getParent().get()))
         .build();

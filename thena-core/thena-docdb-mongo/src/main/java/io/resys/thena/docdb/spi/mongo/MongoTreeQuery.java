@@ -42,7 +42,7 @@ public class MongoTreeQuery implements TreeQuery {
         .getDatabase(ctx.getDb())
         .getCollection(ctx.getTrees(), Tree.class)
         .find(Filters.eq(TreeCodec.ID, tree))
-        .collectItems().first();
+        .collect().first();
   }
   @Override
   public Multi<Tree> find() {

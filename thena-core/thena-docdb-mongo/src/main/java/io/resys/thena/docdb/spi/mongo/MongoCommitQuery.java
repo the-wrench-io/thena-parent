@@ -42,7 +42,7 @@ public class MongoCommitQuery implements CommitQuery {
         .getDatabase(ctx.getDb())
         .getCollection(ctx.getCommits(), Commit.class)
         .find(Filters.eq(CommitCodec.ID, commit))
-        .collectItems().first();
+        .collect().first();
   }
   @Override
   public Multi<Commit> find() {

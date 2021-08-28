@@ -97,7 +97,7 @@ public class DefaultRepoSqlBuilder implements RepoSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getRepos())
-        .append("(id, rev, prefix, name) VALUES($1, $2, $3, $4)")
+        .append(" (id, rev, prefix, name) VALUES($1, $2, $3, $4)")
         .build())
         .props(Tuple.of(newRepo.getId(), newRepo.getRev(), newRepo.getPrefix(), newRepo.getName()))
         .build();

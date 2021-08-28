@@ -62,7 +62,11 @@ public class PgRepoBuilder implements RepoBuilder {
           return null;
         })
         .onFailure(e -> PgErrors.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REPOS' by 'name'!", e));
+        .onFailure().invoke(e -> {
+          
+          
+          PgErrors.deadEnd("Can't find 'REPOS' by 'name'!", e);
+        });
   }
 
   @Override

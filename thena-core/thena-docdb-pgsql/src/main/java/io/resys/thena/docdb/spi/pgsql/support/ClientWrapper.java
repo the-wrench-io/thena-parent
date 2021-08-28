@@ -32,4 +32,6 @@ public interface ClientWrapper {
   Repo getRepo();
   PgPool getClient();
   ClientCollections getNames();
+  
+  
 }

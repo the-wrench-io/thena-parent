@@ -77,7 +77,7 @@ public class DocDBPrettyPrinter {
       .append(item.getCommit()).append(": ").append(item.getName())
       .append(System.lineSeparator());
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
 
     
     result
@@ -96,7 +96,7 @@ public class DocDBPrettyPrinter {
       .append(System.lineSeparator());
       
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     result
     .append(System.lineSeparator())
@@ -115,7 +115,7 @@ public class DocDBPrettyPrinter {
       .append(System.lineSeparator());
       
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     
     result
@@ -135,7 +135,7 @@ public class DocDBPrettyPrinter {
       });
       
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     
     
@@ -148,7 +148,7 @@ public class DocDBPrettyPrinter {
     .transform(item -> {
       result.append("  - ").append(item.getId()).append(": ").append(item.getValue()).append(System.lineSeparator());
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     return result.toString();
   }

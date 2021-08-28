@@ -45,12 +45,12 @@ public class MongoRefQuery implements RefQuery {
             Filters.eq(RefCodec.NAME, refNameOrCommit),
             Filters.eq(RefCodec.COMMIT, refNameOrCommit)
         ))
-        .collectItems()
+        .collect()
         .first();
   }
   @Override
   public Uni<Ref> get() {
-    return find().collectItems().first();
+    return find().collect().first();
   }
   @Override
   public Multi<Ref> find() {
@@ -67,7 +67,7 @@ public class MongoRefQuery implements RefQuery {
         .getDatabase(ctx.getDb())
         .getCollection(ctx.getRefs(), Ref.class)
         .find(Filters.eq(RefCodec.NAME, name))
-        .collectItems()
+        .collect()
         .first();
   }
 }

@@ -47,7 +47,7 @@ public class MongoBlobQuery implements BlobQuery {
         .getDatabase(ctx.getDb())
         .getCollection(ctx.getBlobs(), Blob.class)
         .find(Filters.eq(BlobCodec.ID, blobId))
-        .collectItems().first();
+        .collect().first();
   }
   @Override
   public Uni<List<Blob>> id(List<String> blobId) {
@@ -56,7 +56,7 @@ public class MongoBlobQuery implements BlobQuery {
         .getDatabase(ctx.getDb())
         .getCollection(ctx.getBlobs(), Blob.class)
         .find(Filters.in(BlobCodec.ID, blobId))
-        .collectItems().asList();
+        .collect().asList();
   }
   @Override
   public Multi<Blob> find() {
