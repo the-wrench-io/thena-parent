@@ -66,7 +66,7 @@ public class RepoCreateBuilder implements RepoActions.CreateBuilder {
             .build());
       } else {
         result = state.repos().find()
-        .collectItems().asList().onItem()
+        .collect().asList().onItem()
         .transformToUni((allRepos) -> { 
           
           final var newRepo = ImmutableRepo.builder()

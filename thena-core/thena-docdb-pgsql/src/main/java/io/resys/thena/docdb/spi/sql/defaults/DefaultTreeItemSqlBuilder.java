@@ -60,17 +60,19 @@ public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
     return ImmutableSql.builder()
         .value(new SqlStatement().ln()
         .append("ALTER TABLE ").append(options.getTreeItems()).ln()
-        .append("  ADD CONSTRAINT TREE_ITEM_BLOB_FK").ln()
+        .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_ITEM_BLOB_FK").ln()
         .append("  FOREIGN KEY (blob)").ln()
         .append("  REFERENCES ").append(options.getBlobs()).append(" (id);").ln()
         .append("ALTER TABLE ").append(options.getTreeItems()).ln()
-        .append("  ADD CONSTRAINT TREE_ITEM_PARENT_FK").ln()
+        .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_ITEM_PARENT_FK").ln()
         .append("  FOREIGN KEY (tree)").ln()
         .append("  REFERENCES ").append(options.getTrees()).append(" (id);").ln()
+        .append("ALTER TABLE ").append(options.getTreeItems()).ln()
+        .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_NAME_BLOB_UNIQUE").ln()
+        .append("  UNIQUE (tree, name, blob);").ln()
         .build())
         .build();
   }
-  
   
   @Override
   public Sql findAll() {
@@ -96,7 +98,8 @@ public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTreeItems())
-        .append(" (name, blob, tree) VALUES($1, $2, $3)")
+        .append(" (name, blob, tree) VALUES($1, $2, $3)").ln()
+        .append(" ON CONFLICT (name, blob, tree) DO NOTHING")
         .build())
         .props(Tuple.of(item.getName(), item.getBlob(), tree.getId()))
         .build();
@@ -106,7 +109,8 @@ public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
     return ImmutableSqlTupleList.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTreeItems())
-        .append(" (name, blob, tree) VALUES($1, $2, $3)")
+        .append(" (name, blob, tree) VALUES($1, $2, $3)").ln()
+        .append(" ON CONFLICT (name, blob, tree) DO NOTHING")
         .build())
         .props(item.getValues().values().stream()
             .map(v -> Tuple.of(v.getName(), v.getBlob(), item.getId()))

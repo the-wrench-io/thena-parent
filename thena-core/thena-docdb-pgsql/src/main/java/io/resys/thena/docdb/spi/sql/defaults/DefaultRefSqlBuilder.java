@@ -53,7 +53,7 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
     return ImmutableSql.builder()
         .value(new SqlStatement().ln()
         .append("ALTER TABLE ").append(options.getRefs()).ln()
-        .append("  ADD CONSTRAINT REF_COMMIT_FK").ln()
+        .append("  ADD CONSTRAINT ").append(options.getRefs()).append("_REF_COMMIT_FK").ln()
         .append("  FOREIGN KEY (commit)").ln()
         .append("  REFERENCES ").append(options.getCommits()).append(" (id);").ln()
         .build())

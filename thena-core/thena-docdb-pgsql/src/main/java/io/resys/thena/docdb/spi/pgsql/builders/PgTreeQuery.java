@@ -61,7 +61,7 @@ public class PgTreeQuery implements TreeQuery {
           }
           return (Tree) builder.build();
         })
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'TREE'!", e));
+        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find/load 'TREE': " + tree + "!", e));
   }
   @Override
   public Multi<Tree> find() {

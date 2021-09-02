@@ -55,8 +55,8 @@ public class DefaultTagSqlBuilder implements TagSqlBuilder {
   public Sql constraints() {
     return ImmutableSql.builder()
         .value(new SqlStatement().ln()
-        .append("ALTER TABLE ").append(options.getRefs()).ln()
-        .append("  ADD CONSTRAINT TAG_COMMIT_FK").ln()
+        .append("ALTER TABLE ").append(options.getTags()).ln()
+        .append("  ADD CONSTRAINT ").append(options.getTags()).append("_TAG_COMMIT_FK").ln()
         .append("  FOREIGN KEY (commit)").ln()
         .append("  REFERENCES ").append(options.getCommits()).append(" (id);").ln()
         .build())

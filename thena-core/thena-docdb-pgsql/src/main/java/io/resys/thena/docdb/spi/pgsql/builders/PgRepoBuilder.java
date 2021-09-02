@@ -30,7 +30,6 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.RowSet;
-import io.vertx.mutiny.sqlclient.SqlClient;
 import io.vertx.mutiny.sqlclient.SqlClientHelper;
 
 public class PgRepoBuilder implements RepoBuilder {
@@ -107,7 +106,11 @@ public class PgRepoBuilder implements RepoBuilder {
           .append(sqlBuilder.tags().constraints().getValue())
           .append(sqlBuilder.treeItems().constraints().getValue())
           .toString();      
-      final Uni<Void> create = create(tx);
+      final Uni<Void> create = client.preparedQuery(sqlBuilder.repo().create().getValue()).execute()
+          .onItem().transformToUni(data -> Uni.createFrom().voidItem())
+          .onFailure().invoke(e -> PgErrors.deadEnd("Can't create table 'REPOS'!", e));;
+      
+      
       final Uni<Void> insert = tx.preparedQuery(repoInsert.getValue()).execute(repoInsert.getProps())
           .onItem().transformToUni(rowSet -> Uni.createFrom().voidItem())
           .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into 'REPO': '" + repoInsert.getValue() + "'!", e));
@@ -136,10 +139,6 @@ public class PgRepoBuilder implements RepoBuilder {
 
   @Override
   public Uni<Void> create() {
-    return create(client);
-  }
-  
-  public Uni<Void> create(SqlClient client) {
     return client.preparedQuery(this.sqlBuilder.repo().create().getValue()).execute()
     .onItem().transformToUni(data -> Uni.createFrom().voidItem())
     .onFailure().invoke(e -> PgErrors.deadEnd("Can't create table 'REPOS'!", e));

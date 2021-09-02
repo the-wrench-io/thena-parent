@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi.pgsql.config;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -37,13 +39,15 @@ public class DbTestTemplate {
   @Inject
   io.vertx.mutiny.pgclient.PgPool pgPool;
   
+  private static AtomicInteger index = new AtomicInteger(1);
+  
   @BeforeEach
   public void setUp() {
     this.client = DocDBFactory.create()
         .db("junit")
         .client(pgPool)
         .build();
-    this.client.repo().create().name("junit").build();
+    this.client.repo().create().name("junit" + index.incrementAndGet()).build();
   }
   
   @AfterEach
