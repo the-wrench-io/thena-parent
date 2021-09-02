@@ -71,6 +71,7 @@ public class DefaultTreeSqlBuilder implements TreeSqlBuilder {
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getTrees())
         .append(" (id) VALUES($1)")
+        .append(" ON CONFLICT (id) DO NOTHING")
         .build())
         .props(Tuple.of(tree.getId()))
         .build();

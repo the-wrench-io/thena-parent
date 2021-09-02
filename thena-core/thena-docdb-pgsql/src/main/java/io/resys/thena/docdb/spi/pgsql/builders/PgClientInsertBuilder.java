@@ -300,7 +300,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
         if(next.getStatus() == CommitOutputStatus.OK) {
           return Execute.apply(tx, treeInsert).onItem()
               .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.rowCount()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree", e));
+              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
         }
         return Uni.createFrom().item(next);
       }).chain(next -> {
