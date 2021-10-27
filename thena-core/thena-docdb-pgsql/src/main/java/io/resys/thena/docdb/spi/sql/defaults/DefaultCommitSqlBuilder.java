@@ -93,13 +93,19 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
   }
   @Override
   public SqlTuple insertOne(Commit commit) {
+    
+    var message = commit.getMessage();
+    if(commit.getMessage().length() > 100) {
+      message = message.substring(0, 100);
+    }
+    
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getCommits())
         .append(" (id, datetime, author, message, tree, parent, merge) VALUES($1, $2, $3, $4, $5, $6, $7)")
         .build())
         .props(Tuple.from(Arrays.asList(
-            commit.getId(), commit.getDateTime().toString(), commit.getAuthor(), commit.getMessage(), 
+            commit.getId(), commit.getDateTime().toString(), commit.getAuthor(), message, 
             commit.getTree(), commit.getParent().orElse(null), commit.getMerge().orElse(null))))
         .build();
   }
