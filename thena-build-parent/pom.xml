@@ -30,7 +30,7 @@
 
     <mongodb.version>3.12.7</mongodb.version>
 
-    <commons-io.version>2.5</commons-io.version>
+    <commons-io.version>2.7</commons-io.version>
     <commons-csv.version>1.5</commons-csv.version>
     <commons-codec.version>1.13</commons-codec.version>
     <commons-lang.version>3.9</commons-lang.version>
