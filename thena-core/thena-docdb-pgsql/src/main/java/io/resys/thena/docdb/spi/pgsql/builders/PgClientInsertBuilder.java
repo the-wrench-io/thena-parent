@@ -305,6 +305,10 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
         return Uni.createFrom().item(next);
       }).chain(next -> {
         if(next.getStatus() == CommitOutputStatus.OK) {
+          if(treeValueInsert.getProps().isEmpty()) {
+            return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
+          }
+          
           return Execute.apply(tx, treeValueInsert).onItem()
               .transform(row -> successOutput(next, "Tree Values saved, number of new entries: " + row.rowCount()))
               .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree values", e));

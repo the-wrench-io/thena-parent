@@ -50,6 +50,47 @@ public class SimpleTest extends DbTestTemplate {
     String getId();
     String getName();
   }
+
+  @Test
+  public void crateRepoAddAndDeleteFile() {
+    // create project
+    RepoResult repo = getClient().repo().create()
+        .name("project-x")
+        .build()
+        .await().atMost(Duration.ofMinutes(1));
+    LOGGER.debug("created repo {}", repo);
+    Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
+    
+    // Create head and first commit
+    CommitResult commit_0 = getClient().commit().head()
+      .head("project-x-delete", "main")
+      .append("readme.md", "readme content")
+      .author("same vimes")
+      .head("project-x", "main")
+      .message("first commit!")
+      .build()
+      .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
+      .await().atMost(Duration.ofMinutes(1));
+
+    LOGGER.debug("created commit {}", commit_0);
+    Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
+    
+    
+    // Create head and first commit
+    CommitResult commit_1 = getClient().commit().head()
+      .head(repo.getRepo().getName(), "main")
+      .parent(commit_0.getCommit().getId())
+      .remove("readme.md")
+      .author("same vimes")
+      .message("second commit!")
+      .build()
+      .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
+      .await().atMost(Duration.ofMinutes(1));
+    
+    LOGGER.debug("created commit 1 {}", commit_1);
+    Assertions.assertEquals(CommitStatus.OK, commit_1.getStatus());
+    super.printRepo(repo.getRepo());
+  }
   
   @Test
   public void crateRepoWithOneCommit() {
