@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.api.exceptions;
 
+import java.util.List;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -47,6 +49,16 @@ public class RepoException extends DocDBException {
             .text(new StringBuilder()
             .append("Repo with name: '").append(repo).append("',")
             .append(" has no ref: '").append(ref).append("'")
+            .append("!")
+            .toString())
+          .build();
+    }
+    public Message noRepoRef(String repo, String ref, List<String> allRefs) {
+      return ImmutableMessage.builder()
+            .text(new StringBuilder()
+            .append("Repo with name: '").append(repo).append("',")
+            .append(" has no ref: '").append(ref).append("'")
+            .append(" known refs: '").append(String.join(",", allRefs)).append("'")
             .append("!")
             .toString())
           .build();

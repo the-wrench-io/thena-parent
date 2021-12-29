@@ -93,12 +93,16 @@ public class RefStateBuilderDefault implements RefStateBuilder {
     return ctx.query().refs().name(refName).onItem()
         .transformToUni(ref -> {
           if(ref == null) {
-            return Uni.createFrom().item(ImmutableObjectsResult
-                .<RefObjects>builder()
-                .repo(repo)
-                .status(ObjectsStatus.OK)
-                .addMessages(RepoException.builder().noRepoRef(repo.getName(), refName))
-                .build());
+            return ctx.query().refs().find().collect().asList().onItem().transform(allRefs -> 
+              (ObjectsResult<RefObjects>) ImmutableObjectsResult
+              .<RefObjects>builder()
+              .repo(repo)
+              .status(ObjectsStatus.OK)
+              .addMessages(RepoException.builder().noRepoRef(
+                  repo.getName(), refName, 
+                  allRefs.stream().map(e -> e.getName()).collect(Collectors.toList())))
+              .build()
+            );
           }
           return getState(repo, ref, ctx);
         });
@@ -144,7 +148,7 @@ public class RefStateBuilderDefault implements RefStateBuilder {
     return ctx.query().commits().id(ref.getCommit());
   }
   private Uni<Map<String, Blob>> getBlobs(Tree tree, ClientRepoState ctx) {
-    return ctx.query().blobs().find(tree).collectItems().asList().onItem()
+    return ctx.query().blobs().find(tree).collect().asList().onItem()
         .transform(blobs -> blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)));
   }
 }
