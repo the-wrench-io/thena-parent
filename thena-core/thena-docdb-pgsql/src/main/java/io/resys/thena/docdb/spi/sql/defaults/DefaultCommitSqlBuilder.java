@@ -47,7 +47,7 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
     .append("  id VARCHAR(40) PRIMARY KEY,").ln()
     .append("  datetime VARCHAR(29) NOT NULL,").ln()
     .append("  author VARCHAR(40) NOT NULL,").ln()
-    .append("  message VARCHAR(100) NOT NULL,").ln()
+    .append("  message VARCHAR(255) NOT NULL,").ln()
     .append("  tree VARCHAR(40) NOT NULL,").ln()
     .append("  parent VARCHAR(40),").ln()
     .append("  merge VARCHAR(40)").ln()
