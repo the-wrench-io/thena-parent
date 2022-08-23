@@ -13,6 +13,7 @@ jobs:
       uses: actions/checkout@main
       with:
         ref: main
+        token: ${{ secrets.REPO_TOKEN }}
 
     - uses: joschi/setup-jdk@v2
       with:
