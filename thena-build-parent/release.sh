@@ -50,11 +50,11 @@ mvn -version
 
 git checkout ${branch}
 mvn versions:set -DnewVersion=${RELEASE_VERSION}
-git commit -am "Release: ${RELEASE_VERSION}"
+git commit -am "release: ${RELEASE_VERSION}"
 git tag -a ${RELEASE_VERSION} -m "release ${RELEASE_VERSION}"
 
 mvn clean deploy -Pthena-release --settings thena-build-parent/ci-maven-settings.xml
 mvn versions:set -DnewVersion=${PROJECT_VERSION}
-git commit -am "Release: ${RELEASE_VERSION}"
+git commit -am "release: ${RELEASE_VERSION}"
 git push
 git push origin ${RELEASE_VERSION}
