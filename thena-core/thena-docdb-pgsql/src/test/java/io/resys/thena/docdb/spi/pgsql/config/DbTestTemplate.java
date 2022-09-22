@@ -33,7 +33,7 @@ import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBPrettyPrinter;
 import io.resys.thena.docdb.spi.pgsql.PgErrors;
-import io.resys.thena.docdb.sql.DocDBFactory;
+import io.resys.thena.docdb.sql.DocDBFactorySql;
 
 public class DbTestTemplate {
   private DocDB client;
@@ -44,7 +44,7 @@ public class DbTestTemplate {
   
   @BeforeEach
   public void setUp() {
-    this.client = DocDBFactory.create()
+    this.client = DocDBFactorySql.create()
         .db("junit")
         .client(pgPool)
         .errorHandler(new PgErrors())
@@ -62,7 +62,7 @@ public class DbTestTemplate {
   
   public ClientState createState() {
     final var ctx = ClientCollections.defaults("junit");
-    return DocDBFactory.state(ctx, pgPool, new PgErrors());
+    return DocDBFactorySql.state(ctx, pgPool, new PgErrors());
   }
   
   public void printRepo(Repo repo) {

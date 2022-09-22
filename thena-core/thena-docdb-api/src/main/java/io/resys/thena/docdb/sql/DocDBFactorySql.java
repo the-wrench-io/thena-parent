@@ -36,7 +36,7 @@ import io.resys.thena.docdb.sql.defaults.DefaultSqlMapper;
 import io.resys.thena.docdb.sql.support.ImmutableClientWrapper;
 import io.smallrye.mutiny.Uni;
 
-public class DocDBFactory {
+public class DocDBFactorySql {
 
   public static Builder create() {
     return new Builder();
