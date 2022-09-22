@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.sql.defaults;
+package io.resys.thena.docdb.sql.defaults;
 
 /*-
  * #%L
@@ -24,11 +24,11 @@ import java.util.Arrays;
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.sql.ImmutableSql;
-import io.resys.thena.docdb.spi.sql.ImmutableSqlTuple;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.CommitSqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.Sql;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTuple;
+import io.resys.thena.docdb.sql.ImmutableSql;
+import io.resys.thena.docdb.sql.ImmutableSqlTuple;
+import io.resys.thena.docdb.sql.SqlBuilder.CommitSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.Sql;
+import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.vertx.mutiny.sqlclient.Tuple;
 
 public class DefaultCommitSqlBuilder implements CommitSqlBuilder {

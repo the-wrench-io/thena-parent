@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.support;
+package io.resys.thena.docdb.sql;
 
 /*-
  * #%L
@@ -20,18 +20,21 @@ package io.resys.thena.docdb.spi.pgsql.support;
  * #L%
  */
 
-
-import org.immutables.value.Value;
-
+import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.spi.ClientCollections;
-import io.vertx.mutiny.pgclient.PgPool;
+import io.vertx.mutiny.sqlclient.Row;
 
-@Value.Immutable
-public interface ClientWrapper {
-  Repo getRepo();
-  PgPool getClient();
-  ClientCollections getNames();
-  
-  
+public interface SqlMapper {
+  Repo repo(Row row);
+  Commit commit(Row row);
+  Tree tree(Row row);
+  TreeValue treeItem(Row row);
+  Tag tag(Row row);
+  Ref ref(Row row);
+  Blob blob(Row row);
 }

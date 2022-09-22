@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.sql.defaults;
+package io.resys.thena.docdb.sql.defaults;
 
 /*-
  * #%L
@@ -25,13 +25,13 @@ import java.util.stream.Collectors;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.sql.ImmutableSql;
-import io.resys.thena.docdb.spi.sql.ImmutableSqlTuple;
-import io.resys.thena.docdb.spi.sql.ImmutableSqlTupleList;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.Sql;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTuple;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTupleList;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.TreeItemSqlBuilder;
+import io.resys.thena.docdb.sql.ImmutableSql;
+import io.resys.thena.docdb.sql.ImmutableSqlTuple;
+import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
+import io.resys.thena.docdb.sql.SqlBuilder.Sql;
+import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
+import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
+import io.resys.thena.docdb.sql.SqlBuilder.TreeItemSqlBuilder;
 import io.vertx.mutiny.sqlclient.Tuple;
 
 

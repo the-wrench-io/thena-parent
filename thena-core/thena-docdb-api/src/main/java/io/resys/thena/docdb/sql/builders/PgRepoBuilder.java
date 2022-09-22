@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.builders;
+package io.resys.thena.docdb.sql.builders;
 
 /*-
  * #%L
@@ -22,29 +22,24 @@ package io.resys.thena.docdb.spi.pgsql.builders;
 
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ClientState.RepoBuilder;
-import io.resys.thena.docdb.spi.pgsql.sql.PgErrors;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
+import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlMapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.RowSet;
 import io.vertx.mutiny.sqlclient.SqlClientHelper;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class PgRepoBuilder implements RepoBuilder {
-  private final PgPool client;
+  private final io.vertx.mutiny.sqlclient.Pool client;
   private final ClientCollections names;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
+  private final ErrorHandler errorHandler;
 
-  public PgRepoBuilder(PgPool client, ClientCollections names, SqlMapper sqlMapper, SqlBuilder sqlBuilder) {
-    super();
-    this.client = client;
-    this.names = names;
-    this.sqlMapper = sqlMapper;
-    this.sqlBuilder = sqlBuilder;
-  }
 
   @Override
   public Uni<Repo> getByName(String name) {
@@ -60,11 +55,11 @@ public class PgRepoBuilder implements RepoBuilder {
           }
           return null;
         })
-        .onFailure(e -> PgErrors.notFound(e)).recoverWithNull()
+        .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
         .onFailure().invoke(e -> {
           
           
-          PgErrors.deadEnd("Can't find 'REPOS' by 'name'!", e);
+          errorHandler.deadEnd("Can't find 'REPOS' by 'name'!", e);
         });
   }
 
@@ -82,8 +77,8 @@ public class PgRepoBuilder implements RepoBuilder {
           }
           return null;
         })
-        .onFailure(e -> PgErrors.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REPOS' by 'name' or 'id'!", e));
+        .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REPOS' by 'name' or 'id'!", e));
   }
   
   @Override
@@ -108,15 +103,15 @@ public class PgRepoBuilder implements RepoBuilder {
           .toString();      
       final Uni<Void> create = client.preparedQuery(sqlBuilder.repo().create().getValue()).execute()
           .onItem().transformToUni(data -> Uni.createFrom().voidItem())
-          .onFailure().invoke(e -> PgErrors.deadEnd("Can't create table 'REPOS'!", e));;
+          .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));;
       
       
       final Uni<Void> insert = tx.preparedQuery(repoInsert.getValue()).execute(repoInsert.getProps())
           .onItem().transformToUni(rowSet -> Uni.createFrom().voidItem())
-          .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into 'REPO': '" + repoInsert.getValue() + "'!", e));
+          .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'REPO': '" + repoInsert.getValue() + "'!", e));
       final Uni<Void> nested = tx.query(tablesCreate).execute()
           .onItem().transformToUni(rowSet -> Uni.createFrom().voidItem())
-          .onFailure().invoke(e -> PgErrors.deadEnd("Can't create tables: " + tablesCreate, e));;
+          .onFailure().invoke(e -> errorHandler.deadEnd("Can't create tables: " + tablesCreate, e));;
       
       
       return create
@@ -133,14 +128,14 @@ public class PgRepoBuilder implements RepoBuilder {
     .execute()
     .onItem()
     .transformToMulti((RowSet<Repo> rowset) -> Multi.createFrom().iterable(rowset))
-    .onFailure(e -> PgErrors.notFound(e)).recoverWithCompletion()
-    .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REPOS'!", e));
+    .onFailure(e -> errorHandler.notFound(e)).recoverWithCompletion()
+    .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REPOS'!", e));
   }
 
   @Override
   public Uni<Void> create() {
     return client.preparedQuery(this.sqlBuilder.repo().create().getValue()).execute()
     .onItem().transformToUni(data -> Uni.createFrom().voidItem())
-    .onFailure().invoke(e -> PgErrors.deadEnd("Can't create table 'REPOS'!", e));
+    .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));
   }
 }

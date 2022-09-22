@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.builders;
+package io.resys.thena.docdb.sql.builders;
 
 /*-
  * #%L
@@ -25,29 +25,23 @@ import java.util.List;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
-import io.resys.thena.docdb.spi.pgsql.sql.PgErrors;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
+import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlMapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.RowSet;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class PgBlobQuery implements BlobQuery {
 
-  private final PgPool client;
+  private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
+  private final ErrorHandler errorHandler;
 
-  public PgBlobQuery(PgPool client, ClientCollections names, SqlMapper sqlMapper, SqlBuilder sqlBuilder) {
-    super();
-    this.client = client;
-    this.sqlMapper = sqlMapper;
-    this.sqlBuilder = sqlBuilder;
-  }
-  
   @Override
   public Uni<Blob> id(String blobId) {
     final var sql = sqlBuilder.blobs().getById(blobId);
@@ -62,8 +56,8 @@ public class PgBlobQuery implements BlobQuery {
           }
           return null;
         })
-        .onFailure(e -> PgErrors.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'BLOB' by 'id': '" + blobId + "'!", e));
+        .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id': '" + blobId + "'!", e));
   }
   @Override
   public Uni<List<Blob>> id(List<String> blobId) {
@@ -79,8 +73,8 @@ public class PgBlobQuery implements BlobQuery {
           }
           return result;
         })
-        .onFailure(e -> PgErrors.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'BLOB' by 'id'-s: '" + String.join(",", blobId) + "'!", e));
+        .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id'-s: '" + String.join(",", blobId) + "'!", e));
   }
   @Override
   public Multi<Blob> find() {
@@ -90,7 +84,7 @@ public class PgBlobQuery implements BlobQuery {
         .execute()
         .onItem()
         .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'BLOB'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
   }
   @Override
   public Multi<Blob> find(Tree tree) {
@@ -100,6 +94,6 @@ public class PgBlobQuery implements BlobQuery {
         .execute(sql.getProps())
         .onItem()
         .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'BLOB' by tree: " + tree.getId() + "!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + tree.getId() + "!", e));
   }
 }

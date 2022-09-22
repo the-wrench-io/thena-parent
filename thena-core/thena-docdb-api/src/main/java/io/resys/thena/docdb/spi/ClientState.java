@@ -27,6 +27,7 @@ import io.smallrye.mutiny.Uni;
 public interface ClientState {
   ClientCollections getCollections();
   RepoBuilder repos();
+  ErrorHandler getErrorHandler();
   
   Uni<ClientInsertBuilder> insert(String repoNameOrId);
   ClientInsertBuilder insert(Repo repo);

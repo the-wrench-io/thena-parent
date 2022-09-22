@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.sql;
+package io.resys.thena.docdb.spi.pgsql;
 
 /*-
  * #%L
@@ -23,12 +23,13 @@ package io.resys.thena.docdb.spi.pgsql.sql;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.vertx.pgclient.PgException;
 
-public class PgErrors {
+public class PgErrors implements ErrorHandler {
   private static final Logger LOGGER = LoggerFactory.getLogger(PgErrors.class);
   
-  public static boolean notFound(Throwable e) {
+  public boolean notFound(Throwable e) {
     if(e instanceof PgException) {
       PgException ogre = (PgException) e;
       
@@ -37,7 +38,7 @@ public class PgErrors {
     return false;
   }
   
-  public static boolean duplicate(Throwable e) {
+  public boolean duplicate(Throwable e) {
     if(e instanceof PgException) {
       PgException ogre = (PgException) e;
       
@@ -46,11 +47,11 @@ public class PgErrors {
     return false;
   }
   
-  public static void deadEnd(String additionalMsg, Throwable e) {
+  public void deadEnd(String additionalMsg, Throwable e) {
     LOGGER.error(additionalMsg + System.lineSeparator() + e.getMessage(), e);
   }
   
-  public static void deadEnd(String additionalMsg) {
+  public void deadEnd(String additionalMsg) {
     LOGGER.error(additionalMsg);
   }
 }

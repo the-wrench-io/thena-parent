@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.sql;
+package io.resys.thena.docdb.sql;
 
 import java.util.Collection;
 

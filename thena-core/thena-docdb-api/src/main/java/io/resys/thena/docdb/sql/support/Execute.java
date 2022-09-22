@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.support;
+package io.resys.thena.docdb.sql.support;
 
 /*-
  * #%L
@@ -23,9 +23,9 @@ package io.resys.thena.docdb.spi.pgsql.support;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.resys.thena.docdb.spi.sql.SqlBuilder.Sql;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTuple;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTupleList;
+import io.resys.thena.docdb.sql.SqlBuilder.Sql;
+import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
+import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.Row;
 import io.vertx.mutiny.sqlclient.RowSet;

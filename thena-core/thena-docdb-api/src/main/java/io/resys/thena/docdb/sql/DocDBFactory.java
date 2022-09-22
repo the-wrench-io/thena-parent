@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql;
+package io.resys.thena.docdb.sql;
 
 /*-
  * #%L
@@ -27,16 +27,14 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ClientQuery;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBDefault;
-import io.resys.thena.docdb.spi.pgsql.builders.PgClientInsertBuilder;
-import io.resys.thena.docdb.spi.pgsql.builders.PgRepoBuilder;
-import io.resys.thena.docdb.spi.pgsql.support.ImmutableClientWrapper;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
-import io.resys.thena.docdb.spi.sql.defaults.DefaultSqlBuilder;
-import io.resys.thena.docdb.spi.sql.defaults.DefaultSqlMapper;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
+import io.resys.thena.docdb.sql.builders.PgClientInsertBuilder;
+import io.resys.thena.docdb.sql.builders.PgRepoBuilder;
+import io.resys.thena.docdb.sql.defaults.DefaultSqlBuilder;
+import io.resys.thena.docdb.sql.defaults.DefaultSqlMapper;
+import io.resys.thena.docdb.sql.support.ImmutableClientWrapper;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
 
 public class DocDBFactory {
 
@@ -44,8 +42,12 @@ public class DocDBFactory {
     return new Builder();
   }
 
-  public static ClientState state(ClientCollections ctx, PgPool client) {
+  public static ClientState state(ClientCollections ctx, io.vertx.mutiny.sqlclient.Pool client, ErrorHandler handler) {
     return new ClientState() {
+      @Override
+      public ErrorHandler getErrorHandler() {
+        return handler;
+      }
       
       @Override
       public ClientCollections getCollections() {
@@ -53,7 +55,7 @@ public class DocDBFactory {
       }
       @Override
       public RepoBuilder repos() {
-        return new PgRepoBuilder(client, ctx, sqlMapper(ctx), sqlBuilder(ctx));
+        return new PgRepoBuilder(client, ctx, sqlMapper(ctx), sqlBuilder(ctx), handler);
       }
       @Override
       public Uni<ClientInsertBuilder> insert(String repoNameOrId) {
@@ -66,7 +68,7 @@ public class DocDBFactory {
             .client(client)
             .names(ctx.toRepo(repo))
             .build();
-        return new PgClientInsertBuilder(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()));
+        return new PgClientInsertBuilder(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
       }
       @Override
       public Uni<ClientQuery> query(String repoNameOrId) {
@@ -79,7 +81,7 @@ public class DocDBFactory {
             .client(client)
             .names(ctx.toRepo(repo))
             .build();
-        return new PgClientQuery(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()));
+        return new PgClientQuery(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
       }
       @Override
       public ClientRepoState withRepo(Repo repo) {
@@ -91,11 +93,11 @@ public class DocDBFactory {
         return new ClientRepoState() {
           @Override
           public ClientQuery query() {
-            return new PgClientQuery(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()));
+            return new PgClientQuery(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
           @Override
           public ClientInsertBuilder insert() {
-            return new PgClientInsertBuilder(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()));
+            return new PgClientInsertBuilder(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
         };
       }
@@ -114,23 +116,29 @@ public class DocDBFactory {
   }
   
   public static class Builder {
-    private PgPool client;
+    private io.vertx.mutiny.sqlclient.Pool client;
     private String db = "docdb";
-
+    private ErrorHandler errorHandler;
+    
+    public Builder errorHandler(ErrorHandler errorHandler) {
+      this.errorHandler = errorHandler;
+      return this;
+    }
     public Builder db(String db) {
       this.db = db;
       return this;
     }
-    public Builder client(PgPool client) {
+    public Builder client(io.vertx.mutiny.sqlclient.Pool client) {
       this.client = client;
       return this;
     }
     public DocDB build() {
       RepoAssert.notNull(client, () -> "client must be defined!");
       RepoAssert.notNull(db, () -> "db must be defined!");
+      RepoAssert.notNull(errorHandler, () -> "errorHandler must be defined!");
 
       final var ctx = ClientCollections.defaults(db);
-      return new DocDBDefault(state(ctx, client));
+      return new DocDBDefault(state(ctx, client, errorHandler));
     }
   }
 }

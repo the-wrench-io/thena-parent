@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.builders;
+package io.resys.thena.docdb.sql.builders;
 
 /*-
  * #%L
@@ -21,31 +21,27 @@ package io.resys.thena.docdb.spi.pgsql.builders;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientQuery.DeleteResult;
 import io.resys.thena.docdb.spi.ClientQuery.TagQuery;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableDeleteResult;
-import io.resys.thena.docdb.spi.pgsql.sql.PgErrors;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
+import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlMapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.RowSet;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class PgTagQuery implements TagQuery {
   
-  private final PgPool client;
+  private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
+  private final ErrorHandler errorHandler;
+
   private String name;
 
-  public PgTagQuery(PgPool client, ClientCollections names, SqlMapper sqlMapper, SqlBuilder sqlBuilder) {
-    super();
-    this.client = client;
-    this.sqlMapper = sqlMapper;
-    this.sqlBuilder = sqlBuilder;
-  }
   @Override
   public TagQuery name(String name) {
     this.name = name;
@@ -58,7 +54,7 @@ public class PgTagQuery implements TagQuery {
         .execute(sql.getProps())
         .onItem()
         .transform(result -> (DeleteResult) ImmutableDeleteResult.builder().deletedCount(1).build())
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't delete 'TAG' by name: '" + name + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't delete 'TAG' by name: '" + name + "'!", e));
   }
   @Override
   public Uni<Tag> get() {
@@ -74,7 +70,7 @@ public class PgTagQuery implements TagQuery {
           }
           return null;
         })
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'TAG'!", e));      
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'TAG'!", e));      
   }
   @Override
   public Multi<Tag> find() {
@@ -85,7 +81,7 @@ public class PgTagQuery implements TagQuery {
           .execute()
           .onItem()
           .transformToMulti((RowSet<Tag> rowset) -> Multi.createFrom().iterable(rowset))
-          .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'TAG'!", e));      
+          .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'TAG'!", e));      
     }
     final var sql = sqlBuilder.tags().getByName(name);
     return client.preparedQuery(sql.getValue())
@@ -93,6 +89,6 @@ public class PgTagQuery implements TagQuery {
         .execute(sql.getProps())
         .onItem()
         .transformToMulti((RowSet<Tag> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'TAG' by name: '" + name + "'!", e));   
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'TAG' by name: '" + name + "'!", e));   
   }
 }

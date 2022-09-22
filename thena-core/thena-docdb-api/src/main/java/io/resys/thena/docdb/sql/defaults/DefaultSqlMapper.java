@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.sql.defaults;
+package io.resys.thena.docdb.sql.defaults;
 
 /*-
  * #%L
@@ -38,7 +38,7 @@ import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
+import io.resys.thena.docdb.sql.SqlMapper;
 import io.vertx.mutiny.sqlclient.Row;
 
 public class DefaultSqlMapper implements SqlMapper {

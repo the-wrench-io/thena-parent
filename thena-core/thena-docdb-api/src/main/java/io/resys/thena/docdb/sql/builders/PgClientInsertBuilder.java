@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.builders;
+package io.resys.thena.docdb.sql.builders;
 
 /*-
  * #%L
@@ -27,31 +27,25 @@ import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableInsertResult;
 import io.resys.thena.docdb.spi.ImmutableUpsertResult;
 import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutput;
 import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutputStatus;
 import io.resys.thena.docdb.spi.commits.ImmutableCommitOutput;
-import io.resys.thena.docdb.spi.pgsql.sql.PgErrors;
-import io.resys.thena.docdb.spi.pgsql.support.ClientWrapper;
-import io.resys.thena.docdb.spi.pgsql.support.Execute;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
+import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.support.Execute;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.SqlClientHelper;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class PgClientInsertBuilder implements ClientInsertBuilder {
-  private final PgPool client;
+  private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
-
-  public PgClientInsertBuilder(ClientWrapper wrapper, SqlMapper sqlMapper, SqlBuilder sqlBuilder) {
-    super();
-    this.client = wrapper.getClient();
-    this.sqlMapper = sqlMapper;
-    this.sqlBuilder = sqlBuilder;
-  }
+  private final ErrorHandler errorHandler;
   
 
   @Override
@@ -59,9 +53,9 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
     final var tagInsert = sqlBuilder.tags().insertOne(tag);
     return client.preparedQuery(tagInsert.getValue()).execute(tagInsert.getProps())
         .onItem().transform(inserted -> (InsertResult) ImmutableInsertResult.builder().duplicate(false).build())
-        .onFailure(e -> PgErrors.duplicate(e))
+        .onFailure(e -> errorHandler.duplicate(e))
         .recoverWithItem(e -> ImmutableInsertResult.builder().duplicate(true).build())
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into 'TAG': '" + tagInsert.getValue() + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'TAG': '" + tagInsert.getValue() + "'!", e));
   }
 
   @Override
@@ -84,7 +78,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                 .build())
             .build()
         )
-        .onFailure(e -> PgErrors.duplicate(e))
+        .onFailure(e -> errorHandler.duplicate(e))
         .recoverWithItem(e -> (UpsertResult) ImmutableUpsertResult.builder()
             .id(blob.getId())
             .isModified(false)
@@ -98,7 +92,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                     .toString())
                 .build())
             .build())
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into 'BLOB': '" + blobsInsert.getValue() + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'BLOB': '" + blobsInsert.getValue() + "'!", e));
   }
 
   public Uni<UpsertResult> ref(Ref ref, Commit commit) {
@@ -174,7 +168,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                 .build())
             .build()
         )
-        .onFailure(e -> PgErrors.duplicate(e))
+        .onFailure(e -> errorHandler.duplicate(e))
         .recoverWithItem(e -> (UpsertResult) ImmutableUpsertResult.builder()
           .id(ref.getName())
           .isModified(false)
@@ -188,7 +182,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                   .toString())
               .build())
           .build())
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into 'REF': '" + refsInsert.getValue() + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'REF': '" + refsInsert.getValue() + "'!", e));
   }
 
   @Override
@@ -214,7 +208,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
             .build())
         .build()
     )
-    .onFailure(e -> PgErrors.duplicate(e))
+    .onFailure(e -> errorHandler.duplicate(e))
     .recoverWithItem(e -> (UpsertResult) ImmutableUpsertResult.builder()
         .id(tree.getId())
         .isModified(false)
@@ -228,7 +222,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                 .toString())
             .build())
         .build())
-    .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into "
+    .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into "
         +"\r\n"
         + "'TREE': " + treeInsert.getValue() 
         + "\r\n"
@@ -256,7 +250,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                 .build())
             .build()
         )
-        .onFailure(e -> PgErrors.duplicate(e))
+        .onFailure(e -> errorHandler.duplicate(e))
         .recoverWithItem(e -> (UpsertResult) ImmutableUpsertResult.builder()
             .id(commit.getId())
             .isModified(false)
@@ -270,7 +264,7 @@ public class PgClientInsertBuilder implements ClientInsertBuilder {
                     .toString())
                 .build())
             .build())
-        .onFailure().invoke(e -> PgErrors.deadEnd("Can't insert into 'COMMIT': '" + commitsInsert.getValue() + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'COMMIT': '" + commitsInsert.getValue() + "'!", e));
   }
  
   

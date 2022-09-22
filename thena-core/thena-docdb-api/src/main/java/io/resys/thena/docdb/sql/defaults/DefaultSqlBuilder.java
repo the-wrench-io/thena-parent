@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.sql.defaults;
+package io.resys.thena.docdb.sql.defaults;
 
 /*-
  * #%L
@@ -21,7 +21,7 @@ package io.resys.thena.docdb.spi.sql.defaults;
  */
 
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder;
 
 public class DefaultSqlBuilder implements SqlBuilder {
   private final ClientCollections ctx;

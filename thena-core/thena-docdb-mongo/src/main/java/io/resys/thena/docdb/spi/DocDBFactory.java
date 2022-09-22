@@ -37,6 +37,23 @@ public class DocDBFactory {
   }
   
   public static ClientState state(ClientCollections ctx, ReactiveMongoClient client) {
+    final var handler = new ErrorHandler() {
+      @Override
+      public boolean notFound(Throwable e) {
+        return false;
+      }
+      @Override
+      public boolean duplicate(Throwable e) {
+        return false;
+      }
+      @Override
+      public void deadEnd(String additionalMsg) {
+      }
+      @Override
+      public void deadEnd(String additionalMsg, Throwable e) {
+      }
+    };
+    
     return new ClientState() {
       @Override
       public ClientCollections getCollections() {
@@ -94,6 +111,10 @@ public class DocDBFactory {
       public Uni<ClientRepoState> withRepo(String repoNameOrId) {
         return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
       }
+      @Override
+      public ErrorHandler getErrorHandler() {
+        return handler;
+      }
     };
   }
   
@@ -110,10 +131,10 @@ public class DocDBFactory {
       return this;
     }
     
+    
     public DocDB build() {
       RepoAssert.notNull(client, () -> "client must be defined!");
       RepoAssert.notNull(db, () -> "db must be defined!");
-      
       final var ctx = ClientCollections.defaults(db);
       return new DocDBDefault(state(ctx, client));
     }

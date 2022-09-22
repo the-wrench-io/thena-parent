@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.pgsql.builders;
+package io.resys.thena.docdb.sql.builders;
 
 /*-
  * #%L
@@ -21,29 +21,25 @@ package io.resys.thena.docdb.spi.pgsql.builders;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ClientQuery.RefQuery;
-import io.resys.thena.docdb.spi.pgsql.sql.PgErrors;
-import io.resys.thena.docdb.spi.sql.SqlBuilder;
-import io.resys.thena.docdb.spi.sql.SqlMapper;
 import io.resys.thena.docdb.spi.support.RepoAssert;
+import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlMapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.pgclient.PgPool;
 import io.vertx.mutiny.sqlclient.RowSet;
+import lombok.RequiredArgsConstructor;
 
+
+@RequiredArgsConstructor
 public class PgRefQuery implements RefQuery {
 
-  private final PgPool client;
+  private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
+  private final ErrorHandler errorHandler;
 
-  public PgRefQuery(PgPool client, ClientCollections names, SqlMapper sqlMapper, SqlBuilder sqlBuilder) {
-    super();
-    this.client = client;
-    this.sqlMapper = sqlMapper;
-    this.sqlBuilder = sqlBuilder;
-  }
   @Override
   public Uni<Ref> nameOrCommit(String refNameOrCommit) {
     RepoAssert.notEmpty(refNameOrCommit, () -> "refNameOrCommit must be defined!");
@@ -59,7 +55,7 @@ public class PgRefQuery implements RefQuery {
         }
         return null;
       })
-      .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REF' by refNameOrCommit: '" + refNameOrCommit + "'!", e));
+      .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by refNameOrCommit: '" + refNameOrCommit + "'!", e));
   }
   @Override
   public Uni<Ref> get() {
@@ -75,7 +71,7 @@ public class PgRefQuery implements RefQuery {
         }
         return null;
       })
-      .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REF'!", e));
+      .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF'!", e));
   }
   @Override
   public Multi<Ref> find() {
@@ -85,7 +81,7 @@ public class PgRefQuery implements RefQuery {
       .execute()
       .onItem()
       .transformToMulti((RowSet<Ref> rowset) -> Multi.createFrom().iterable(rowset))
-      .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REF'!", e));
+      .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF'!", e));
   }
   @Override
   public Uni<Ref> name(String name) {
@@ -102,6 +98,6 @@ public class PgRefQuery implements RefQuery {
         }
         return null;
       })
-      .onFailure().invoke(e -> PgErrors.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
+      .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
   }
 }

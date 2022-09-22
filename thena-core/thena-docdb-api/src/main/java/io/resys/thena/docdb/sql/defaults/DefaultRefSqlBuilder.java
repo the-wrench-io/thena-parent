@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.sql.defaults;
+package io.resys.thena.docdb.sql.defaults;
 
 /*-
  * #%L
@@ -20,34 +20,31 @@ package io.resys.thena.docdb.spi.sql.defaults;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.sql.ImmutableSql;
-import io.resys.thena.docdb.spi.sql.ImmutableSqlTuple;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.Sql;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.SqlTuple;
-import io.resys.thena.docdb.spi.sql.SqlBuilder.TagSqlBuilder;
+import io.resys.thena.docdb.sql.ImmutableSql;
+import io.resys.thena.docdb.sql.ImmutableSqlTuple;
+import io.resys.thena.docdb.sql.SqlBuilder.RefSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.Sql;
+import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.vertx.mutiny.sqlclient.Tuple;
 
-public class DefaultTagSqlBuilder implements TagSqlBuilder {
-  
+public class DefaultRefSqlBuilder implements RefSqlBuilder {
   private final ClientCollections options;
   
-  public DefaultTagSqlBuilder(ClientCollections options) {
+  public DefaultRefSqlBuilder(ClientCollections options) {
     super();
     this.options = options;
   }
-  
+
   @Override
   public Sql create() {
     return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getTags()).ln()
+    .append("CREATE TABLE ").append(options.getRefs()).ln()
     .append("(").ln()
-    .append("  id VARCHAR(40) PRIMARY KEY,").ln()
-    .append("  commit VARCHAR(40) NOT NULL,").ln()
-    .append("  datetime VARCHAR(29) NOT NULL,").ln()
-    .append("  author VARCHAR(40) NOT NULL,").ln()
-    .append("  message VARCHAR(100) NOT NULL").ln()
+    .append("  name VARCHAR(100) PRIMARY KEY,").ln()
+    .append("  commit VARCHAR(40) NOT NULL").ln()
     .append(");").ln()
     .build()).build();
   }
@@ -55,59 +52,77 @@ public class DefaultTagSqlBuilder implements TagSqlBuilder {
   public Sql constraints() {
     return ImmutableSql.builder()
         .value(new SqlStatement().ln()
-        .append("ALTER TABLE ").append(options.getTags()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getTags()).append("_TAG_COMMIT_FK").ln()
+        .append("ALTER TABLE ").append(options.getRefs()).ln()
+        .append("  ADD CONSTRAINT ").append(options.getRefs()).append("_REF_COMMIT_FK").ln()
         .append("  FOREIGN KEY (commit)").ln()
         .append("  REFERENCES ").append(options.getCommits()).append(" (id);").ln()
         .build())
         .build();
   }
+  
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getTags())
+        .append("SELECT * FROM ").append(options.getRefs())
         .build())
         .build();
   }
+
   @Override
   public SqlTuple getByName(String name) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getTags())
+        .append("SELECT * FROM ").append(options.getRefs())
         .append(" WHERE name = $1")
         .append(" FETCH FIRST ROW ONLY")
         .build())
         .props(Tuple.of(name))
         .build();
   }
+
   @Override
-  public SqlTuple deleteByName(String name) {
+  public SqlTuple getByNameOrCommit(String refNameOrCommit) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("DELETE FROM ").append(options.getTags())
-        .append(" WHERE name = $1")
+        .append("SELECT * FROM ").append(options.getRefs())
+        .append(" WHERE name = $1 OR commit = $1")
+        .append(" FETCH FIRST ROW ONLY")
         .build())
-        .props(Tuple.of(name))
+        .props(Tuple.of(refNameOrCommit))
         .build();
   }
+
   @Override
   public Sql getFirst() {
     return ImmutableSql.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getTags())
+        .append("SELECT * FROM ").append(options.getRefs())
         .append(" FETCH FIRST ROW ONLY")
         .build())
         .build();
   }
+
   @Override
-  public SqlTuple insertOne(Tag newTag) {
+  public SqlTuple insertOne(Ref ref) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("INSERT INTO ").append(options.getTags())
-        .append(" (id, commit, datetime, author, message) VALUES($1, $2, $3, $4, $5)")
+        .append("INSERT INTO ").append(options.getRefs())
+        .append(" (name, commit) VALUES($1, $2)")
         .build())
-        .props(Tuple.of(newTag.getName(), newTag.getCommit(), newTag.getDateTime().toString(), newTag.getAuthor(), newTag.getMessage()))
+        .props(Tuple.of(ref.getName(), ref.getCommit()))
+        .build();
+  }
+
+  @Override
+  public SqlTuple updateOne(Ref ref, Commit commit) {
+    return ImmutableSqlTuple.builder()
+        .value(new SqlStatement()
+        .append("UPDATE ").append(options.getRefs())
+        .append(" SET commit = $1")
+        .append(" WHERE name = $2 AND commit = $3")
+        .build())
+        .props(Tuple.of(ref.getCommit(), ref.getName(), commit.getParent().get()))
         .build();
   }
 }
