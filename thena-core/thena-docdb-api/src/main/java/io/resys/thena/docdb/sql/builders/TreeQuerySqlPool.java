@@ -33,7 +33,7 @@ import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PgTreeQuery implements TreeQuery {
+public class TreeQuerySqlPool implements TreeQuery {
 
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;

@@ -31,7 +31,7 @@ import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PgCommitQuery implements CommitQuery {
+public class CommitQuerySqlPool implements CommitQuery {
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;

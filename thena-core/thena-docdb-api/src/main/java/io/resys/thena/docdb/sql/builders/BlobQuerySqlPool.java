@@ -35,7 +35,7 @@ import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PgBlobQuery implements BlobQuery {
+public class BlobQuerySqlPool implements BlobQuery {
 
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;

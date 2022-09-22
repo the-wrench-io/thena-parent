@@ -41,7 +41,7 @@ import io.vertx.mutiny.sqlclient.SqlClientHelper;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PgClientInsertBuilder implements ClientInsertBuilder {
+public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;

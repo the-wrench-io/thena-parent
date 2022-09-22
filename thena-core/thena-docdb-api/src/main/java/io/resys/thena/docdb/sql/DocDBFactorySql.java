@@ -29,8 +29,8 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.docdb.sql.builders.PgClientInsertBuilder;
-import io.resys.thena.docdb.sql.builders.PgRepoBuilder;
+import io.resys.thena.docdb.sql.builders.ClientInsertBuilderSqlPool;
+import io.resys.thena.docdb.sql.builders.RepoBuilderSqlPool;
 import io.resys.thena.docdb.sql.defaults.DefaultSqlBuilder;
 import io.resys.thena.docdb.sql.defaults.DefaultSqlMapper;
 import io.resys.thena.docdb.sql.support.ImmutableClientWrapper;
@@ -55,7 +55,7 @@ public class DocDBFactorySql {
       }
       @Override
       public RepoBuilder repos() {
-        return new PgRepoBuilder(client, ctx, sqlMapper(ctx), sqlBuilder(ctx), handler);
+        return new RepoBuilderSqlPool(client, ctx, sqlMapper(ctx), sqlBuilder(ctx), handler);
       }
       @Override
       public Uni<ClientInsertBuilder> insert(String repoNameOrId) {
@@ -68,7 +68,7 @@ public class DocDBFactorySql {
             .client(client)
             .names(ctx.toRepo(repo))
             .build();
-        return new PgClientInsertBuilder(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+        return new ClientInsertBuilderSqlPool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
       }
       @Override
       public Uni<ClientQuery> query(String repoNameOrId) {
@@ -81,7 +81,7 @@ public class DocDBFactorySql {
             .client(client)
             .names(ctx.toRepo(repo))
             .build();
-        return new PgClientQuery(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+        return new ClientQuerySqlPool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
       }
       @Override
       public ClientRepoState withRepo(Repo repo) {
@@ -93,11 +93,11 @@ public class DocDBFactorySql {
         return new ClientRepoState() {
           @Override
           public ClientQuery query() {
-            return new PgClientQuery(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+            return new ClientQuerySqlPool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
           @Override
           public ClientInsertBuilder insert() {
-            return new PgClientInsertBuilder(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+            return new ClientInsertBuilderSqlPool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
         };
       }

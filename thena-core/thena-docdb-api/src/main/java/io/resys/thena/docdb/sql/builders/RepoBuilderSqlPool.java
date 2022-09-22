@@ -33,7 +33,7 @@ import io.vertx.mutiny.sqlclient.SqlClientHelper;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PgRepoBuilder implements RepoBuilder {
+public class RepoBuilderSqlPool implements RepoBuilder {
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final ClientCollections names;
   private final SqlMapper sqlMapper;

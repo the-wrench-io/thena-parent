@@ -22,16 +22,16 @@ package io.resys.thena.docdb.sql;
 
 import io.resys.thena.docdb.spi.ClientQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
-import io.resys.thena.docdb.sql.builders.PgBlobQuery;
-import io.resys.thena.docdb.sql.builders.PgCommitQuery;
-import io.resys.thena.docdb.sql.builders.PgRefQuery;
-import io.resys.thena.docdb.sql.builders.PgTagQuery;
-import io.resys.thena.docdb.sql.builders.PgTreeQuery;
+import io.resys.thena.docdb.sql.builders.BlobQuerySqlPool;
+import io.resys.thena.docdb.sql.builders.CommitQuerySqlPool;
+import io.resys.thena.docdb.sql.builders.RefQuerySqlPool;
+import io.resys.thena.docdb.sql.builders.TagQuerySqlPool;
+import io.resys.thena.docdb.sql.builders.TreeQuerySqlPool;
 import io.resys.thena.docdb.sql.support.ClientWrapper;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class PgClientQuery implements ClientQuery {
+public class ClientQuerySqlPool implements ClientQuery {
   
   private final ClientWrapper wrapper;
   private final SqlMapper sqlMapper;
@@ -40,26 +40,26 @@ public class PgClientQuery implements ClientQuery {
   
   @Override
   public TagQuery tags() {
-    return new PgTagQuery(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new TagQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
   }
 
   @Override
   public CommitQuery commits() {
-    return new PgCommitQuery(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new CommitQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
   }
 
   @Override
   public RefQuery refs() {
-    return new PgRefQuery(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new RefQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
   }
 
   @Override
   public TreeQuery trees() {
-    return new PgTreeQuery(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new TreeQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
   }
 
   @Override
   public BlobQuery blobs() {
-    return new PgBlobQuery(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new BlobQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
   }
 }

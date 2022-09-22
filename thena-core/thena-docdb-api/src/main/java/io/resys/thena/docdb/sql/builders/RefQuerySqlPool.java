@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class PgRefQuery implements RefQuery {
+public class RefQuerySqlPool implements RefQuery {
 
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final SqlMapper sqlMapper;
