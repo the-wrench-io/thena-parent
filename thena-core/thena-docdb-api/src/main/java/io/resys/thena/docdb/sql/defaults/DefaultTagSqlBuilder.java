@@ -75,7 +75,7 @@ public class DefaultTagSqlBuilder implements TagSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("SELECT * FROM ").append(options.getTags())
-        .append(" WHERE name = $1")
+        .append(" WHERE id = $1")
         .append(" FETCH FIRST ROW ONLY")
         .build())
         .props(Tuple.of(name))
@@ -86,7 +86,7 @@ public class DefaultTagSqlBuilder implements TagSqlBuilder {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("DELETE FROM ").append(options.getTags())
-        .append(" WHERE name = $1")
+        .append(" WHERE id = $1")
         .build())
         .props(Tuple.of(name))
         .build();

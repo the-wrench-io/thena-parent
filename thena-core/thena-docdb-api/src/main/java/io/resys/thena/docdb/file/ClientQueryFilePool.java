@@ -1,4 +1,12 @@
-package io.resys.thena.docdb.sql;
+package io.resys.thena.docdb.file;
+
+import io.resys.thena.docdb.file.builders.BlobQueryFilePool;
+import io.resys.thena.docdb.file.builders.CommitQueryFilePool;
+import io.resys.thena.docdb.file.builders.RefQueryFilePool;
+import io.resys.thena.docdb.file.builders.TagQueryFilePool;
+import io.resys.thena.docdb.file.builders.TreeQueryFilePool;
+import io.resys.thena.docdb.file.tables.Table.FileClientWrapper;
+import io.resys.thena.docdb.file.tables.Table.FileMapper;
 
 /*-
  * #%L
@@ -22,44 +30,38 @@ package io.resys.thena.docdb.sql;
 
 import io.resys.thena.docdb.spi.ClientQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
-import io.resys.thena.docdb.sql.builders.BlobQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.CommitQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.RefQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.TagQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.TreeQuerySqlPool;
-import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class ClientQuerySqlPool implements ClientQuery {
+public class ClientQueryFilePool implements ClientQuery {
   
-  private final SqlClientWrapper wrapper;
-  private final SqlMapper sqlMapper;
-  private final SqlBuilder sqlBuilder;
+  private final FileClientWrapper wrapper;
+  private final FileMapper mapper;
+  private final FileBuilder builder;
   private final ErrorHandler errorHandler;
   
   @Override
   public TagQuery tags() {
-    return new TagQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new TagQueryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
 
   @Override
   public CommitQuery commits() {
-    return new CommitQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new CommitQueryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
 
   @Override
   public RefQuery refs() {
-    return new RefQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new RefQueryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
 
   @Override
   public TreeQuery trees() {
-    return new TreeQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new TreeQueryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
 
   @Override
   public BlobQuery blobs() {
-    return new BlobQuerySqlPool(wrapper.getClient(), sqlMapper, sqlBuilder, errorHandler);
+    return new BlobQueryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
 }

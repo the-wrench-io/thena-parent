@@ -1,10 +1,10 @@
-package io.resys.thena.docdb.sql;
+package io.resys.thena.docdb.spi.support;
 
 /*-
  * #%L
- * thena-docdb-pgsql
+ * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2022 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,15 +27,13 @@ import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.spi.support.DataMapper;
-import io.vertx.mutiny.sqlclient.Row;
 
-public interface SqlMapper extends DataMapper<Row>{
-  Repo repo(Row row);
-  Commit commit(Row row);
-  Tree tree(Row row);
-  TreeValue treeItem(Row row);
-  Tag tag(Row row);
-  Ref ref(Row row);
-  Blob blob(Row row);
+public interface DataMapper<T> {
+  Repo repo(T row);
+  Commit commit(T row);
+  Tree tree(T row);
+  TreeValue treeItem(T row);
+  Tag tag(T row);
+  Ref ref(T row);
+  Blob blob(T row);
 }

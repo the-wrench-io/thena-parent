@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql;
+package io.resys.thena.docdb.file;
 
 /*-
  * #%L
@@ -22,6 +22,11 @@ package io.resys.thena.docdb.sql;
 
 import io.resys.thena.docdb.api.DocDB;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.file.builders.ClientInsertBuilderFilePool;
+import io.resys.thena.docdb.file.builders.RepoBuilderFilePool;
+import io.resys.thena.docdb.file.tables.ImmutableFileClientWrapper;
+import io.resys.thena.docdb.file.tables.Table.FileMapper;
+import io.resys.thena.docdb.file.tables.Table.FilePool;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ClientQuery;
@@ -29,20 +34,15 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.docdb.sql.builders.ClientInsertBuilderSqlPool;
-import io.resys.thena.docdb.sql.builders.RepoBuilderSqlPool;
-import io.resys.thena.docdb.sql.defaults.DefaultSqlBuilder;
-import io.resys.thena.docdb.sql.defaults.DefaultSqlMapper;
-import io.resys.thena.docdb.sql.support.ImmutableSqlClientWrapper;
 import io.smallrye.mutiny.Uni;
 
-public class DocDBFactorySql {
+public class DocDBFactoryFile {
 
   public static Builder create() {
     return new Builder();
   }
 
-  public static ClientState state(ClientCollections ctx, io.vertx.mutiny.sqlclient.Pool client, ErrorHandler handler) {
+  public static ClientState state(ClientCollections ctx, FilePool client, ErrorHandler handler) {
     return new ClientState() {
       @Override
       public ErrorHandler getErrorHandler() {
@@ -55,7 +55,7 @@ public class DocDBFactorySql {
       }
       @Override
       public RepoBuilder repos() {
-        return new RepoBuilderSqlPool(client, ctx, sqlMapper(ctx), sqlBuilder(ctx), handler);
+        return new RepoBuilderFilePool(client, ctx, sqlMapper(ctx), sqlBuilder(ctx), handler);
       }
       @Override
       public Uni<ClientInsertBuilder> insert(String repoNameOrId) {
@@ -63,12 +63,12 @@ public class DocDBFactorySql {
       }
       @Override
       public ClientInsertBuilder insert(Repo repo) {
-        final var wrapper = ImmutableSqlClientWrapper.builder()
+        final var wrapper = ImmutableFileClientWrapper.builder()
             .repo(repo)
             .client(client)
             .names(ctx.toRepo(repo))
             .build();
-        return new ClientInsertBuilderSqlPool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+        return new ClientInsertBuilderFilePool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
       }
       @Override
       public Uni<ClientQuery> query(String repoNameOrId) {
@@ -76,16 +76,16 @@ public class DocDBFactorySql {
       }
       @Override
       public ClientQuery query(Repo repo) {
-        final var wrapper = ImmutableSqlClientWrapper.builder()
+        final var wrapper = ImmutableFileClientWrapper.builder()
             .repo(repo)
             .client(client)
             .names(ctx.toRepo(repo))
             .build();
-        return new ClientQuerySqlPool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+        return new ClientQueryFilePool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
       }
       @Override
       public ClientRepoState withRepo(Repo repo) {
-        final var wrapper = ImmutableSqlClientWrapper.builder()
+        final var wrapper = ImmutableFileClientWrapper.builder()
             .repo(repo)
             .client(client)
             .names(ctx.toRepo(repo))
@@ -93,11 +93,11 @@ public class DocDBFactorySql {
         return new ClientRepoState() {
           @Override
           public ClientQuery query() {
-            return new ClientQuerySqlPool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+            return new ClientQueryFilePool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
           @Override
           public ClientInsertBuilder insert() {
-            return new ClientInsertBuilderSqlPool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
+            return new ClientInsertBuilderFilePool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
         };
       }
@@ -108,15 +108,15 @@ public class DocDBFactorySql {
     };
   }
 
-  public static SqlBuilder sqlBuilder(ClientCollections ctx) {
-    return new DefaultSqlBuilder(ctx);
+  public static FileBuilder sqlBuilder(ClientCollections ctx) {
+    return new DefaultFileBuilder(ctx);
   }
-  public static SqlMapper sqlMapper(ClientCollections ctx) {
-    return new DefaultSqlMapper(ctx);
+  public static FileMapper sqlMapper(ClientCollections ctx) {
+    return new DefaultFileMapper();
   }
   
   public static class Builder {
-    private io.vertx.mutiny.sqlclient.Pool client;
+    private FilePool client;
     private String db = "docdb";
     private ErrorHandler errorHandler;
     
@@ -128,7 +128,7 @@ public class DocDBFactorySql {
       this.db = db;
       return this;
     }
-    public Builder client(io.vertx.mutiny.sqlclient.Pool client) {
+    public Builder client(FilePool client) {
       this.client = client;
       return this;
     }

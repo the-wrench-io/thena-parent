@@ -27,7 +27,7 @@ import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
 
 @Value.Immutable
-public interface ClientWrapper {
+public interface SqlClientWrapper {
   Repo getRepo();
   io.vertx.mutiny.sqlclient.Pool getClient();
   ClientCollections getNames();
