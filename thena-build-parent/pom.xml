@@ -29,7 +29,7 @@
     <jsonassert.version>1.5.0</jsonassert.version>
     <flapdoodle.version>3.0.0</flapdoodle.version>
     <lombok.version>1.18.22</lombok.version>
-    <mongodb.version>3.12.7</mongodb.version>
+    <mongodb.version>3.12.8</mongodb.version>
 
     <commons-io.version>2.7</commons-io.version>
     <commons-csv.version>1.5</commons-csv.version>
