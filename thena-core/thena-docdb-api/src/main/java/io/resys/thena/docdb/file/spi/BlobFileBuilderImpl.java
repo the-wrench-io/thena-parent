@@ -150,6 +150,9 @@ public class BlobFileBuilderImpl implements BlobFileBuilder {
           root.getRepoTable(ctx).getBlobs().insertAll(inserts);
           return results;
         })
+        .props(blobs.stream()
+            .map(v -> Tuple.of(v.getId(), v.getValue()))
+            .collect(Collectors.toList()))
         .build();
   }
 }
