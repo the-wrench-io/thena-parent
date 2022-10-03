@@ -133,6 +133,8 @@ public class TreeItemFileBuilderImpl implements TreeItemFileBuilder {
               final var key = (treeItem.getName() + treeItem.getBlob() + tree.getId());
               
               if(byId.containsKey(key)) {
+                results.add(byId.get(key));
+              } else {
                 final var newRow = ImmutableTreeItemTableRow.builder()
                     .id(UUID.randomUUID().toString())
                     .name(treeItem.getName())
@@ -141,8 +143,6 @@ public class TreeItemFileBuilderImpl implements TreeItemFileBuilder {
                     .build();
                 inserts.add(newRow);
                 results.add(newRow);
-              } else {
-                results.add(byId.get(key));              
               }  
             });
             root.getRepoTable(ctx).getTreeItems().insertAll(inserts);

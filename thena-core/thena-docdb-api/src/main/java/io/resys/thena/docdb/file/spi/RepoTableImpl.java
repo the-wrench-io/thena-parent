@@ -76,6 +76,13 @@ public class RepoTableImpl extends FileTable<RepoTable.RepoTableRow> implements 
       super(db, ctx.getTrees(), objectMapper, TreeTable.TreeTableRow.class,
           new TypeReference<List<TreeTable.TreeTableRow>>() {});
     }
+    public List<TreeTable.TreeTableRow> insertAll(List<TreeTable.TreeTableRow> entry) {
+      return super.insertAll(entry);
+    }
+    
+    public TreeTable.TreeTableRow insert(TreeTable.TreeTableRow type) {
+      return super.insert(type);
+    }
   }
   public static class TreeItemTableImpl extends FileTable<TreeItemTable.TreeItemTableRow> implements TreeItemTable {
     public TreeItemTableImpl(File db, ClientCollections ctx, ObjectMapper objectMapper) {

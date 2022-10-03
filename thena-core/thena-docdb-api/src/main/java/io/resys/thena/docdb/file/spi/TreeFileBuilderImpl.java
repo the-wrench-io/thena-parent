@@ -80,7 +80,7 @@ public class TreeFileBuilderImpl implements TreeFileBuilder {
           final var exists = root.getRepoTable(ctx).getTrees().getRows().stream()
               .filter(tree -> tree.getId().equals(src.getId()))
               .collect(Collectors.toList());
-          if(exists.isEmpty()) {
+          if(!exists.isEmpty()) {
             return exists;
           }
           final var newRow = root.getRepoTable(ctx).getTrees().insert(ImmutableTreeTableRow.builder()

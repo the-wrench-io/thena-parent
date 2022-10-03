@@ -137,7 +137,7 @@ public class RefFileBuilderImpl implements RefFileBuilder {
           
           final var newRow = ImmutableRefTableRow.builder()
               .name(ref.getName())
-              .commit(commit.getParent().get())
+              .commit(ref.getCommit())
               .build();
           root.getRepoTable(ctx).getRefs().update(exists.get(), newRow);
           return Arrays.asList(newRow);

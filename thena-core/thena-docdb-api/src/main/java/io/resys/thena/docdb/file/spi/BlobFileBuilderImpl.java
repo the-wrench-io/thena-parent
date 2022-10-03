@@ -138,15 +138,18 @@ public class BlobFileBuilderImpl implements BlobFileBuilder {
           final var inserts = new ArrayList<BlobTableRow>();
           final var results = new ArrayList<BlobTableRow>();
           
-          blobs.stream().forEach(blob -> {
-            if(byId.containsKey(blob.getId())) {
+          for (final var blob : blobs) {
+
+            if (byId.containsKey(blob.getId())) {
+              results.add(byId.get(blob.getId()));
+            } else {
               final var newRow = ImmutableBlobTableRow.builder().id(blob.getId()).value(blob.getValue()).build();
               inserts.add(newRow);
               results.add(newRow);
-            } else {
-              results.add(byId.get(blob.getId()));              
-            }  
-          });
+
+            }
+          }
+          
           root.getRepoTable(ctx).getBlobs().insertAll(inserts);
           return results;
         })
