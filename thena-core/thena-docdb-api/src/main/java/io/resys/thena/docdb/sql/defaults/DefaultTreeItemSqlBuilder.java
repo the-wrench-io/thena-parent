@@ -70,6 +70,13 @@ public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
         .append("ALTER TABLE ").append(options.getTreeItems()).ln()
         .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_NAME_BLOB_UNIQUE").ln()
         .append("  UNIQUE (tree, name, blob);").ln()
+        
+        .append("CREATE INDEX ").append(options.getTreeItems()).append("_TREE_INDEX")
+        .append(" ON ").append(options.getTreeItems()).append(" (tree);").ln()
+//        .append("CREATE INDEX ").append(options.getTreeItems()).append("_TREE_BLOB_INDEX")
+//        .append(" ON ").append(options.getTreeItems()).append(" (tree, blob);").ln()
+//        .append("CREATE INDEX ").append(options.getTreeItems()).append("_TREE_NAME_INDEX")
+//        .append(" ON ").append(options.getTreeItems()).append(" (tree, name);").ln()
         .build())
         .build();
   }

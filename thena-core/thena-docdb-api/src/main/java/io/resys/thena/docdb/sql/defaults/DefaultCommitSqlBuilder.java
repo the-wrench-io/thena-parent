@@ -68,6 +68,12 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
         .append("  ADD CONSTRAINT ").append(options.getCommits()).append("_COMMIT_TREE_FK").ln()
         .append("  FOREIGN KEY (tree)").ln()
         .append("  REFERENCES ").append(options.getTrees()).append(" (id);").ln()
+        
+        .append("CREATE INDEX ").append(options.getCommits()).append("_TREE_INDEX")
+        .append(" ON ").append(options.getTreeItems()).append(" (tree);").ln()
+        
+        .append("CREATE INDEX ").append(options.getCommits()).append("_PARENT_INDEX")
+        .append(" ON ").append(options.getTreeItems()).append(" (tree);").ln()
         .build())
         .build();
   }
