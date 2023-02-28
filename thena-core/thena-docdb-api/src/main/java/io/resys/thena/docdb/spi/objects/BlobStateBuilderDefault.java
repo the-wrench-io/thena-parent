@@ -45,7 +45,9 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class BlobStateBuilderDefault implements BlobStateBuilder {
   private final ClientState state;
   private String repoName;
@@ -56,11 +58,6 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
   public static interface BlobAndTree {
     List<Blob> getBlob();
     Tree getTree();
-  }
-  
-  public BlobStateBuilderDefault(ClientState state) {
-    super();
-    this.state = state;
   }
   @Override
   public BlobStateBuilderDefault repo(String repoName) {

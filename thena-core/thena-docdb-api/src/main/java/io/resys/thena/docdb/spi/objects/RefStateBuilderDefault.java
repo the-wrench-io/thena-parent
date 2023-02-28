@@ -39,32 +39,19 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
+
+@RequiredArgsConstructor
+@Data @Accessors(fluent = true)
 public class RefStateBuilderDefault implements RefStateBuilder {
   private final ClientState state;
-  private String repoName;
+  private String repo; //repo name
   private String ref;
   private boolean blobs;
-  
-  public RefStateBuilderDefault(ClientState state) {
-    super();
-    this.state = state;
-  }
-  @Override
-  public RefStateBuilder repo(String repoName) {
-    this.repoName = repoName;
-    return this;
-  }
-  @Override
-  public RefStateBuilder ref(String ref) {
-    this.ref = ref;
-    return this;
-  }
-  @Override
-  public RefStateBuilder blobs(boolean load) {
-    this.blobs = load;
-    return this;
-  }
+
   @Override
   public RefStateBuilder blobs() {
     this.blobs = true;
@@ -72,16 +59,16 @@ public class RefStateBuilderDefault implements RefStateBuilder {
   }
   @Override
   public Uni<ObjectsResult<RefObjects>> build() {
-    RepoAssert.notEmpty(repoName, () -> "repoName is not defined!");
+    RepoAssert.notEmpty(repo, () -> "repoName is not defined!");
     RepoAssert.notEmpty(ref, () -> "ref is not defined!");
     
-    return state.repos().getByNameOrId(repoName).onItem()
+    return state.repos().getByNameOrId(repo).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
         return Uni.createFrom().item(ImmutableObjectsResult
             .<RefObjects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repoName))
+            .addMessages(RepoException.builder().notRepoWithName(repo))
             .build());
       }
       return getRef(existing, ref, state.withRepo(existing));

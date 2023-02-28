@@ -29,37 +29,12 @@ import io.resys.thena.docdb.sql.SqlBuilder.RefSqlBuilder;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultRefSqlBuilder implements RefSqlBuilder {
   private final ClientCollections options;
-  
-  public DefaultRefSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
 
-  @Override
-  public Sql create() {
-    return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getRefs()).ln()
-    .append("(").ln()
-    .append("  name VARCHAR(100) PRIMARY KEY,").ln()
-    .append("  commit VARCHAR(40) NOT NULL").ln()
-    .append(");").ln()
-    .build()).build();
-  }
-  @Override
-  public Sql constraints() {
-    return ImmutableSql.builder()
-        .value(new SqlStatement().ln()
-        .append("ALTER TABLE ").append(options.getRefs()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getRefs()).append("_REF_COMMIT_FK").ln()
-        .append("  FOREIGN KEY (commit)").ln()
-        .append("  REFERENCES ").append(options.getCommits()).append(" (id);").ln()
-        .build())
-        .build();
-  }
-  
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()

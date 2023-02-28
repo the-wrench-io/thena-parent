@@ -57,7 +57,6 @@ public interface SqlBuilder {
   }
   
   interface BlobSqlBuilder {
-    Sql create();
     SqlTuple getById(String blobId);
     SqlTuple findByIds(Collection<String> blobId);
     SqlTuple findByTree(Tree tree);
@@ -67,8 +66,6 @@ public interface SqlBuilder {
   }
   
   interface RefSqlBuilder {
-    Sql create();
-    Sql constraints();
     SqlTuple getByName(String name);
     SqlTuple getByNameOrCommit(String refNameOrCommit);
     Sql getFirst();
@@ -78,8 +75,6 @@ public interface SqlBuilder {
   }
   
   interface TagSqlBuilder {
-    Sql create();
-    Sql constraints();
     SqlTuple getByName(String name);
     SqlTuple deleteByName(String name);
     Sql findAll();
@@ -88,7 +83,6 @@ public interface SqlBuilder {
   }
   
   interface TreeSqlBuilder {
-    Sql create();
     SqlTuple getById(String id);
     Sql findAll();
     SqlTuple insertOne(Tree tree);
@@ -96,16 +90,12 @@ public interface SqlBuilder {
   
   
   interface CommitSqlBuilder {
-    Sql create();
-    Sql constraints();
     SqlTuple getById(String id);
     Sql findAll();
     SqlTuple insertOne(Commit commit);
   }
   
   interface TreeItemSqlBuilder {
-    Sql create();
-    Sql constraints();
     SqlTuple getByTreeId(String treeId);
     Sql findAll();
     SqlTuple insertOne(Tree tree, TreeValue item);

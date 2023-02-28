@@ -22,10 +22,11 @@ package io.resys.thena.docdb.sql.builders;
 
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ClientState.RepoBuilder;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.SqlSchema;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
@@ -36,6 +37,7 @@ import lombok.RequiredArgsConstructor;
 public class RepoBuilderSqlPool implements RepoBuilder {
   private final io.vertx.mutiny.sqlclient.Pool client;
   private final ClientCollections names;
+  private final SqlSchema sqlSchema;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
@@ -84,22 +86,22 @@ public class RepoBuilderSqlPool implements RepoBuilder {
   @Override
   public Uni<Repo> insert(final Repo newRepo) {
     final var next = names.toRepo(newRepo);
-    final var sqlBuilder = this.sqlBuilder.withOptions(next);
+    final var sqlSchema = this.sqlSchema.withOptions(next);
     
     return SqlClientHelper.inTransactionUni(client, tx -> {
-      final var repoInsert = sqlBuilder.repo().insertOne(newRepo);
+      final var repoInsert = this.sqlBuilder.withOptions(next).repo().insertOne(newRepo);
       final var tablesCreate = new StringBuilder()
-          .append(sqlBuilder.blobs().create().getValue())
-          .append(sqlBuilder.commits().create().getValue())
-          .append(sqlBuilder.treeItems().create().getValue())
-          .append(sqlBuilder.trees().create().getValue())
-          .append(sqlBuilder.refs().create().getValue())
-          .append(sqlBuilder.tags().create().getValue())
+          .append(sqlSchema.blobs().getValue())
+          .append(sqlSchema.commits().getValue())
+          .append(sqlSchema.treeItems().getValue())
+          .append(sqlSchema.trees().getValue())
+          .append(sqlSchema.refs().getValue())
+          .append(sqlSchema.tags().getValue())
           
-          .append(sqlBuilder.commits().constraints().getValue())
-          .append(sqlBuilder.refs().constraints().getValue())
-          .append(sqlBuilder.tags().constraints().getValue())
-          .append(sqlBuilder.treeItems().constraints().getValue())
+          .append(sqlSchema.commitsConstraints().getValue())
+          .append(sqlSchema.refsConstraints().getValue())
+          .append(sqlSchema.tagsConstraints().getValue())
+          .append(sqlSchema.treeItemsConstraints().getValue())
           .toString();      
       final Uni<Void> create = client.preparedQuery(sqlBuilder.repo().create().getValue()).execute()
           .onItem().transformToUni(data -> Uni.createFrom().voidItem())

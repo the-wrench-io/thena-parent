@@ -28,24 +28,12 @@ import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.TreeSqlBuilder;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultTreeSqlBuilder implements TreeSqlBuilder {
-
   private final ClientCollections options;
   
-  public DefaultTreeSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
-  @Override
-  public Sql create() {
-    return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getTrees()).ln()
-    .append("(").ln()
-    .append("  id VARCHAR(40) PRIMARY KEY").ln()
-    .append(");").ln()
-    .build()).build();
-  }
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()

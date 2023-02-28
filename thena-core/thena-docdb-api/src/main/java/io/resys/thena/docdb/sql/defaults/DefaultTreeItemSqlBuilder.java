@@ -33,53 +33,11 @@ import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.resys.thena.docdb.sql.SqlBuilder.TreeItemSqlBuilder;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
-
+@RequiredArgsConstructor
 public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
-
   private final ClientCollections options;
-  
-  public DefaultTreeItemSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
-  @Override
-  public Sql create() {
-    return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getTreeItems())
-    .append("(")
-    .append("  id SERIAL PRIMARY KEY,")
-    .append("  name VARCHAR(255) NOT NULL,")
-    .append("  blob VARCHAR(40) NOT NULL,")
-    .append("  tree VARCHAR(40) NOT NULL")
-    .append(");")
-    .build()).build();
-  }
-  @Override
-  public Sql constraints() {
-    return ImmutableSql.builder()
-        .value(new SqlStatement().ln()
-        .append("ALTER TABLE ").append(options.getTreeItems()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_ITEM_BLOB_FK").ln()
-        .append("  FOREIGN KEY (blob)").ln()
-        .append("  REFERENCES ").append(options.getBlobs()).append(" (id);").ln()
-        .append("ALTER TABLE ").append(options.getTreeItems()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_ITEM_PARENT_FK").ln()
-        .append("  FOREIGN KEY (tree)").ln()
-        .append("  REFERENCES ").append(options.getTrees()).append(" (id);").ln()
-        .append("ALTER TABLE ").append(options.getTreeItems()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getTreeItems()).append("_TREE_NAME_BLOB_UNIQUE").ln()
-        .append("  UNIQUE (tree, name, blob);").ln()
-        
-        .append("CREATE INDEX ").append(options.getTreeItems()).append("_TREE_INDEX")
-        .append(" ON ").append(options.getTreeItems()).append(" (tree);").ln()
-//        .append("CREATE INDEX ").append(options.getTreeItems()).append("_TREE_BLOB_INDEX")
-//        .append(" ON ").append(options.getTreeItems()).append(" (tree, blob);").ln()
-//        .append("CREATE INDEX ").append(options.getTreeItems()).append("_TREE_NAME_INDEX")
-//        .append(" ON ").append(options.getTreeItems()).append(" (tree, name);").ln()
-        .build())
-        .build();
-  }
   
   @Override
   public Sql findAll() {

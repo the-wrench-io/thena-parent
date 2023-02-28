@@ -22,7 +22,6 @@ package io.resys.thena.docdb.spi.repo;
 
 import io.resys.thena.docdb.api.actions.ImmutableRepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions;
-import io.resys.thena.docdb.api.actions.RepoActions.CreateBuilder;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
 import io.resys.thena.docdb.api.exceptions.RepoException;
@@ -32,23 +31,17 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
+@RequiredArgsConstructor
+@Data @Accessors(fluent = true)
 public class RepoCreateBuilder implements RepoActions.CreateBuilder {
 
   private final ClientState state;
   private String name;
   
-  public RepoCreateBuilder(ClientState state) {
-    super();
-    this.state = state;
-  }
-  
-  @Override
-  public CreateBuilder name(String name) {
-    this.name = name;
-    return this;
-  }
-
   @Override
   public Uni<RepoResult> build() {
     RepoAssert.notEmpty(name, () -> "repo name not defined!");

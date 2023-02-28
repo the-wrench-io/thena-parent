@@ -22,14 +22,12 @@ package io.resys.thena.docdb.spi.objects;
 
 import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.spi.ClientState;
+import lombok.RequiredArgsConstructor;
 
+
+@RequiredArgsConstructor
 public class ObjectsActionsDefault implements ObjectsActions {
   private final ClientState state;
-  
-  public ObjectsActionsDefault(ClientState state) {
-    super();
-    this.state = state;
-  }
 
   @Override
   public RepoStateBuilder repoState() {
@@ -39,7 +37,6 @@ public class ObjectsActionsDefault implements ObjectsActions {
   public RefStateBuilder refState() {
     return new RefStateBuilderDefault(state);
   }
-
   @Override
   public CommitStateBuilder commitState() {
     return new CommitStateBuilderDefault(state);

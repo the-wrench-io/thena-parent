@@ -35,7 +35,9 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class CreateTagBuilder implements TagBuilder {
   private final ClientState state;
   
@@ -45,10 +47,6 @@ public class CreateTagBuilder implements TagBuilder {
   private String author;
   private String message;
   
-  public CreateTagBuilder(ClientState state) {
-    super();
-    this.state = state;
-  }
   @Override
   public TagBuilder tagName(String tagName) {
     this.tagName = tagName;

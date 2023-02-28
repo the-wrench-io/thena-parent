@@ -40,8 +40,10 @@ import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutputStatus;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.RequiredArgsConstructor;
 
 
+@RequiredArgsConstructor
 public class HeadCommitBuilderDefault implements HeadCommitBuilder {
 
   private final ClientState state;
@@ -57,11 +59,6 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
   private String parentCommit;
   private Boolean parentIsLatest;
 
-  public HeadCommitBuilderDefault(ClientState state, ObjectsActions objectsActions) {
-    super();
-    this.state = state;
-    this.objectsActions = objectsActions;
-  }
   @Override
   public HeadCommitBuilder id(String headGid) {
     RepoAssert.isEmpty(headName, () -> "Can't defined id when head is defined!");

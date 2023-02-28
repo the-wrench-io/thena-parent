@@ -40,32 +40,18 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
+@RequiredArgsConstructor
+@Data @Accessors(fluent = true)
 public class CommitStateBuilderDefault implements CommitStateBuilder {
   private final ClientState state;
-  private String repoName;
-  private String refOrCommitOrTag;
+  private String repo;
+  private String anyId; //refOrCommitOrTag
   private boolean blobs;
   
-  public CommitStateBuilderDefault(ClientState state) {
-    super();
-    this.state = state;
-  }
-  @Override
-  public CommitStateBuilder repo(String repoName) {
-    this.repoName = repoName;
-    return this;
-  }
-  @Override
-  public CommitStateBuilder anyId(String refOrCommitOrTag) {
-    this.refOrCommitOrTag = refOrCommitOrTag;
-    return this;
-  }
-  @Override
-  public CommitStateBuilder blobs(boolean load) {
-    this.blobs = load;
-    return this;
-  }
   @Override
   public CommitStateBuilder blobs() {
     this.blobs = true;
@@ -73,30 +59,30 @@ public class CommitStateBuilderDefault implements CommitStateBuilder {
   }
   @Override
   public Uni<ObjectsResult<CommitObjects>> build() {
-    RepoAssert.notEmpty(repoName, () -> "repoName is not defined!");
-    RepoAssert.notEmpty(refOrCommitOrTag, () -> "refOrCommitOrTag is not defined!");
+    RepoAssert.notEmpty(repo, () -> "repo is not defined!");
+    RepoAssert.notEmpty(anyId, () -> "refOrCommitOrTag is not defined!");
     
-    return state.repos().getByNameOrId(repoName).onItem()
+    return state.repos().getByNameOrId(repo).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
         return Uni.createFrom().item(ImmutableObjectsResult
             .<CommitObjects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repoName))
+            .addMessages(RepoException.builder().notRepoWithName(repo))
             .build());
       }
       final var ctx = state.withRepo(existing);
       
-      return getTagCommit(refOrCommitOrTag, ctx)
+      return getTagCommit(anyId, ctx)
         .onItem().transformToUni(tag -> {
           if(tag == null) {
-            return getRefCommit(refOrCommitOrTag, ctx);
+            return getRefCommit(anyId, ctx);
           }
           return Uni.createFrom().item(tag);
         })
         .onItem().transformToUni(commitId -> {
           if(commitId == null) {
-            return getCommit(refOrCommitOrTag, ctx);
+            return getCommit(anyId, ctx);
           }
           return getCommit(commitId, ctx);
         }).onItem().transformToUni(commit -> {
@@ -117,7 +103,7 @@ public class CommitStateBuilderDefault implements CommitStateBuilder {
       .text(new StringBuilder()
       .append("Repo with name: '").append(repo.getName()).append("'")
       .append(" does not contain: tag, ref or commit with id:")
-      .append(" '").append(refOrCommitOrTag).append("'")
+      .append(" '").append(anyId).append("'")
       .toString())
       .build();
   }
@@ -168,7 +154,7 @@ public class CommitStateBuilderDefault implements CommitStateBuilder {
   }
   private Uni<Map<String, Blob>> getBlobs(Tree tree, ClientRepoState ctx) {
     return ctx.query().blobs().find(tree)
-        .collectItems().asList().onItem()
+        .collect().asList().onItem()
         .transform(blobs -> blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)));
   }
 }

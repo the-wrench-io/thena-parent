@@ -21,14 +21,12 @@ package io.resys.thena.docdb.spi;
  */
 
 import io.resys.thena.docdb.api.DocDB;
-import io.resys.thena.docdb.api.actions.CheckoutActions;
 import io.resys.thena.docdb.api.actions.CommitActions;
 import io.resys.thena.docdb.api.actions.DiffActions;
 import io.resys.thena.docdb.api.actions.HistoryActions;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.api.actions.RepoActions;
 import io.resys.thena.docdb.api.actions.TagActions;
-import io.resys.thena.docdb.spi.checkout.CheckoutActionsDefault;
 import io.resys.thena.docdb.spi.commits.CommitActionsDefault;
 import io.resys.thena.docdb.spi.diff.DiffActionsDefault;
 import io.resys.thena.docdb.spi.history.HistoryActionsDefault;
@@ -41,7 +39,6 @@ public class DocDBDefault implements DocDB {
   private RepoActions repoActions;
   private CommitActions commitActions;
   private TagActions tagActions;
-  private CheckoutActions checkoutActions;
   private HistoryActions historyActions;
   private ObjectsActions objectsActions;
   private DiffActions diffActions;
@@ -71,13 +68,6 @@ public class DocDBDefault implements DocDB {
       tagActions = new TagActionsDefault(state); 
     }
     return tagActions;
-  }
-  @Override
-  public CheckoutActions checkout() {
-    if(checkoutActions == null) {
-      checkoutActions = new CheckoutActionsDefault(state); 
-    }
-    return checkoutActions;
   }
   @Override
   public HistoryActions history() {

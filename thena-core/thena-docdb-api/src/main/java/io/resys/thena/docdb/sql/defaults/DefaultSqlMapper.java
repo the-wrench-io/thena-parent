@@ -40,16 +40,13 @@ import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.vertx.mutiny.sqlclient.Row;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultSqlMapper implements SqlMapper {
 
   private final ClientCollections ctx;
  
-  public DefaultSqlMapper(ClientCollections ctx) {
-    super();
-    this.ctx = ctx;
-  }
-   
   @Override
   public Repo repo(Row row) {
     return ImmutableRepo.builder()

@@ -25,16 +25,11 @@ import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutput;
 import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutputStatus;
 import io.smallrye.mutiny.Uni;
+import lombok.RequiredArgsConstructor;
 
-public class CommitSaveVisitor {
-
-  
+@RequiredArgsConstructor
+public class CommitSaveVisitor {  
   private final ClientRepoState state;
-
-  public CommitSaveVisitor(ClientRepoState state) {
-    super();
-    this.state = state;
-  }
 
   public Uni<CommitOutput> visit(CommitOutput output) {
     // check for consistency

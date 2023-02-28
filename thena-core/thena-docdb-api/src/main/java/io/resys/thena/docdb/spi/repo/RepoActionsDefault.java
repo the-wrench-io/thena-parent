@@ -22,15 +22,12 @@ package io.resys.thena.docdb.spi.repo;
 
 import io.resys.thena.docdb.api.actions.RepoActions;
 import io.resys.thena.docdb.spi.ClientState;
+import lombok.RequiredArgsConstructor;
 
+
+@RequiredArgsConstructor
 public class RepoActionsDefault implements RepoActions {
-
   private final ClientState state;
-  
-  public RepoActionsDefault(ClientState state) {
-    super();
-    this.state = state;
-  }
 
   @Override
   public QueryBuilder query() {
@@ -40,17 +37,5 @@ public class RepoActionsDefault implements RepoActions {
   @Override
   public CreateBuilder create() {
     return new RepoCreateBuilder(state);
-  }
-
-  @Override
-  public UpdateBuilder update() {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public StateBuilder state() {
-    // TODO Auto-generated method stub
-    return null;
   }
 }

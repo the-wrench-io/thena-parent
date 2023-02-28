@@ -23,16 +23,12 @@ package io.resys.thena.docdb.spi.diff;
 import io.resys.thena.docdb.api.actions.DiffActions;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.spi.ClientState;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DiffActionsDefault implements DiffActions {
   private final ClientState state;
   private final ObjectsActions objects;
-  
-  public DiffActionsDefault(ClientState state, ObjectsActions objects) {
-    super();
-    this.state = state;
-    this.objects = objects;
-  }
 
   @Override
   public HeadDiffBuilder head() {

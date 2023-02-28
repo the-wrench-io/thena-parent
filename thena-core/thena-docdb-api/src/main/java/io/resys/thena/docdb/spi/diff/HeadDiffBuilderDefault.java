@@ -34,46 +34,30 @@ import io.resys.thena.docdb.api.models.Objects;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
+@RequiredArgsConstructor
+@Data @Accessors(fluent = true)
 public class HeadDiffBuilderDefault implements HeadDiffBuilder {
   private final ClientState state;
   private final ObjectsActions objects;
   
-  private String repoIdOrName;
-  private String leftHeadOrCommitOrTag;
-  private String rightHeadOrCommitOrTag;
-  
-  public HeadDiffBuilderDefault(ClientState state, ObjectsActions objects) {
-    super();
-    this.state = state;
-    this.objects = objects;
-  }
+  private String repo;  //RepoIdOrName;
+  private String left;  //HeadOrCommitOrTag;
+  private String right; //HeadOrCommitOrTag;
 
   @Override
-  public HeadDiffBuilder repo(String repoIdOrName) {
-    this.repoIdOrName = repoIdOrName;
-    return this;
-  }
-  @Override
-  public HeadDiffBuilder left(String headOrCommitOrTag) {
-    this.leftHeadOrCommitOrTag = headOrCommitOrTag;
-    return this;
-  }
-  @Override
-  public HeadDiffBuilder right(String headOrCommitOrTag) {
-    this.rightHeadOrCommitOrTag = headOrCommitOrTag;
-    return this;
-  }
-  @Override
   public Uni<DiffResult<Diff>> build() {
-    RepoAssert.notEmpty(repoIdOrName, () -> "repoIdOrName is not defined!");
-    RepoAssert.notEmpty(leftHeadOrCommitOrTag, () -> "leftHeadOrCommitOrTag is not defined!");
-    RepoAssert.notEmpty(rightHeadOrCommitOrTag, () -> "rightHeadOrCommitOrTag is not defined!");
+    RepoAssert.notEmpty(repo, () -> "repo is not defined!");
+    RepoAssert.notEmpty(left, () -> "left is not defined!");
+    RepoAssert.notEmpty(right, () -> "right is not defined!");
     
     return Uni.combine().all().unis(
-        objects.repoState().repo(repoIdOrName).build(),
-        objects.commitState().anyId(leftHeadOrCommitOrTag).repo(repoIdOrName).build(), 
-        objects.commitState().anyId(rightHeadOrCommitOrTag).repo(repoIdOrName).build())
+        objects.repoState().repo(repo).build(),
+        objects.commitState().anyId(left).repo(repo).build(), 
+        objects.commitState().anyId(right).repo(repo).build())
 
       .asTuple().onItem().transform(tuple -> {
         final var objects = tuple.getItem1();

@@ -32,25 +32,6 @@ import io.smallrye.mutiny.Uni;
 
 public interface CommitActions {
   HeadCommitBuilder head();
-  MergeBuilder merge();
-  RebaseBuilder rebase();
-  
-  interface RebaseBuilder {
-    RebaseBuilder author(String author);
-    RebaseBuilder message(String message);
-    RebaseBuilder id(String headGid); // head GID to what to append
-    RebaseBuilder head(String repoId, @Nullable String headName); // head name, if null main is set
-    Uni<CommitResult> build();
-  }
-  
-  interface MergeBuilder {
-    MergeBuilder repo(String repoId);
-    MergeBuilder from(String fromHeadName);
-    MergeBuilder to(String fromHeadName);
-    MergeBuilder author(String author);
-    MergeBuilder message(String message);
-    Uni<CommitResult> build();
-  }
   
   interface HeadCommitBuilder {
     HeadCommitBuilder id(String headGid); // head GID to what to append

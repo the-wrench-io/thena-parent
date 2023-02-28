@@ -4,7 +4,7 @@ package io.resys.thena.docdb.api;
  * #%L
  * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ package io.resys.thena.docdb.api;
  * #L%
  */
 
-import io.resys.thena.docdb.api.actions.CheckoutActions;
 import io.resys.thena.docdb.api.actions.CommitActions;
 import io.resys.thena.docdb.api.actions.DiffActions;
 import io.resys.thena.docdb.api.actions.HistoryActions;
@@ -33,7 +32,6 @@ public interface DocDB {
   CommitActions commit();
   TagActions tag();
   DiffActions diff();
-  CheckoutActions checkout();
   HistoryActions history();
   ObjectsActions objects();
 }

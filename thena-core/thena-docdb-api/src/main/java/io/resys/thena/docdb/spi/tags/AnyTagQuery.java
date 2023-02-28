@@ -28,50 +28,39 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
+@RequiredArgsConstructor
+@Data @Accessors(fluent = true)
 public class AnyTagQuery implements TagQuery {
   private final ClientState state;
-  
-  private String repoId;
+  private String repo; //repoId
   private String tagName;
-  
-  public AnyTagQuery(ClientState state) {
-    super();
-    this.state = state;
-  }
-  @Override
-  public TagQuery tagName(String tagName) {
-    this.tagName = tagName;
-    return this;
-  }
-  @Override
-  public TagQuery repo(String repoId) {
-    this.repoId = repoId;
-    return this;
-  }
   
   @Override
   public Multi<Tag> find() {
-    RepoAssert.notEmpty(repoId, () -> "repoId can't be empty!");
+    RepoAssert.notEmpty(repo, () -> "repo can't be empty!");
 
-    return state.query(repoId)
+    return state.query(repo)
         .onItem().transformToMulti(f -> f.tags().name(tagName).find());
   }
   @Override
   public Uni<Optional<Tag>> get() {
-    RepoAssert.notEmpty(repoId, () -> "repoId can't be empty!");
+    RepoAssert.notEmpty(repo, () -> "repo can't be empty!");
     RepoAssert.notEmpty(tagName, () -> "tagName can't be empty!");
     
-    return state.query(repoId)
+    return state.query(repo)
         .onItem().transformToUni(f -> f.tags().name(tagName).get())
         .onItem().transform(tag -> Optional.ofNullable(tag));
   }
   @Override
   public Uni<Optional<Tag>> delete() {
-    RepoAssert.notEmpty(repoId, () -> "repoId can't be empty!");
+    RepoAssert.notEmpty(repo, () -> "repo can't be empty!");
     RepoAssert.notEmpty(tagName, () -> "tagName can't be empty!");
     
-    return state.query(repoId)
+    return state.query(repo)
     .onItem().transformToUni(query -> 
       query.tags().name(tagName).get().onItem().transformToUni(tag -> {
         if(tag == null) {

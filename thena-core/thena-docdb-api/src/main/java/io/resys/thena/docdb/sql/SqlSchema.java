@@ -1,10 +1,10 @@
-package io.resys.thena.docdb.spi.tags;
+package io.resys.thena.docdb.sql;
 
 /*-
  * #%L
  * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,21 +20,25 @@ package io.resys.thena.docdb.spi.tags;
  * #L%
  */
 
-import io.resys.thena.docdb.api.actions.TagActions;
-import io.resys.thena.docdb.spi.ClientState;
-import lombok.RequiredArgsConstructor;
+import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 
-@RequiredArgsConstructor
-public class TagActionsDefault implements TagActions {
-  private final ClientState state;
+public interface SqlSchema {
+  SqlSchema withOptions(ClientCollections options);
+  
+  Sql blobs();
 
-  @Override
-  public TagBuilder create() {
-    return new CreateTagBuilder(state);
-  }
+  Sql commits();
+  Sql commitsConstraints();
+  
+  Sql treeItemsConstraints();
+  Sql treeItems();
 
-  @Override
-  public TagQuery query() {
-    return new AnyTagQuery(state);
-  }
+  Sql trees();
+
+  Sql refs();
+  Sql refsConstraints();
+
+  Sql tags();
+  Sql tagsConstraints();
 }

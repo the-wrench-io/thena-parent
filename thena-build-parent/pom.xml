@@ -73,6 +73,7 @@
           <excludes>
             <exclude>**/*.json</exclude>
             <exclude>**/*.yaml</exclude>
+            <exclude>**/db.schema.sql</exclude>
           </excludes>
         </configuration>
         <executions>

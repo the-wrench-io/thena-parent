@@ -22,13 +22,12 @@ package io.resys.thena.docdb.sql.defaults;
 
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlBuilder;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultSqlBuilder implements SqlBuilder {
   private final ClientCollections ctx;
-  public DefaultSqlBuilder(ClientCollections ctx) {
-    super();
-    this.ctx = ctx;
-  }
+
   @Override
   public RepoSqlBuilder repo() {
     return new DefaultRepoSqlBuilder(ctx);

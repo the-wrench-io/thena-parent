@@ -34,31 +34,28 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 
+
+@RequiredArgsConstructor
+@Data @Accessors(fluent = true)
 public class RepoStateBuilderDefault implements RepoStateBuilder {
   private final ClientState state;
-  private String repoName;
+  private String repo; //repo name
 
-  public RepoStateBuilderDefault(ClientState state) {
-    super();
-    this.state = state;
-  }
-  @Override
-  public RepoStateBuilder repo(String repoName) {
-    this.repoName = repoName;
-    return this;
-  }
   @Override
   public Uni<ObjectsResult<Objects>> build() {
-    RepoAssert.notEmpty(repoName, () -> "repoName not defined!");
+    RepoAssert.notEmpty(repo, () -> "repo not defined!");
     
-    return state.repos().getByNameOrId(repoName).onItem().transformToUni((Repo existing) -> {
+    return state.repos().getByNameOrId(repo).onItem().transformToUni((Repo existing) -> {
           
       if(existing == null) {
         return Uni.createFrom().item(ImmutableObjectsResult
             .<Objects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repoName))
+            .addMessages(RepoException.builder().notRepoWithName(repo))
             .build());
       }
       return getState(existing, state.withRepo(existing));
@@ -90,31 +87,31 @@ public class RepoStateBuilderDefault implements RepoStateBuilder {
   }
   
   private Uni<Objects> getRefs(Repo repo, ClientRepoState ctx) {
-    return ctx.query().refs().find().collectItems().asList().onItem()
+    return ctx.query().refs().find().collect().asList().onItem()
         .transform(refs -> ImmutableObjects.builder()
             .putAllRefs(refs.stream().collect(Collectors.toMap(r -> r.getName(), r -> r)))
             .build());
   }
   private Uni<Objects> getTags(Repo repo, ClientRepoState ctx) {
-    return ctx.query().tags().find().collectItems().asList().onItem()
+    return ctx.query().tags().find().collect().asList().onItem()
         .transform(refs -> ImmutableObjects.builder()
             .putAllTags(refs.stream().collect(Collectors.toMap(r -> r.getName(), r -> r)))
             .build());
   }
   private Uni<Objects> getBlobs(Repo repo, ClientRepoState ctx) {
-    return ctx.query().blobs().find().collectItems().asList().onItem()
+    return ctx.query().blobs().find().collect().asList().onItem()
         .transform(blobs -> ImmutableObjects.builder()
             .putAllValues(blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)))
             .build());
   }
   private Uni<Objects> getTrees(Repo repo, ClientRepoState ctx) {
-    return ctx.query().trees().find().collectItems().asList().onItem()
+    return ctx.query().trees().find().collect().asList().onItem()
         .transform(trees -> ImmutableObjects.builder()
             .putAllValues(trees.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)))
             .build());
   }
   private Uni<Objects> getCommits(Repo repo, ClientRepoState ctx) {
-    return ctx.query().commits().find().collectItems().asList().onItem()
+    return ctx.query().commits().find().collect().asList().onItem()
         .transform(commits -> ImmutableObjects.builder()
             .putAllValues(commits.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)))
             .build());

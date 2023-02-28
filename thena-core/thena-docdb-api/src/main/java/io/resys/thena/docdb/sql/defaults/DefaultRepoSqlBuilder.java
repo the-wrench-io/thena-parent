@@ -28,14 +28,12 @@ import io.resys.thena.docdb.sql.SqlBuilder.RepoSqlBuilder;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultRepoSqlBuilder implements RepoSqlBuilder {
   private final ClientCollections options;
   
-  public DefaultRepoSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
 
   @Override
   public SqlTuple exists() {

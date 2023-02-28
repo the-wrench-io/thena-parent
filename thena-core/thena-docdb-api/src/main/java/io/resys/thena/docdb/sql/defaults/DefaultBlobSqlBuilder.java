@@ -37,26 +37,12 @@ import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
-  
-  
   private final ClientCollections options;
   
-  public DefaultBlobSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
-  @Override
-  public Sql create() {
-    return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getBlobs()).ln()
-    .append("(").ln()
-    .append("  id VARCHAR(40) PRIMARY KEY,").ln()
-    .append("  value TEXT NOT NULL").ln()
-    .append(");").ln()
-    .build()).build();
-  }
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()

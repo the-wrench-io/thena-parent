@@ -28,40 +28,13 @@ import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.TagSqlBuilder;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultTagSqlBuilder implements TagSqlBuilder {
   
   private final ClientCollections options;
   
-  public DefaultTagSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
-  
-  @Override
-  public Sql create() {
-    return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getTags()).ln()
-    .append("(").ln()
-    .append("  id VARCHAR(40) PRIMARY KEY,").ln()
-    .append("  commit VARCHAR(40) NOT NULL,").ln()
-    .append("  datetime VARCHAR(29) NOT NULL,").ln()
-    .append("  author VARCHAR(40) NOT NULL,").ln()
-    .append("  message VARCHAR(100) NOT NULL").ln()
-    .append(");").ln()
-    .build()).build();
-  }
-  @Override
-  public Sql constraints() {
-    return ImmutableSql.builder()
-        .value(new SqlStatement().ln()
-        .append("ALTER TABLE ").append(options.getTags()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getTags()).append("_TAG_COMMIT_FK").ln()
-        .append("  FOREIGN KEY (commit)").ln()
-        .append("  REFERENCES ").append(options.getCommits()).append(" (id);").ln()
-        .build())
-        .build();
-  }
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()

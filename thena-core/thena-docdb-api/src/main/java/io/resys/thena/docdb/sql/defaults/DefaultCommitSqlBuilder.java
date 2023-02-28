@@ -30,54 +30,12 @@ import io.resys.thena.docdb.sql.SqlBuilder.CommitSqlBuilder;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
-
   private final ClientCollections options;
-  
-  public DefaultCommitSqlBuilder(ClientCollections options) {
-    super();
-    this.options = options;
-  }
-  @Override
-  public Sql create() {
-    return ImmutableSql.builder().value(new SqlStatement().ln()
-    .append("CREATE TABLE ").append(options.getCommits()).ln()
-    .append("(").ln()
-    .append("  id VARCHAR(40) PRIMARY KEY,").ln()
-    .append("  datetime VARCHAR(29) NOT NULL,").ln()
-    .append("  author VARCHAR(40) NOT NULL,").ln()
-    .append("  message VARCHAR(255) NOT NULL,").ln()
-    .append("  tree VARCHAR(40) NOT NULL,").ln()
-    .append("  parent VARCHAR(40),").ln()
-    .append("  merge VARCHAR(40)").ln()
-    .append(");").ln()
-    .build()).build();
-  }
-  
-  @Override
-  public Sql constraints() {
-    return ImmutableSql.builder()
-        .value(new SqlStatement().ln()
-        .append("ALTER TABLE ").append(options.getCommits()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getCommits()).append("_COMMIT_PARENT_FK").ln()
-        .append("  FOREIGN KEY (parent)").ln()
-        .append("  REFERENCES ").append(options.getCommits()).append(" (id);").ln()
-        
-        .append("ALTER TABLE ").append(options.getCommits()).ln()
-        .append("  ADD CONSTRAINT ").append(options.getCommits()).append("_COMMIT_TREE_FK").ln()
-        .append("  FOREIGN KEY (tree)").ln()
-        .append("  REFERENCES ").append(options.getTrees()).append(" (id);").ln()
-        
-        .append("CREATE INDEX ").append(options.getCommits()).append("_TREE_INDEX")
-        .append(" ON ").append(options.getTreeItems()).append(" (tree);").ln()
-        
-        .append("CREATE INDEX ").append(options.getCommits()).append("_PARENT_INDEX")
-        .append(" ON ").append(options.getTreeItems()).append(" (tree);").ln()
-        .build())
-        .build();
-  }
-  
+ 
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()
