@@ -68,7 +68,7 @@ public class DocDBTestPrinter {
       .append(ID.apply(item.getCommit())).append(": ").append(item.getName())
       .append(System.lineSeparator());
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
 
     
     result
@@ -85,7 +85,7 @@ public class DocDBTestPrinter {
       .append(System.lineSeparator());
       
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     result
     .append(System.lineSeparator())
@@ -102,7 +102,7 @@ public class DocDBTestPrinter {
       .append(System.lineSeparator());
       
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     
     result
@@ -122,7 +122,7 @@ public class DocDBTestPrinter {
       });
       
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     
     
@@ -135,7 +135,7 @@ public class DocDBTestPrinter {
     .transform(item -> {
       result.append("  - ").append(item.getId()).append(": ").append(item.getValue()).append(System.lineSeparator());
       return item;
-    }).collectItems().asList().await().indefinitely();
+    }).collect().asList().await().indefinitely();
     
     return result.toString();
   }

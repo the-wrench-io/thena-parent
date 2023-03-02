@@ -159,7 +159,7 @@ public class TaggingTest extends MongoDbConfig {
         .await().atMost(Duration.ofMinutes(1));
     Assertions.assertEquals(TagStatus.OK, tag_1.getStatus());
     
-    List<String> tagNames = getClient().tag().query().repo(repo.getRepo().getName()).find().collectItems().asList()
+    List<String> tagNames = getClient().tag().query().repo(repo.getRepo().getName()).find().collect().asList()
     .await().indefinitely().stream().map(t -> t.getName()).collect(Collectors.toList());
     
     Assertions.assertTrue(tagNames.contains(tag_0.getTag().getName()));
