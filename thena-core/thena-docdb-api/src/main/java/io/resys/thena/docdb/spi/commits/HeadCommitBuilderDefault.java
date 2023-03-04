@@ -36,10 +36,12 @@ import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.spi.ClientState;
-import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutputStatus;
+import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitBody;
+import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutputStatus;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
 
 
@@ -48,7 +50,7 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
 
   private final ClientState state;
   private final ObjectsActions objectsActions;
-  private final Map<String, String> appendBlobs = new HashMap<>();
+  private final Map<String, JsonObject> appendBlobs = new HashMap<>();
   private final List<String> deleteBlobs = new ArrayList<>();
   
   private String headGid;
@@ -76,8 +78,8 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
     return this;
   }
   @Override
-  public HeadCommitBuilder append(String name, String blob) {
-    RepoAssert.notEmpty(blob, () -> "blob can't be empty!");
+  public HeadCommitBuilder append(String name, JsonObject blob) {
+    RepoAssert.notNull(blob, () -> "blob can't be empty!");
     RepoAssert.notEmpty(name, () -> "name can't be empty!");
     RepoAssert.isTrue(!this.appendBlobs.containsKey(name), () -> "Blob with name: '" + name + "' is already defined!");
     RepoAssert.isTrue(!this.deleteBlobs.contains(name), () -> "Blob with name: '" + name + "' can't be appended because it's been marked for removal!");
@@ -202,8 +204,8 @@ public class HeadCommitBuilderDefault implements HeadCommitBuilder {
   }
   
   private Uni<CommitResult> createCommit(ObjectsResult<RefObjects> state, String gid) {
-    final var toBeSaved = new CommitVisitor().visit(
-        ImmutableCommitInput.builder()
+    final var toBeSaved = new CommitBodyVisitor().visit(
+        CommitBody.builder()
           .commitAuthor(this.author)
           .commitMessage(this.message)
           .ref(headName)

@@ -1,28 +1,5 @@
 package io.resys.thena.docdb.spi.objects;
 
-/*-
- * #%L
- * thena-docdb-api
- * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import java.util.Map;
-import java.util.stream.Collectors;
-
 import io.resys.thena.docdb.api.actions.ImmutableCommitObjects;
 import io.resys.thena.docdb.api.actions.ImmutableObjectsResult;
 import io.resys.thena.docdb.api.actions.ObjectsActions.CommitObjects;
@@ -32,7 +9,6 @@ import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.exceptions.RepoException;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Repo;
@@ -43,7 +19,9 @@ import io.smallrye.mutiny.Uni;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
 public class CommitStateBuilderDefault implements CommitStateBuilder {
@@ -65,10 +43,12 @@ public class CommitStateBuilderDefault implements CommitStateBuilder {
     return state.repos().getByNameOrId(repo).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
+        final var ex = RepoException.builder().notRepoWithName(repo);
+        log.warn(ex.getText());
         return Uni.createFrom().item(ImmutableObjectsResult
             .<CommitObjects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repo))
+            .addMessages(ex)
             .build());
       }
       final var ctx = state.withRepo(existing);
@@ -115,10 +95,9 @@ public class CommitStateBuilderDefault implements CommitStateBuilder {
             return getBlobs(tree, ctx)
               .onItem().transform(blobs -> ImmutableObjectsResult.<CommitObjects>builder()
                 .repo(repo)
-                .objects(ImmutableCommitObjects.builder()
+                .objects(blobs
                     .repo(repo)
                     .tree(tree)
-                    .blobs(blobs)
                     .commit(commit)
                     .build())
                 .repo(repo)
@@ -152,9 +131,13 @@ public class CommitStateBuilderDefault implements CommitStateBuilder {
   private Uni<Commit> getCommit(String commit, ClientRepoState ctx) {
     return ctx.query().commits().id(commit);
   }
-  private Uni<Map<String, Blob>> getBlobs(Tree tree, ClientRepoState ctx) {
+  private Uni<ImmutableCommitObjects.Builder> getBlobs(Tree tree, ClientRepoState ctx) {
     return ctx.query().blobs().find(tree)
         .collect().asList().onItem()
-        .transform(blobs -> blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)));
+        .transform(blobs -> {
+          final var objects = ImmutableCommitObjects.builder();
+          blobs.forEach(blob -> objects.putBlobs(blob.getId(), blob));
+          return objects;
+        });
   }
 }

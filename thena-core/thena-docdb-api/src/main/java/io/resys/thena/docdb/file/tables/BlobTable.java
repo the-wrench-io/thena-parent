@@ -26,13 +26,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.resys.thena.docdb.file.tables.BlobTable.BlobTableRow;
+import io.vertx.core.json.JsonObject;
 
 public interface BlobTable extends Table<BlobTableRow> {
 
   @Value.Immutable @JsonSerialize(as = ImmutableBlobTableRow.class) @JsonDeserialize(as = ImmutableBlobTableRow.class)
   interface BlobTableRow extends Table.Row {
     String getId();
-    String getValue();
+    JsonObject getValue();
   }
 
 }

@@ -1,6 +1,7 @@
 package io.resys.thena.docdb.spi;
 
 import java.util.List;
+import java.util.Map;
 
 /*-
  * #%L
@@ -25,6 +26,7 @@ import java.util.List;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
@@ -38,12 +40,21 @@ public interface ClientQuery {
   RefQuery refs();
   TreeQuery trees();
   BlobQuery blobs();
+  BlobHistoryQuery blobHistory();
+  
   
   interface RefQuery {
     Uni<Ref> name(String name);
     Uni<Ref> nameOrCommit(String refNameOrCommit);
     Uni<Ref> get();
     Multi<Ref> find();
+  }
+  
+  interface BlobHistoryQuery {
+    BlobHistoryQuery latestOnly(boolean latestOnly);
+    BlobHistoryQuery blobName(String name);
+    BlobHistoryQuery criteria(Map<String, String> criteria);
+    Multi<BlobHistory> find();
   }
   
   interface BlobQuery {

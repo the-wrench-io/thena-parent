@@ -33,10 +33,7 @@ import io.resys.thena.docdb.file.tables.Table.FilePreparedQuery;
 import io.resys.thena.docdb.file.tables.Table.Row;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-
-@Slf4j
 @RequiredArgsConstructor
 public class FileTuplePreparedQuery<T> implements FilePreparedQuery<T> {
   private final File rootDir;
@@ -49,12 +46,14 @@ public class FileTuplePreparedQuery<T> implements FilePreparedQuery<T> {
   public <U> FilePreparedQuery<U> mapping(Function<Table.Row, U> mapper) {
     return new FileTuplePreparedQuery<U>(rootDir, query, mapper, objectMapper, conn);
   }
-
+  
+  @SuppressWarnings("unchecked")
   @Override
   public Uni<List<T>> execute() {
+
     return Uni.createFrom().item(() -> {
-      log.info(query.getValue());
       final List<? extends Row> rows = query.getCommand().apply(conn);
+
       final var mapped = rows.stream().map(r -> {
         if(mapper == null) {
           return (T) r;

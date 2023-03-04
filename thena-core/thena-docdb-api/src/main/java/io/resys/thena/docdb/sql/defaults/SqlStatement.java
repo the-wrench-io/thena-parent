@@ -29,7 +29,7 @@ public class SqlStatement {
     return this;
   }
   public SqlStatement ln() {
-    result.append(System.lineSeparator());
+    result.append("\n");
     return this;
   }
   

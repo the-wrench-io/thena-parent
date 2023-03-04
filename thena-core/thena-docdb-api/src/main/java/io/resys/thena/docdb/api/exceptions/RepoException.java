@@ -25,6 +25,7 @@ import java.util.List;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Message;
 
+
 public class RepoException extends DocDBException {
   private static final long serialVersionUID = 4311634600357697485L;
 
@@ -38,10 +39,11 @@ public class RepoException extends DocDBException {
 
   public static class Builder {
     public Message notRepoWithName(String repoId) {
+      final var text = new StringBuilder()
+          .append("Repo with name: '").append(repoId).append("' does not exist!")
+          .toString();
       return ImmutableMessage.builder()
-            .text(new StringBuilder()
-            .append("Repo with name: '").append(repoId).append("' does not exist!")
-            .toString())
+            .text(text)
           .build();
     }
     public Message noRepoRef(String repo, String ref) {

@@ -22,6 +22,7 @@ package io.resys.thena.docdb.spi.pgsql;
 
 import java.io.Serializable;
 import java.time.Duration;
+import java.util.Map;
 
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Assertions;
@@ -37,6 +38,7 @@ import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
 import io.resys.thena.docdb.spi.pgsql.config.DbTestTemplate;
 import io.resys.thena.docdb.spi.pgsql.config.PgProfile;
+import io.vertx.core.json.JsonObject;
 
 
 @QuarkusTest
@@ -64,7 +66,10 @@ public class SimpleTest extends DbTestTemplate {
     // Create head and first commit
     CommitResult commit_0 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
-      .append("readme.md", "readme content")
+      .append("readme.md", new JsonObject(Map.of(
+          "type", "person",
+          "name", "sam", 
+          "lastName", "vimes")).toString())
       .author("same vimes")
       .message("first commit!")
       .build()

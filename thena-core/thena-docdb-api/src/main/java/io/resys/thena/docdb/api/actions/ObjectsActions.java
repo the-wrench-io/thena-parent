@@ -96,7 +96,6 @@ public interface ObjectsActions {
   @Value.Immutable
   interface BlobObject {
     Repo getRepo();
-// TODO::    Ref getRef();
     Commit getCommit();
     Tree getTree();
     Blob getBlob();
@@ -105,7 +104,6 @@ public interface ObjectsActions {
   @Value.Immutable
   interface BlobObjects {
     Repo getRepo();
-// TODO::    Ref getRef();
     Commit getCommit();
     Tree getTree();
     List<Blob> getBlob();

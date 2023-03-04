@@ -22,8 +22,8 @@ package io.resys.thena.docdb.spi.commits;
 
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
-import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutput;
-import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutputStatus;
+import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutput;
+import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutputStatus;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 

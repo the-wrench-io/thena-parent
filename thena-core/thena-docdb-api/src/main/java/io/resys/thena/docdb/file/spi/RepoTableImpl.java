@@ -36,8 +36,11 @@ import io.resys.thena.docdb.file.tables.TreeItemTable;
 import io.resys.thena.docdb.file.tables.TreeTable;
 import io.resys.thena.docdb.spi.ClientCollections;
 
-public class RepoTableImpl extends FileTable<RepoTable.RepoTableRow> implements RepoTable {
+public class RepoTableImpl implements RepoTable {
   private final ClientCollections ctx;
+  private final File db;
+  private final ObjectMapper objectMapper;
+  private final FileTable<RepoTable.RepoTableRow> repoTable;
   private final BlobTable blobs;
   private final CommitTable commits;
   private final RefTable refs;
@@ -46,9 +49,10 @@ public class RepoTableImpl extends FileTable<RepoTable.RepoTableRow> implements 
   private final TreeTable trees;
   
   public RepoTableImpl(File db, ClientCollections ctx, ObjectMapper objectMapper) {
-    super(db, ctx.getRepos(), objectMapper, RepoTable.RepoTableRow.class,
-        new TypeReference<List<RepoTable.RepoTableRow>>() {});
     this.ctx = ctx;
+    this.db = db;
+    this.objectMapper = objectMapper;
+    this.repoTable = new FileTable<RepoTable.RepoTableRow>(db, ctx.getRepos(), objectMapper, RepoTable.RepoTableRow.class, new TypeReference<List<RepoTable.RepoTableRow>>() {}) {};
     this.blobs = new BlobTableImpl(db, ctx, objectMapper);
     this.commits = new CommitTableImpl(db, ctx, objectMapper);
     this.refs = new RefTableImpl(db, ctx, objectMapper);
@@ -56,7 +60,28 @@ public class RepoTableImpl extends FileTable<RepoTable.RepoTableRow> implements 
     this.treeItems = new TreeItemTableImpl(db, ctx, objectMapper);
     this.trees = new TreeTableImpl(db, ctx, objectMapper);
   }
-  
+
+  public RepoTableImpl(
+      File db, ClientCollections ctx, ObjectMapper objectMapper,
+      FileTable<RepoTable.RepoTableRow> repoTable,
+      BlobTable blobs, 
+      CommitTable commits, 
+      RefTable refs,
+      TagTable tags, 
+      TreeItemTable treeItems, 
+      TreeTable trees) {
+    this.db = db;
+    this.objectMapper = objectMapper;
+    this.repoTable = repoTable;
+    this.ctx = ctx;
+    this.blobs = blobs;
+    this.commits = commits;
+    this.refs = refs;
+    this.tags = tags;
+    this.treeItems = treeItems;
+    this.trees = trees;
+  }
+
   @Override public BlobTable getBlobs() { return blobs; }
   @Override public CommitTable getCommits() { return commits; }
   @Override public RefTable getRefs() { return refs; }
@@ -108,4 +133,54 @@ public class RepoTableImpl extends FileTable<RepoTable.RepoTableRow> implements 
           new TypeReference<List<BlobTable.BlobTableRow>>() {});
     }
   }
+  @Override
+  public ClientCollections getContext() {
+    return ctx;
+  }
+  @Override
+  public String getTableName() {
+    return repoTable.getTableName();
+  }
+  @Override
+  public Boolean getExists() {
+    return repoTable.getExists();
+  }
+  @Override
+  public RepoTableRow insert(RepoTableRow entry) {
+    return repoTable.insert(entry);
+  }
+
+  @Override
+  public List<RepoTableRow> insertAll(List<RepoTableRow> entry) {
+    return repoTable.insertAll(entry);
+  }
+
+  @Override
+  public RepoTableRow delete(RepoTableRow entry) {
+    return repoTable.delete(entry);
+  }
+
+  @Override
+  public boolean create() {
+    return repoTable.create();
+  }
+
+  @Override
+  public List<RepoTableRow> getRows() {
+    return repoTable.getRows();
+  }
+  
+  @Override
+  public RepoTable withContext(ClientCollections ctx) {
+    return new RepoTableImpl(db, ctx, objectMapper,
+        this.repoTable,
+        new BlobTableImpl(db, ctx, objectMapper),
+        new CommitTableImpl(db, ctx, objectMapper),
+        new RefTableImpl(db, ctx, objectMapper),
+        new TagTableImpl(db, ctx, objectMapper),
+        new TreeItemTableImpl(db, ctx, objectMapper),
+        new TreeTableImpl(db, ctx, objectMapper)
+        );
+  }
+  
 }

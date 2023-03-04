@@ -46,7 +46,9 @@ import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class BlobStateBuilderDefault implements BlobStateBuilder {
   private final ClientState state;
@@ -89,10 +91,12 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
     return state.repos().getByNameOrId(repoName).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
+        final var ex = RepoException.builder().notRepoWithName(repoName);
+        log.warn(ex.getText());
         return Uni.createFrom().item(ImmutableObjectsResult
             .<BlobObjects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repoName))
+            .addMessages(ex)
             .build());
       }
       final var ctx = state.withRepo(existing);
@@ -131,10 +135,12 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
     return state.repos().getByNameOrId(repoName).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
+        final var ex = RepoException.builder().notRepoWithName(repoName);
+        log.warn(ex.getText());
         return Uni.createFrom().item(ImmutableObjectsResult
             .<BlobObject>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repoName))
+            .addMessages(ex)
             .build());
       }
       final var ctx = state.withRepo(existing);

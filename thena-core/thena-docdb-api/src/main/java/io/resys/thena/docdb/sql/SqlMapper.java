@@ -21,6 +21,7 @@ package io.resys.thena.docdb.sql;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
@@ -38,4 +39,5 @@ public interface SqlMapper extends DataMapper<Row>{
   Tag tag(Row row);
   Ref ref(Row row);
   Blob blob(Row row);
+  BlobHistory blobHistory(Row row);
 }

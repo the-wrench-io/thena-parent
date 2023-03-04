@@ -32,6 +32,7 @@ import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
 import io.resys.thena.docdb.test.config.FileTestTemplate;
+import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 
@@ -48,17 +49,13 @@ public class FileDBTest extends FileTestTemplate {
   @Test
   public void crateRepoAddAndDeleteFile() {
     // create project
-    RepoResult repo = getClient().repo().create()
-        .name("crateRepoAddAndDeleteFile")
-        .build()
-        .await().atMost(Duration.ofMinutes(1));
-    log.debug("created repo {}", repo);
+    RepoResult repo = createRepo("crateRepoAddAndDeleteFile");
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().head()
+    CommitResult commit_0 = getClient(repo.getRepo()).commit().head()
       .head(repo.getRepo().getName(), "main")
-      .append("readme.md", "readme content")
+      .append("readme.md", JsonObject.of("content", "readme content"))
       .author("same vimes")
       .message("first commit!")
       .build()
@@ -70,7 +67,7 @@ public class FileDBTest extends FileTestTemplate {
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().head()
+    CommitResult commit_1 = getClient(repo.getRepo()).commit().head()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .remove("readme.md")
@@ -88,19 +85,15 @@ public class FileDBTest extends FileTestTemplate {
   @Test
   public void crateRepoWithOneCommit() {
     // create project
-    RepoResult repo = getClient().repo().create()
-        .name("project-x")
-        .build()
-        .await().atMost(Duration.ofMinutes(1));
-    log.debug("created repo {}", repo);
+    RepoResult repo = createRepo("project-x");
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().head()
+    CommitResult commit_0 = getClient(repo.getRepo()).commit().head()
       .head("project-x", "main")
-      .append("readme.md", "readme content")
-      .append("file1.json", "[{}]")
-      .append("fileFromObject.txt", ImmutableTestContent.builder().id("10").name("sam vimes").build().toString())
+      .append("readme.md", JsonObject.of("content", "readme content"))
+      .append("file1.json", JsonObject.of("content", ""))
+      .append("fileFromObject.txt", JsonObject.mapFrom(ImmutableTestContent.builder().id("10").name("sam vimes 1").build()))
       .author("same vimes")
       .head("project-x", "main")
       .message("first commit!")
@@ -117,19 +110,15 @@ public class FileDBTest extends FileTestTemplate {
   @Test
   public void createRepoWithTwoCommits() {
     // create project
-    RepoResult repo = getClient().repo().create()
-        .name("project-xy")
-        .build()
-        .await().atMost(Duration.ofMinutes(1));
-    log.debug("created repo {}", repo);
+    RepoResult repo = createRepo("project-xy");
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().head()
+    CommitResult commit_0 = getClient(repo.getRepo()).commit().head()
       .head(repo.getRepo().getName(), "main")
-      .append("readme.md", "readme content")
-      .append("file1.json", "[{}]")
-      .append("fileFromObject.txt", ImmutableTestContent.builder().id("10").name("sam vimes").build().toString())
+      .append("readme.md", JsonObject.of("content", "readme content"))
+      .append("file1.json", JsonObject.of("content", ""))
+      .append("fileFromObject.txt", JsonObject.mapFrom(ImmutableTestContent.builder().id("10").name("sam vimes 1").build()))
       .author("same vimes")
       .message("first commit!")
       .build()
@@ -141,12 +130,12 @@ public class FileDBTest extends FileTestTemplate {
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().head()
+    CommitResult commit_1 = getClient(repo.getRepo()).commit().head()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
-      .append("readme.md", "readme content")
-      .append("file1.json", "[{}, {}]")
-      .append("fileFromObject.txt", ImmutableTestContent.builder().id("10").name("sam vimes 1").build().toString())
+      .append("readme.md", JsonObject.of("content", "readme content"))
+      .append("file1.json", JsonObject.of("content", ""))
+      .append("fileFromObject.txt", JsonObject.mapFrom(ImmutableTestContent.builder().id("10").name("sam vimes 1").build()))
       .author("same vimes")
       .message("second commit!")
       .build()

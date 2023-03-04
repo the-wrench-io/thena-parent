@@ -1,6 +1,7 @@
 package io.resys.thena.docdb.spi.pgsql.config;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /*-
  * #%L
@@ -32,8 +33,8 @@ import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBPrettyPrinter;
+import io.resys.thena.docdb.spi.pgsql.DocDBFactoryPgSql;
 import io.resys.thena.docdb.spi.pgsql.PgErrors;
-import io.resys.thena.docdb.sql.DocDBFactorySql;
 
 public class DbTestTemplate {
   private DocDB client;
@@ -41,15 +42,25 @@ public class DbTestTemplate {
   io.vertx.mutiny.pgclient.PgPool pgPool;
   
   private static AtomicInteger index = new AtomicInteger(1);
+  private Consumer<DocDB> callback;
+  
+  public DbTestTemplate() {
+  }
+  public DbTestTemplate(Consumer<DocDB> callback) {
+    this.callback = callback;
+  }  
   
   @BeforeEach
   public void setUp() {
-    this.client = DocDBFactorySql.create()
+    this.client = DocDBFactoryPgSql.create()
         .db("junit")
         .client(pgPool)
         .errorHandler(new PgErrors())
         .build();
     this.client.repo().create().name("junit" + index.incrementAndGet()).build();
+    if(callback != null) {
+      callback.accept(client);
+    }
   }
   
   @AfterEach
@@ -62,7 +73,7 @@ public class DbTestTemplate {
   
   public ClientState createState() {
     final var ctx = ClientCollections.defaults("junit");
-    return DocDBFactorySql.state(ctx, pgPool, new PgErrors());
+    return DocDBFactoryPgSql.state(ctx, pgPool, new PgErrors());
   }
   
   public void printRepo(Repo repo) {

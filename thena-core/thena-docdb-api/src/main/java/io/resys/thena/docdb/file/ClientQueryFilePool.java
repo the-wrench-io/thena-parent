@@ -64,4 +64,10 @@ public class ClientQueryFilePool implements ClientQuery {
   public BlobQuery blobs() {
     return new BlobQueryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
+
+  @Override
+  public BlobHistoryQuery blobHistory() {
+    // TODO::
+    return null;
+  }
 }

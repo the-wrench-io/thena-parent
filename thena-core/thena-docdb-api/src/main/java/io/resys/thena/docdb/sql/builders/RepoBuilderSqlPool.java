@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.builders;
 
+import io.resys.thena.docdb.api.LogConstants;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -32,7 +34,9 @@ import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
 import io.vertx.mutiny.sqlclient.SqlClientHelper;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class RepoBuilderSqlPool implements RepoBuilder {
   private final io.vertx.mutiny.sqlclient.Pool client;
@@ -102,7 +106,15 @@ public class RepoBuilderSqlPool implements RepoBuilder {
           .append(sqlSchema.refsConstraints().getValue())
           .append(sqlSchema.tagsConstraints().getValue())
           .append(sqlSchema.treeItemsConstraints().getValue())
-          .toString();      
+          .toString();
+      
+      if(log.isDebugEnabled()) {
+        log.debug(new StringBuilder("Creating schema: ")
+            .append(System.lineSeparator())
+            .append(tablesCreate.toString())
+            .toString());
+      }
+      
       final Uni<Void> create = client.preparedQuery(sqlBuilder.repo().create().getValue()).execute()
           .onItem().transformToUni(data -> Uni.createFrom().voidItem())
           .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));;

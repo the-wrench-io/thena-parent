@@ -29,7 +29,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class DefaultSqlSchema implements SqlSchema {
 
-  private final ClientCollections options;
+  protected final ClientCollections options;
   
   @Override
   public Sql blobs() {
@@ -37,7 +37,7 @@ public class DefaultSqlSchema implements SqlSchema {
     .append("CREATE TABLE ").append(options.getBlobs()).ln()
     .append("(").ln()
     .append("  id VARCHAR(40) PRIMARY KEY,").ln()
-    .append("  value TEXT NOT NULL").ln()
+    .append("  value jsonb NOT NULL").ln()
     .append(");").ln()
     .build()).build();
   }

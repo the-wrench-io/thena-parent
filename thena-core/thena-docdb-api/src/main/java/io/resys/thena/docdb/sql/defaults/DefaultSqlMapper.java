@@ -31,6 +31,7 @@ import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
@@ -100,7 +101,13 @@ public class DefaultSqlMapper implements SqlMapper {
   public Blob blob(Row row) {
     return ImmutableBlob.builder()
         .id(row.getString("id"))
-        .value(row.getString("value"))
+        .value(row.getJsonObject("value"))
         .build();
+  }
+  @Override
+  public BlobHistory blobHistory(Row row) {
+    // TODO Auto-generated method stub
+    System.err.println(row.deepToString()); 
+    return null;
   }
 }

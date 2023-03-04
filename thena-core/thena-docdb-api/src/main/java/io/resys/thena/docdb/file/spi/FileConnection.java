@@ -34,12 +34,13 @@ import java.util.Map;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.resys.thena.docdb.api.LogConstants;
 import io.resys.thena.docdb.file.tables.RepoTable;
 import io.resys.thena.docdb.file.tables.Table;
 import io.resys.thena.docdb.spi.ClientCollections;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j(topic = LogConstants.SHOW_SQL)
 public class FileConnection implements Table.Connection {
   private final File rootDir;
   private final ObjectMapper objectMapper;
@@ -52,8 +53,25 @@ public class FileConnection implements Table.Connection {
 
   @Override
   public RepoTable getRepoTable(ClientCollections ctx) {
+    
     if(cache.containsKey(ctx.getDb())) {
-      return cache.get(ctx.getDb());
+      final var cached = cache.get(ctx.getDb());
+      final var cachedCtx = cached.getContext();
+      
+      // same ctx
+      if(cachedCtx.getBlobs().equals(ctx.getBlobs())) {
+        return cached;
+      }
+      
+      final var ctxKey = ctx.getDb() + "/" + ctx.getBlobs();
+      final var cachedBlobCtx = cache.get(ctxKey);
+      if(cachedBlobCtx == null) {
+        final var repo = cached.withContext(ctx);
+        cache.put(ctxKey, repo);
+        return repo;
+      }
+      
+      return cachedBlobCtx;
     }
     
     final var db = new File(rootDir, ctx.getDb());
@@ -66,13 +84,12 @@ public class FileConnection implements Table.Connection {
     return repo;
   }
 
-  @Slf4j
+  @Slf4j(topic = LogConstants.SHOW_SQL)
   public static abstract class FileTable<T extends Table.Row> {
     private final Class<T> type;
-    @SuppressWarnings("unused")
-    private final File db;
+    protected final File db;
     private final File asset;
-    private final ObjectMapper objectMapper;
+    protected final ObjectMapper objectMapper;
     private final String assetName;
     private final TypeReference<List<T>> ref;
     private boolean cache_created;
@@ -110,6 +127,9 @@ public class FileConnection implements Table.Connection {
         nextState.remove(oldRow.get());
         nextState.add(newState);
         write(objectMapper.writeValueAsString(nextState));
+        
+
+        
         this.cache_rows = nextState;
       } catch(IOException e) {
         throw new RuntimeException(e.getMessage(), e);
@@ -171,6 +191,7 @@ public class FileConnection implements Table.Connection {
     public List<T> insertAll(List<T> entry) {
 
       try {
+        log.debug("Writing into local table: {}", asset.getAbsolutePath());
         final var next = new ArrayList<>(getRows());
         next.addAll(entry);
         write(objectMapper.writeValueAsString(next));
@@ -184,6 +205,7 @@ public class FileConnection implements Table.Connection {
     
     public T insert(T type) {
       try {
+        log.debug("Writing into local table: {}", asset.getAbsolutePath());
         final var next = new ArrayList<>(getRows());
         next.add(type);
         write(objectMapper.writeValueAsString(next));
@@ -200,8 +222,7 @@ public class FileConnection implements Table.Connection {
         return Collections.emptyList();
       }
       try {
-        
-        final var jsonString = read();       
+        final var jsonString = read();
         return objectMapper.readValue(jsonString, ref);
       } catch(IOException e) {
         throw new RuntimeException(e.getMessage(), e);

@@ -22,20 +22,16 @@ package io.resys.thena.docdb.spi.history;
 
 import io.resys.thena.docdb.api.actions.HistoryActions;
 import io.resys.thena.docdb.spi.ClientState;
+import lombok.RequiredArgsConstructor;
 
+@RequiredArgsConstructor
 public class HistoryActionsDefault implements HistoryActions {
 
   private final ClientState state;
-  
-  public HistoryActionsDefault(ClientState state) {
-    super();
-    this.state = state;
-  }
 
   @Override
   public BlobHistoryBuilder blob() {
-    // TODO Auto-generated method stub
-    return null;
+    return new BlobHistoryBuilderDefault(state);
   }
 
 }

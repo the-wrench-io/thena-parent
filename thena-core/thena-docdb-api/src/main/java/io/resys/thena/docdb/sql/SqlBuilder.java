@@ -23,6 +23,9 @@ import java.util.Collection;
  */
 
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
@@ -61,9 +64,12 @@ public interface SqlBuilder {
     SqlTuple findByIds(Collection<String> blobId);
     SqlTuple findByTree(Tree tree);
     SqlTuple insertOne(Blob blob);
+    SqlTuple findByCriteria(@Nullable String name, boolean latestOnly, Map<String, String> criteria);
     SqlTupleList insertAll(Collection<Blob> blobs);
     Sql findAll();
   }
+  
+  
   
   interface RefSqlBuilder {
     SqlTuple getByName(String name);

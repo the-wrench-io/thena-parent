@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.resys.thena.docdb.file.tables.RepoTable.RepoTableRow;
+import io.resys.thena.docdb.spi.ClientCollections;
 
 public interface RepoTable extends Table<RepoTableRow> {
   
@@ -36,6 +37,8 @@ public interface RepoTable extends Table<RepoTableRow> {
   TreeItemTable getTreeItems();
   TreeTable getTrees();
   
+  ClientCollections getContext();
+  
   @Value.Immutable @JsonSerialize(as = ImmutableRepoTableRow.class) @JsonDeserialize(as = ImmutableRepoTableRow.class)
   interface RepoTableRow extends Table.Row {
     String getId();
@@ -43,5 +46,7 @@ public interface RepoTable extends Table<RepoTableRow> {
     String getPrefix();
     String getName();
   }
+  
+  RepoTable withContext(ClientCollections ctx);
   
 }

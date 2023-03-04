@@ -26,6 +26,8 @@ import java.util.Optional;
 
 import org.immutables.value.Value;
 
+import io.vertx.core.json.JsonObject;
+
 @Value.Immutable
 public interface Objects {
   Map<String, Ref> getRefs();
@@ -85,6 +87,16 @@ public interface Objects {
   
   @Value.Immutable
   interface Blob extends IsObject {
-    String getValue();
+    JsonObject getValue();
   }
+  
+
+  @Value.Immutable
+  interface BlobHistory {
+    String getTreeId();
+    String getTreeValueName();
+    String getCommit();
+    Blob getBlob();
+  }
+
 }

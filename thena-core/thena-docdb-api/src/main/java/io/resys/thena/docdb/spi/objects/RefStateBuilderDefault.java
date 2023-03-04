@@ -42,8 +42,10 @@ import io.smallrye.mutiny.Uni;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
 public class RefStateBuilderDefault implements RefStateBuilder {
@@ -65,10 +67,12 @@ public class RefStateBuilderDefault implements RefStateBuilder {
     return state.repos().getByNameOrId(repo).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
+        final var ex = RepoException.builder().notRepoWithName(repo);
+        log.warn(ex.getText());
         return Uni.createFrom().item(ImmutableObjectsResult
             .<RefObjects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repo))
+            .addMessages(ex)
             .build());
       }
       return getRef(existing, ref, state.withRepo(existing));

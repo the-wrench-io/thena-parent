@@ -31,6 +31,7 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
+import io.resys.thena.docdb.sql.ClientQuerySqlPool.ClientQuerySqlContext;
 import io.resys.thena.docdb.sql.builders.ClientInsertBuilderSqlPool;
 import io.resys.thena.docdb.sql.builders.RepoBuilderSqlPool;
 import io.resys.thena.docdb.sql.defaults.DefaultSqlBuilder;
@@ -48,7 +49,7 @@ public class DocDBFactorySql implements ClientState {
   final Function<ClientCollections, SqlSchema> sqlSchema; 
   final Function<ClientCollections, SqlMapper> sqlMapper;
   final Function<ClientCollections, SqlBuilder> sqlBuilder;
-  
+  final Function<ClientQuerySqlContext, ClientQuery> clientQuery;
   
   @Override public ErrorHandler getErrorHandler() { return handler; }
   @Override public ClientCollections getCollections() { return ctx; }
@@ -85,7 +86,14 @@ public class DocDBFactorySql implements ClientState {
         .client(client)
         .names(ctx.toRepo(repo))
         .build();
-    return new ClientQuerySqlPool(wrapper, sqlMapper.apply(wrapper.getNames()), sqlBuilder.apply(wrapper.getNames()), handler);
+    final var ctx = ImmutableClientQuerySqlContext.builder()
+      .mapper(sqlMapper.apply(wrapper.getNames()))
+      .builder(sqlBuilder.apply(wrapper.getNames()))
+      .wrapper(wrapper)
+      .errorHandler(handler)
+      .build();
+    
+    return clientQuery.apply(ctx);
   }
   @Override
   public ClientRepoState withRepo(Repo repo) {
@@ -97,7 +105,14 @@ public class DocDBFactorySql implements ClientState {
     return new ClientRepoState() {
       @Override
       public ClientQuery query() {
-        return new ClientQuerySqlPool(wrapper, sqlMapper.apply(wrapper.getNames()), sqlBuilder.apply(wrapper.getNames()), handler);
+        final var ctx = ImmutableClientQuerySqlContext.builder()
+            .mapper(sqlMapper.apply(wrapper.getNames()))
+            .builder(sqlBuilder.apply(wrapper.getNames()))
+            .wrapper(wrapper)
+            .errorHandler(handler)
+            .build();
+          
+        return clientQuery.apply(ctx);
       }
       @Override
       public ClientInsertBuilder insert() {
@@ -106,7 +121,6 @@ public class DocDBFactorySql implements ClientState {
     };
   }
   
-
   public static ClientState state(
       final ClientCollections ctx,
       final io.vertx.mutiny.sqlclient.Pool client, 
@@ -116,7 +130,8 @@ public class DocDBFactorySql implements ClientState {
         ctx, client, handler, 
         Builder::defaultSqlSchema, 
         Builder::defaultSqlMapper,
-        Builder::defaultSqlBuilder);
+        Builder::defaultSqlBuilder,
+        Builder::defaultSqlQuery);
   }
   
   public static Builder create() {
@@ -124,16 +139,20 @@ public class DocDBFactorySql implements ClientState {
   }
 
   public static class Builder {
-    private io.vertx.mutiny.sqlclient.Pool client;
-    private String db = "docdb";
-    private ErrorHandler errorHandler;
-    private Function<ClientCollections, SqlSchema> sqlSchema; 
-    private Function<ClientCollections, SqlMapper> sqlMapper;
-    private Function<ClientCollections, SqlBuilder> sqlBuilder;
+    protected io.vertx.mutiny.sqlclient.Pool client;
+    protected String db = "docdb";
+    protected ErrorHandler errorHandler;
+    protected Function<ClientCollections, SqlSchema> sqlSchema; 
+    protected Function<ClientCollections, SqlMapper> sqlMapper;
+    protected Function<ClientCollections, SqlBuilder> sqlBuilder;
+    protected Function<ClientQuerySqlContext, ClientQuery> sqlQuery;
 
+    
     public Builder sqlMapper(Function<ClientCollections, SqlMapper> sqlMapper) {this.sqlMapper = sqlMapper; return this; }
     public Builder sqlBuilder(Function<ClientCollections, SqlBuilder> sqlBuilder) {this.sqlBuilder = sqlBuilder; return this; }
     public Builder sqlSchema(Function<ClientCollections, SqlSchema> sqlSchema) {this.sqlSchema = sqlSchema; return this; }
+    public Builder sqlQuery(Function<ClientQuerySqlContext, ClientQuery> sqlQuery) {this.sqlQuery = sqlQuery; return this; }
+    
     public Builder errorHandler(ErrorHandler errorHandler) {this.errorHandler = errorHandler; return this; }
     public Builder db(String db) { this.db = db; return this; }
     public Builder client(io.vertx.mutiny.sqlclient.Pool client) { this.client = client; return this; }
@@ -148,6 +167,9 @@ public class DocDBFactorySql implements ClientState {
     public static SqlSchema defaultSqlSchema(ClientCollections ctx) {
       return new DefaultSqlSchema(ctx);
     }
+    public static ClientQuery defaultSqlQuery(ClientQuerySqlContext ctx) {
+      return new ClientQuerySqlPool(ctx);
+    }
     
     public DocDB build() {
       RepoAssert.notNull(client, () -> "client must be defined!");
@@ -158,7 +180,8 @@ public class DocDBFactorySql implements ClientState {
       final Function<ClientCollections, SqlSchema> sqlSchema = this.sqlSchema == null ? Builder::defaultSqlSchema : this.sqlSchema;
       final Function<ClientCollections, SqlMapper> sqlMapper = this.sqlMapper == null ? Builder::defaultSqlMapper : this.sqlMapper;
       final Function<ClientCollections, SqlBuilder> sqlBuilder = this.sqlBuilder == null ? Builder::defaultSqlBuilder : this.sqlBuilder;
-      final var state = new DocDBFactorySql(ctx, client, errorHandler, sqlSchema, sqlMapper, sqlBuilder);
+      final Function<ClientQuerySqlContext, ClientQuery> sqlQuery = this.sqlQuery == null ? Builder::defaultSqlQuery : this.sqlQuery;
+      final var state = new DocDBFactorySql(ctx, client, errorHandler, sqlSchema, sqlMapper, sqlBuilder, sqlQuery);
       
       return new DocDBDefault(state);
     }

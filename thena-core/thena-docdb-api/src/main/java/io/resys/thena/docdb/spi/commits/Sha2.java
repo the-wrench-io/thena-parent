@@ -33,14 +33,15 @@ import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
+import io.vertx.core.json.JsonObject;
 
 public final class Sha2  {
   private static final TreeEntryComparator comparator = new TreeEntryComparator();
 
-  public static String blobId(String blob) {
+  public static String blobId(JsonObject blob) {
     String id = Hashing
         .murmur3_128()
-        .hashString(blob, Charsets.UTF_8)
+        .hashString(blob.encode(), Charsets.UTF_8)
         .toString();
     return id;
   }
@@ -57,7 +58,7 @@ public final class Sha2  {
   public static Blob id(Blob blob) {
     String id = Hashing
         .murmur3_128()
-        .hashString(blob.getValue(), Charsets.UTF_8)
+        .hashString(blob.getValue().encode(), Charsets.UTF_8)
         .toString();
     return ImmutableBlob.builder().from(blob).id(id).build();
   }

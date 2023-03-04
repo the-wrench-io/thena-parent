@@ -28,7 +28,7 @@ import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.spi.commits.CommitVisitor.CommitOutput;
+import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutput;
 import io.smallrye.mutiny.Uni;
 
 public interface ClientInsertBuilder {

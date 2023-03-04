@@ -21,8 +21,10 @@ package io.resys.thena.docdb.test.config;
  */
 
 import java.io.File;
+import java.io.IOException;
 import java.time.Duration;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
@@ -32,6 +34,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.resys.thena.docdb.api.DocDB;
+import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.file.DocDBFactoryFile;
 import io.resys.thena.docdb.file.FileErrors;
@@ -39,14 +42,24 @@ import io.resys.thena.docdb.file.spi.FilePoolImpl;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBPrettyPrinter;
+import io.resys.thena.docdb.spi.jackson.VertexExtModule;
+import io.vertx.core.json.jackson.VertxModule;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 public class FileTestTemplate {
   private DocDB client;
 
   //private File file = new File("src/test/resources");
   private final String db = "junit";
   private File file = new File("target");
-  private ObjectMapper objectMapper = new ObjectMapper().registerModules(new JavaTimeModule(), new Jdk8Module(), new GuavaModule());
+  private ObjectMapper objectMapper = new ObjectMapper().registerModules(
+      new JavaTimeModule(), 
+      new Jdk8Module(), 
+      new GuavaModule(),
+      new VertxModule(),
+      new VertexExtModule());
   
   @BeforeEach
   public void setUp() {
@@ -54,30 +67,38 @@ public class FileTestTemplate {
     final var file = new File(this.file, ctx.getDb());
     file.mkdir();
 
-    new File(file, ctx.getRepos()).delete();
-    new File(file, ctx.getBlobs()).delete();
-    new File(file, ctx.getCommits()).delete();
-    new File(file, ctx.getRefs()).delete();
-    new File(file, ctx.getTags()).delete();
-    new File(file, ctx.getTrees()).delete();
-    new File(file, ctx.getTreeItems()).delete();
-    
+    try {
+      FileUtils.cleanDirectory(file); 
+    } catch(IOException e) {
+      throw new RuntimeException(e.getMessage(), e);
+    }
+
     this.client = DocDBFactoryFile.create()
         .db(db)
         .client(new FilePoolImpl(this.file, objectMapper))
         .errorHandler(new FileErrors())
         .build();
-    
-    this.client.repo().create().name(db).build()
-    .await()
-    .atMost(Duration.ofSeconds(1));
   }
   
   @AfterEach
   public void tearDown() {
   }
 
-  public DocDB getClient() {
+    
+  public RepoResult createRepo(String name) {
+    
+    RepoResult repo = client.repo().create()
+        .name(name)
+        .build()
+        .await().atMost(Duration.ofMinutes(1));
+    
+    log.debug("created repo {}", repo);
+    return repo;
+  }
+  
+  public DocDB getClient(Repo repo) {
+    final var ctx = ClientCollections.defaults(db).toRepo(repo);
+    
     return client;
   }
   
@@ -87,8 +108,11 @@ public class FileTestTemplate {
   }
   
   public void printRepo(Repo repo) {
-    final String result = new DocDBPrettyPrinter(createState()).print(repo);
-    System.out.println(result);
+    final var ctx = ClientCollections.defaults(db);
+    final var state = DocDBFactoryFile.state(ctx, new FilePoolImpl(file, objectMapper), new FileErrors());
+    
+    final String result = new DocDBPrettyPrinter(state).print(repo);
+    log.debug(result);
   }
 
 }

@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
+import io.resys.thena.docdb.api.LogConstants;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
@@ -44,8 +45,10 @@ import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.vertx.core.json.JsonObject;
+import lombok.extern.slf4j.Slf4j;
 
-public class CommitVisitor {
+public class CommitBodyVisitor {
   
   
   @Value.Immutable
@@ -60,18 +63,19 @@ public class CommitVisitor {
   public interface RedundentHashedBlob {
     String getName();
     String getHash();
-    String getBlob();
+    JsonObject getBlob();
   }
   
-  @Value.Immutable
-  public interface CommitInput {
-    Optional<RefObjects> getParent();
-    Repo getRepo();
-    String getRef();
-    String getCommitAuthor();
-    String getCommitMessage();
-    Map<String, String> getAppend();
-    Collection<String> getRemove();
+  
+  @lombok.Data @lombok.Builder
+  public static class CommitBody {
+    private Optional<RefObjects> parent;
+    private Repo repo;
+    private String ref;
+    private String commitAuthor;
+    private String commitMessage;
+    private Map<String, JsonObject> append;
+    private Collection<String> remove;
   }
   
   public enum CommitOutputStatus {
@@ -92,12 +96,34 @@ public class CommitVisitor {
   
   private final Map<String, Blob> nextBlobs = new HashMap<>();
   private final Map<String, TreeValue> nextTree = new HashMap<>();
-  private final StringBuilder logger = new StringBuilder();
+  private final CommitLogger logger = new CommitLogger();
+  
   private boolean dataDeleted = false;
   private boolean dataAdded = false;
+
+  @Slf4j(topic = LogConstants.SHOW_COMMIT)
+  private static class CommitLogger {
+    private final StringBuilder data = new StringBuilder();
+    
+    public CommitLogger append(String data) {
+      if(log.isDebugEnabled()) {
+        this.data.append(data);
+      }
+      return this;
+    }
+    @Override
+    public String toString() {
+      if(log.isDebugEnabled()) {
+        log.debug(data.toString());
+      } else {
+        data.append("Log DEBUG disabled for: " + CommitBodyVisitor.class.getCanonicalName() + "!");
+      }
+      return data.toString();
+    }
+  } 
   
   
-  public CommitOutput visit(CommitInput input) {
+  public CommitOutput visit(CommitBody input) {
     if(input.getParent().isPresent()) {
       visitParent(input.getParent().get());
     }
@@ -107,7 +133,7 @@ public class CommitVisitor {
     Tree tree = visitTree();
     Collection<Blob> blobs = visitBlobs();
     Commit commit = visitCommit(tree, input);
-    
+
     return ImmutableCommitOutput.builder()
         .log(visitLog())
         .repo(input.getRepo())
@@ -118,14 +144,14 @@ public class CommitVisitor {
         .commit(commit)
         .build();
   }
-  private Ref visitRef(Commit commit, CommitInput input) {
+  private Ref visitRef(Commit commit, CommitBody input) {
     return ImmutableRef.builder()
         .commit(commit.getId())
         .name(input.getRef())
         .build();
   }
   
-  private Commit visitCommit(Tree tree, CommitInput input) {
+  private Commit visitCommit(Tree tree, CommitBody input) {
     final Optional<String> parent = input.getParent().map(r -> r.getCommit().getId());
     final Commit commitTemplate = ImmutableCommit.builder()
       .id("commit-template")
@@ -168,7 +194,7 @@ public class CommitVisitor {
     this.nextTree.putAll(parent.getTree().getValues());
   }
   
-  private void visitAppend(Map<String, String> newBlobs) {
+  private void visitAppend(Map<String, JsonObject> newBlobs) {
     List<RedundentHashedBlob> hashed = newBlobs.entrySet().stream()
       .map(this::visitAppendEntry)
       .collect(Collectors.toList());
@@ -206,6 +232,7 @@ public class CommitVisitor {
   }
   
   private void visitRemove(Collection<String> removeBlobs) {
+    
     if(!removeBlobs.isEmpty()) {
       logger.append("Removing following:").append(System.lineSeparator());
     }
@@ -224,7 +251,7 @@ public class CommitVisitor {
     }
   }
   
-  private RedundentHashedBlob visitAppendEntry(Map.Entry<String, String> entry) {
+  private RedundentHashedBlob visitAppendEntry(Map.Entry<String, JsonObject> entry) {
     return ImmutableRedundentHashedBlob.builder()
       .hash(Sha2.blobId(entry.getValue()))
       .blob(entry.getValue())

@@ -37,8 +37,10 @@ import io.smallrye.mutiny.Uni;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
 public class RepoStateBuilderDefault implements RepoStateBuilder {
@@ -52,10 +54,12 @@ public class RepoStateBuilderDefault implements RepoStateBuilder {
     return state.repos().getByNameOrId(repo).onItem().transformToUni((Repo existing) -> {
           
       if(existing == null) {
+        final var ex = RepoException.builder().notRepoWithName(repo);
+        log.warn(ex.getText());
         return Uni.createFrom().item(ImmutableObjectsResult
             .<Objects>builder()
             .status(ObjectsStatus.ERROR)
-            .addMessages(RepoException.builder().notRepoWithName(repo))
+            .addMessages(ex)
             .build());
       }
       return getState(existing, state.withRepo(existing));
@@ -100,9 +104,12 @@ public class RepoStateBuilderDefault implements RepoStateBuilder {
   }
   private Uni<Objects> getBlobs(Repo repo, ClientRepoState ctx) {
     return ctx.query().blobs().find().collect().asList().onItem()
-        .transform(blobs -> ImmutableObjects.builder()
-            .putAllValues(blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)))
-            .build());
+        .transform(blobs -> {
+          
+          final var objects = ImmutableObjects.builder();
+          blobs.forEach(blob -> objects.putValues(blob.getId(), blob));
+          return objects.build();
+        });
   }
   private Uni<Objects> getTrees(Repo repo, ClientRepoState ctx) {
     return ctx.query().trees().find().collect().asList().onItem()

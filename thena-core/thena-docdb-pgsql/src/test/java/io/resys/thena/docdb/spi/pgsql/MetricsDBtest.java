@@ -42,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @TestProfile(PgProfile.class)
 public class MetricsDBtest extends DbTestTemplate {
 
-  //@Test
+  //@org.junit.jupiter.api.Test
   public void metrics() {
     RepoResult repo = getClient().repo().create()
         .name("create repo for metrics")

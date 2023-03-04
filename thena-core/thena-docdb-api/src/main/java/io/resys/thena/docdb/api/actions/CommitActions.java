@@ -29,6 +29,7 @@ import org.immutables.value.Value;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 
 public interface CommitActions {
   HeadCommitBuilder head();
@@ -38,7 +39,7 @@ public interface CommitActions {
     HeadCommitBuilder parent(String parentCommit); // for validations
     HeadCommitBuilder parentIsLatest();
     HeadCommitBuilder head(String repoId, String headName); // head GID to what to append
-    HeadCommitBuilder append(String name, String blob);
+    HeadCommitBuilder append(String name, JsonObject blob);
     HeadCommitBuilder remove(String name);
     HeadCommitBuilder author(String author);
     HeadCommitBuilder message(String message);

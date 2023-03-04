@@ -30,10 +30,8 @@ import io.resys.thena.docdb.file.tables.Table.FileStatement;
 import io.resys.thena.docdb.file.tables.Table.FileTuple;
 import io.resys.thena.docdb.file.tables.Table.FileTupleList;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import lombok.extern.slf4j.Slf4j;
 
 
-@Slf4j
 public class FilePoolImpl implements FilePool {
 
   private final File rootDir;
