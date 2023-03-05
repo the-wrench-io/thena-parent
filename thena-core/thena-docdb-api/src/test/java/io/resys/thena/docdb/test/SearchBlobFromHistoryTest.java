@@ -71,6 +71,25 @@ public class SearchBlobFromHistoryTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
     }
   }
+  
+  public void addCassandraChaseChanges(int changes, String id) {
+    final var client = getClient();
+    for(int index = 0; index < changes; index++) { 
+      client.commit().head()
+      .head(SearchBlobFromHistoryTest.class.getSimpleName(), "main")
+      .append(id, JsonObject.of(
+        "type", "person",
+        "name", "cassandra", "lastName", "chase",
+        "change id", (index+1) + " of changes: " + changes 
+        ))
+      .author("tester bob")
+      .message("change commit!")
+      .parentIsLatest()
+      .build()
+      .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
+      .await().atMost(Duration.ofMinutes(1));
+    }
+  }
 
 
   @Test
@@ -78,10 +97,11 @@ public class SearchBlobFromHistoryTest extends DbTestTemplate {
     //final var repo = getClient().repo().query().id(SearchBlobFromHistoryTest.class.getSimpleName()).get().await().atMost(Duration.ofMinutes(1));
     //super.printRepo(repo);
     addSamVimesChanges(20, "ID-1");
+    addCassandraChaseChanges(20, "ID-2");
     
     final var history = getClient().history().blob()
       .repo(SearchBlobFromHistoryTest.class.getSimpleName(), "main")
-      .entry("name", "sam")
+      //.entry("name", "sam")
       .latestOnly()
       .build()
       .await().atMost(Duration.ofMinutes(1));

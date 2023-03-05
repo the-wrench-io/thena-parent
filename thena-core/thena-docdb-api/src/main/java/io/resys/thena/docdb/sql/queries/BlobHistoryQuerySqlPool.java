@@ -6,7 +6,6 @@ import java.util.Map;
 import io.resys.thena.docdb.api.LogConstants;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.spi.ClientQuery.BlobHistoryQuery;
-import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool.ClientQuerySqlContext;
 import io.smallrye.mutiny.Multi;
 import io.vertx.mutiny.sqlclient.RowSet;
@@ -28,7 +27,6 @@ public class BlobHistoryQuerySqlPool implements BlobHistoryQuery {
 
   @Override
   public Multi<BlobHistory> find() {
-    RepoAssert.isTrue(!criteria.isEmpty(), () -> "criteria can't be empty!");
     final var sql = context.getBuilder().blobs().findByCriteria(name, latestOnly, criteria);
     final var stream = context.getWrapper().getClient().preparedQuery(sql.getValue())
         .mapping(row -> context.getMapper().blobHistory(row));
