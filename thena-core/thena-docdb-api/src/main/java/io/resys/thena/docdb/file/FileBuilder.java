@@ -34,7 +34,7 @@ import io.resys.thena.docdb.file.tables.Table.FileTuple;
 import io.resys.thena.docdb.file.tables.Table.FileTupleList;
 import io.resys.thena.docdb.spi.ClientCollections;
 
-public interface FileBuilder {
+public interface FileBuilder extends ClientCollections.WithOptions<FileBuilder>{
 
   RepoFileBuilder repo();
   RefFileBuilder refs();

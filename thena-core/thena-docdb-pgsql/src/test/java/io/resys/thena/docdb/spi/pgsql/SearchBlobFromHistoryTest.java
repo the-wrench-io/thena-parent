@@ -32,17 +32,17 @@ public class SearchBlobFromHistoryTest extends DbTestTemplate {
           .append("ID-1", new JsonObject(Map.of(
               "type", "person",
               "name", "sam", 
-              "lastName", "vimes")).toString())
+              "lastName", "vimes")))
           
           .append("ID-2", new JsonObject(Map.of(
               "type", "person",
               "name", "cassandra", 
-              "lastName", "chase")).toString())
+              "lastName", "chase")))
           
           .append("ID-3", new JsonObject(Map.of(
               "type", "person",
               "name", "count", 
-              "lastName", "sober")).toString())
+              "lastName", "sober")))
           
           .author("tester bob")
           .message("first commit!")

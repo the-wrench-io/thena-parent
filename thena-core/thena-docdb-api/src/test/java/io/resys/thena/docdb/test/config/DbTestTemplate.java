@@ -1,6 +1,7 @@
 package io.resys.thena.docdb.test.config;
 
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 /*-
  * #%L
@@ -41,6 +42,15 @@ public class DbTestTemplate {
   
   private static AtomicInteger index = new AtomicInteger(1);
   
+  private Consumer<DocDB> callback;
+  
+  public DbTestTemplate() {
+  }
+  public DbTestTemplate(Consumer<DocDB> callback) {
+    this.callback = callback;
+  }  
+  
+  
   @BeforeEach
   public void setUp() {
     this.client = DocDBFactorySql.create()
@@ -49,6 +59,9 @@ public class DbTestTemplate {
         .errorHandler(new PgTestErrors())
         .build();
     this.client.repo().create().name("junit" + index.incrementAndGet()).build();
+    if(callback != null) {
+      callback.accept(client);
+    }
   }
   
   @AfterEach

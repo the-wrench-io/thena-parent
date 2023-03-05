@@ -40,13 +40,14 @@ import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlMapper;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Row;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class SqlMapperImpl implements SqlMapper {
 
-  private final ClientCollections ctx;
+  protected final ClientCollections ctx;
  
   @Override
   public Repo repo(Row row) {
@@ -101,7 +102,7 @@ public class SqlMapperImpl implements SqlMapper {
   public Blob blob(Row row) {
     return ImmutableBlob.builder()
         .id(row.getString("id"))
-        .value(row.getJsonObject("value"))
+        .value(new JsonObject(row.getString("value")))
         .build();
   }
   @Override

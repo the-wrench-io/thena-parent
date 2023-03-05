@@ -39,13 +39,12 @@ import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.resys.thena.docdb.sql.support.SqlStatement;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
-  private final ClientCollections options;
+  protected final ClientCollections options;
   
   @Override
   public Sql findAll() {
@@ -112,7 +111,7 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .append(" (id, value) VALUES($1, $2)")
         .append(" ON CONFLICT (id) DO NOTHING")
         .build())
-        .props(Tuple.of(blob.getId(), blob.getValue()))
+        .props(Tuple.of(blob.getId(), blob.getValue().encode()))
         .build();
   }
   @Override
@@ -124,7 +123,7 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .append(" ON CONFLICT (id) DO NOTHING")
         .build())
         .props(blobs.stream()
-            .map(v -> Tuple.of(v.getId(), v.getValue()))
+            .map(v -> Tuple.of(v.getId(), v.getValue().encode()))
             .collect(Collectors.toList()))
         .build();
   }
@@ -160,15 +159,28 @@ where
  */
   @Override
   public SqlTuple findByCriteria(String name, boolean latestOnly, Map<String, String> criteria) {
-    
-    final var criteriaString = new JsonObject();
+    final var criteriaString = new StringBuilder();
     int paramIndex = 1;
     final var params = new LinkedList<>();
     for(final var entry : criteria.entrySet()) {
-      final var parsed = new JsonObject();
-      criteriaString.put(entry.getKey(), entry.getValue());
-      //criteriaString.add(parsed);
+      if(paramIndex > 1) {
+        criteriaString.append(" AND ");        
+      }
+      criteriaString
+        .append("blobs.value LIKE $").append(paramIndex++);
+      params.add(new StringBuilder()
+          .append("%")
+          .append("\"").append(entry.getKey()).append("\"")
+          .append(":")
+          .append("\"%").append(entry.getValue()).append("%\"")
+          .append("%")
+          .toString());
     }
+    
+    if(!criteriaString.isEmpty()) {
+      criteriaString.insert(0, "WHERE ");
+    }
+
     
     final var sql = new SqlStatement()
     .append("WITH RECURSIVE generation AS (").ln()
@@ -194,14 +206,12 @@ where
     .append("  ON(commit.tree = item.tree)").ln()
     .append("  LEFT JOIN generation ON(generation.id = commit.id)").ln()
     .append("  LEFT JOIN ").append(options.getBlobs()).append(" AS blobs ON(blobs.id = item.blob)").ln()
-    .append("WHERE ").ln()
-    
-    .append("blobs.value @> '").append(criteriaString.toString()).append("'").ln()
+    .append(criteriaString.toString()).ln()
     .build();
     
     return ImmutableSqlTuple.builder()
         .value(sql)
-        .props(Tuple.of(params))
+        .props(Tuple.from(params))
         .build();
   }
 }

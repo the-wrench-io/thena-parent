@@ -6,8 +6,8 @@ import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.factories.SqlSchemaImpl;
 import io.resys.thena.docdb.sql.support.SqlStatement;
 
-public class PgSqlSchema extends SqlSchemaImpl {
-  public PgSqlSchema(ClientCollections options) {
+public class SqlSchemaPg extends SqlSchemaImpl {
+  public SqlSchemaPg(ClientCollections options) {
     super(options);
   }
 
@@ -24,6 +24,6 @@ public class PgSqlSchema extends SqlSchemaImpl {
   
   @Override
   public SqlSchemaImpl withOptions(ClientCollections options) {
-    return new PgSqlSchema(options);
+    return new SqlSchemaPg(options);
   }
 }

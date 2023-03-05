@@ -39,7 +39,7 @@ import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.vertx.mutiny.sqlclient.Tuple;
 
-public interface SqlBuilder {
+public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
 
   RepoSqlBuilder repo();
   RefSqlBuilder refs();

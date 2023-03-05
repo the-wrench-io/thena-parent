@@ -23,7 +23,7 @@ package io.resys.thena.docdb.sql;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 
-public interface SqlSchema {
+public interface SqlSchema extends ClientCollections.WithOptions<SqlSchema>{
   SqlSchema withOptions(ClientCollections options);
   
   Sql blobs();

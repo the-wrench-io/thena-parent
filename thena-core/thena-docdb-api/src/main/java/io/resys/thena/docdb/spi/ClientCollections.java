@@ -26,6 +26,11 @@ import io.resys.thena.docdb.api.models.Repo;
 
 @Value.Immutable
 public abstract class ClientCollections {
+  public interface WithOptions<T extends WithOptions<T>> {
+    T withOptions(ClientCollections options);
+  }
+  
+  
   public abstract String getDb();
   public abstract String getRepos();
   public abstract String getRefs();

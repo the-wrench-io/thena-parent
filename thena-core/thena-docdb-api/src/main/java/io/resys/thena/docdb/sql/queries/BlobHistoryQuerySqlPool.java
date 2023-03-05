@@ -34,11 +34,12 @@ public class BlobHistoryQuerySqlPool implements BlobHistoryQuery {
         .mapping(row -> context.getMapper().blobHistory(row));
     
     if(log.isDebugEnabled()) {
-      log.debug("Blob history query, with props: {} \r\n{}", sql.getProps(), sql.getValue());
+      log.debug("Blob history query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(), 
+          sql.getValue());
     }
     
-    return //(sql.getProps().size() > 0 ? stream.execute(sql.getProps()) : stream.execute())
-        stream.execute()
+    return (sql.getProps().size() > 0 ? stream.execute(sql.getProps()) : stream.execute())
         .onItem()
         .transformToMulti((RowSet<BlobHistory> rowset) -> Multi.createFrom().iterable(rowset))
         .onFailure().invoke(e -> context.getErrorHandler().deadEnd(

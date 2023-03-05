@@ -33,7 +33,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class SqlBuilderImpl implements SqlBuilder {
-  private final ClientCollections ctx;
+  protected final ClientCollections ctx;
 
   @Override
   public RepoSqlBuilder repo() {

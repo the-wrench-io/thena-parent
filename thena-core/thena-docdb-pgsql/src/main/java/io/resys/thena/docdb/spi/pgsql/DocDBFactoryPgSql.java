@@ -85,7 +85,7 @@ public class DocDBFactoryPgSql extends DocDBFactorySql implements ClientState {
       return new SqlMapperImpl(ctx);
     }
     public static SqlSchema defaultSqlSchema(ClientCollections ctx) {
-      return new PgSqlSchema(ctx);
+      return new SqlSchemaPg(ctx);
     }
     public static ClientQuery defaultSqlQuery(ClientQuerySqlContext ctx) {
       return new ClientQuerySqlPool(ctx);
