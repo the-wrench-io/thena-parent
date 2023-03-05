@@ -128,6 +128,49 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .build();
   }
   
+  
+  /**
+
+WITH RECURSIVE generation AS (
+    SELECT id, parent, 0 AS order_no
+    FROM nested_10_commits
+    WHERE parent IS NULL
+UNION ALL
+    SELECT child.id, child.parent, order_no+1 AS order_no
+    FROM nested_10_commits as child
+    JOIN generation g ON g.id = child.parent
+)
+SELECT * 
+FROM ( SELECT 
+  blob_name,
+  blob_value,
+  blob_id,
+  tree,
+  commit_parent,
+  commit_id,
+  order_no
+  RANK() OVER (PARTITION BY blob_name, order_no ORDER BY order_no DESC) AS RANK
+FROM (SELECT 
+  item.name as blob_name,
+  blobs.value as blob_value,
+  item.blob as blob_id,
+  item.tree as tree,
+  commit.parent as commit_parent,
+  commit.id as commit_id,
+  generation.order_no as order_no
+FROM 
+  nested_10_treeItems as item
+  LEFT JOIN nested_10_commits AS commit
+  ON(commit.tree = item.tree)
+  LEFT JOIN generation ON(generation.id = commit.id)
+  LEFT JOIN nested_10_blobs AS blobs ON(blobs.id = item.blob)
+WHERE blobs.value LIKE $1
+)
+) WHERE RANK = 1
+
+   */
+  
+  
 /*
 
 WITH RECURSIVE generation AS (
@@ -182,36 +225,67 @@ where
     }
 
     
-    final var sql = new SqlStatement()
-    .append("WITH RECURSIVE generation AS (").ln()
-    .append("    SELECT id, parent, 0 AS order_no").ln()
-    .append("    FROM ").append(options.getCommits()).ln()
-    .append("    WHERE parent IS NULL").ln()
-    .append("UNION ALL").ln()
-    .append("    SELECT child.id, child.parent, order_no+1 AS order_no").ln()
-    .append("    FROM ").append(options.getCommits()).append(" as child").ln()
-    .append("    JOIN generation g ON g.id = child.parent").ln()
-    .append(")").ln()
-    .append("SELECT ").ln()
-    .append("  item.name as blob_name,").ln()
-    .append("  blobs.value as blob_value,").ln()
-    .append("  item.blob as blob_id,").ln()
-    .append("  item.tree as tree,").ln()
-    .append("  commit.parent as commit_parent,").ln()
-    .append("  commit.id as commit_id,").ln()
-    .append("  generation.order_no as order_no").ln()
-    .append("FROM ").ln()
-    .append("  ").append(options.getTreeItems()).append(" as item").ln()
-    .append("  LEFT JOIN ").append(options.getCommits()).append(" AS commit").ln()
-    .append("  ON(commit.tree = item.tree)").ln()
-    .append("  LEFT JOIN generation ON(generation.id = commit.id)").ln()
-    .append("  LEFT JOIN ").append(options.getBlobs()).append(" AS blobs ON(blobs.id = item.blob)").ln()
-    .append(criteriaString.toString()).ln()
-    .build();
+    final String sql;
     
+    if(latestOnly) {
+      final var fromData = new SqlStatement()
+          .append(createRecursionSelect())
+          .append(criteriaString.toString()).ln()
+          .build();
+      sql = new SqlStatement().append(createRecursion()).append(createLatest(fromData)).build();
+    } else {
+      sql = new SqlStatement()
+          .append(createRecursion())
+          .append(createRecursionSelect())
+          .append(criteriaString.toString()).ln()
+          .build();      
+    }
     return ImmutableSqlTuple.builder()
         .value(sql)
         .props(Tuple.from(params))
         .build();
+  }
+
+  protected String createLatest(String fromData) {
+    return new SqlStatement()
+        .append("SELECT ranked.* ").ln()
+        .append("FROM ( SELECT ").ln()
+        .append("  RANK() OVER (PARTITION BY blob_name ORDER BY order_no DESC) AS RANK,").ln()
+        .append("  by_commit.*").ln()
+        .append("FROM (").append(fromData).append(") as by_commit").ln()
+        .append(") as ranked WHERE ranked.RANK = 1").ln()
+        .toString();           
+  }
+  
+  protected String createRecursionSelect() {
+    return new SqlStatement()
+        .append("SELECT ").ln()
+        .append("  item.name as blob_name,").ln()
+        .append("  blobs.value as blob_value,").ln()
+        .append("  item.blob as blob_id,").ln()
+        .append("  item.tree as tree,").ln()
+        .append("  commit.parent as commit_parent,").ln()
+        .append("  commit.id as commit_id,").ln()
+        .append("  generation.order_no as order_no").ln()
+        .append("FROM ").ln()
+        .append("  ").append(options.getTreeItems()).append(" as item").ln()
+        .append("  LEFT JOIN ").append(options.getCommits()).append(" AS commit").ln()
+        .append("  ON(commit.tree = item.tree)").ln()
+        .append("  LEFT JOIN generation ON(generation.id = commit.id)").ln()
+        .append("  LEFT JOIN ").append(options.getBlobs()).append(" AS blobs ON(blobs.id = item.blob)").ln()
+        .toString();       
+  }
+  
+  protected String createRecursion() {
+    return new SqlStatement()
+        .append("WITH RECURSIVE generation AS (").ln()
+        .append("    SELECT id, parent, 0 AS order_no").ln()
+        .append("    FROM ").append(options.getCommits()).ln()
+        .append("    WHERE parent IS NULL").ln()
+        .append("UNION ALL").ln()
+        .append("    SELECT child.id, child.parent, order_no+1 AS order_no").ln()
+        .append("    FROM ").append(options.getCommits()).append(" as child").ln()
+        .append("    JOIN generation g ON g.id = child.parent").ln()
+        .append(")").ln().toString();       
   }
 }
