@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.factories;
 
 /*-
  * #%L
@@ -44,7 +44,7 @@ import io.vertx.mutiny.sqlclient.Row;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultSqlMapper implements SqlMapper {
+public class SqlMapperImpl implements SqlMapper {
 
   private final ClientCollections ctx;
  

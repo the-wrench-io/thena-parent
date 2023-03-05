@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.factories;
 
 /*-
  * #%L
@@ -22,12 +22,14 @@ package io.resys.thena.docdb.sql.defaults;
 
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
-import io.resys.thena.docdb.sql.SqlBuilder.Sql;
+import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlSchema;
+import io.resys.thena.docdb.sql.SqlBuilder.Sql;
+import io.resys.thena.docdb.sql.support.SqlStatement;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultSqlSchema implements SqlSchema {
+public class SqlSchemaImpl implements SqlSchema {
 
   protected final ClientCollections options;
   
@@ -37,7 +39,7 @@ public class DefaultSqlSchema implements SqlSchema {
     .append("CREATE TABLE ").append(options.getBlobs()).ln()
     .append("(").ln()
     .append("  id VARCHAR(40) PRIMARY KEY,").ln()
-    .append("  value jsonb NOT NULL").ln()
+    .append("  value TEXT NOT NULL").ln()
     .append(");").ln()
     .build()).build();
   }
@@ -180,8 +182,8 @@ public class DefaultSqlSchema implements SqlSchema {
   }
   
   @Override
-  public DefaultSqlSchema withOptions(ClientCollections options) {
-    return new DefaultSqlSchema(options);
+  public SqlSchemaImpl withOptions(ClientCollections options) {
+    return new SqlSchemaImpl(options);
   }
   
 }

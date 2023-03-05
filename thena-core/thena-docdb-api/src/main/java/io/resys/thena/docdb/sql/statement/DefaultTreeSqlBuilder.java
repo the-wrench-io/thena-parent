@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.statement;
 
 /*-
  * #%L
@@ -20,66 +20,49 @@ package io.resys.thena.docdb.sql.defaults;
  * #L%
  */
 
-import java.util.stream.Collectors;
-
 import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
-import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
-import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
-import io.resys.thena.docdb.sql.SqlBuilder.TreeItemSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.TreeSqlBuilder;
+import io.resys.thena.docdb.sql.support.SqlStatement;
 import io.vertx.mutiny.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultTreeItemSqlBuilder implements TreeItemSqlBuilder {
+public class DefaultTreeSqlBuilder implements TreeSqlBuilder {
   private final ClientCollections options;
   
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getTreeItems())
+        .append("SELECT * FROM ").append(options.getTrees())
         .build())
         .build();
   }
   @Override
-  public SqlTuple getByTreeId(String treeId) {
+  public SqlTuple getById(String id) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("SELECT * ").ln()
-        .append("  FROM ").append(options.getTreeItems()).ln()
-        .append("  WHERE tree = $1").ln()
+        .append("SELECT * FROM ").append(options.getTrees())
+        .append(" WHERE id = $1")
+        .append(" FETCH FIRST ROW ONLY")
         .build())
-        .props(Tuple.of(treeId))
+        .props(Tuple.of(id))
         .build();
   }
   @Override
-  public SqlTuple insertOne(Tree tree, TreeValue item) {
+  public SqlTuple insertOne(Tree tree) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("INSERT INTO ").append(options.getTreeItems())
-        .append(" (name, blob, tree) VALUES($1, $2, $3)").ln()
-        .append(" ON CONFLICT (name, blob, tree) DO NOTHING")
+        .append("INSERT INTO ").append(options.getTrees())
+        .append(" (id) VALUES($1)")
+        .append(" ON CONFLICT (id) DO NOTHING")
         .build())
-        .props(Tuple.of(item.getName(), item.getBlob(), tree.getId()))
-        .build();
-  }
-  @Override
-  public SqlTupleList insertAll(Tree item) {
-    return ImmutableSqlTupleList.builder()
-        .value(new SqlStatement()
-        .append("INSERT INTO ").append(options.getTreeItems())
-        .append(" (name, blob, tree) VALUES($1, $2, $3)").ln()
-        .append(" ON CONFLICT (name, blob, tree) DO NOTHING")
-        .build())
-        .props(item.getValues().values().stream()
-            .map(v -> Tuple.of(v.getName(), v.getBlob(), item.getId()))
-            .collect(Collectors.toList()))
+        .props(Tuple.of(tree.getId()))
         .build();
   }
 }

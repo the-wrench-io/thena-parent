@@ -3,10 +3,10 @@ package io.resys.thena.docdb.spi.pgsql;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
-import io.resys.thena.docdb.sql.defaults.DefaultSqlSchema;
-import io.resys.thena.docdb.sql.defaults.SqlStatement;
+import io.resys.thena.docdb.sql.factories.SqlSchemaImpl;
+import io.resys.thena.docdb.sql.support.SqlStatement;
 
-public class PgSqlSchema extends DefaultSqlSchema {
+public class PgSqlSchema extends SqlSchemaImpl {
   public PgSqlSchema(ClientCollections options) {
     super(options);
   }
@@ -23,7 +23,7 @@ public class PgSqlSchema extends DefaultSqlSchema {
   }
   
   @Override
-  public DefaultSqlSchema withOptions(ClientCollections options) {
+  public SqlSchemaImpl withOptions(ClientCollections options) {
     return new PgSqlSchema(options);
   }
 }

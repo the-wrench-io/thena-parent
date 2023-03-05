@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.builders;
+package io.resys.thena.docdb.sql.queries;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -7,7 +7,7 @@ import io.resys.thena.docdb.api.LogConstants;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.spi.ClientQuery.BlobHistoryQuery;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.docdb.sql.ClientQuerySqlPool.ClientQuerySqlContext;
+import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool.ClientQuerySqlContext;
 import io.smallrye.mutiny.Multi;
 import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;

@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.support;
 
 /*-
  * #%L

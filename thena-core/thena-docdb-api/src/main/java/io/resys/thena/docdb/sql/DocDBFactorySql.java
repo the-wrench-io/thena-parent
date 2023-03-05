@@ -31,12 +31,14 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.docdb.sql.ClientQuerySqlPool.ClientQuerySqlContext;
-import io.resys.thena.docdb.sql.builders.ClientInsertBuilderSqlPool;
-import io.resys.thena.docdb.sql.builders.RepoBuilderSqlPool;
-import io.resys.thena.docdb.sql.defaults.DefaultSqlBuilder;
-import io.resys.thena.docdb.sql.defaults.DefaultSqlMapper;
-import io.resys.thena.docdb.sql.defaults.DefaultSqlSchema;
+import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool;
+import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool.ClientQuerySqlContext;
+import io.resys.thena.docdb.sql.factories.ImmutableClientQuerySqlContext;
+import io.resys.thena.docdb.sql.factories.SqlBuilderImpl;
+import io.resys.thena.docdb.sql.factories.SqlMapperImpl;
+import io.resys.thena.docdb.sql.factories.SqlSchemaImpl;
+import io.resys.thena.docdb.sql.queries.ClientInsertBuilderSqlPool;
+import io.resys.thena.docdb.sql.queries.RepoBuilderSqlPool;
 import io.resys.thena.docdb.sql.support.ImmutableSqlClientWrapper;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
@@ -159,13 +161,13 @@ public class DocDBFactorySql implements ClientState {
     
 
     public static SqlBuilder defaultSqlBuilder(ClientCollections ctx) {
-      return new DefaultSqlBuilder(ctx);
+      return new SqlBuilderImpl(ctx);
     }
     public static SqlMapper defaultSqlMapper(ClientCollections ctx) {
-      return new DefaultSqlMapper(ctx);
+      return new SqlMapperImpl(ctx);
     }
     public static SqlSchema defaultSqlSchema(ClientCollections ctx) {
-      return new DefaultSqlSchema(ctx);
+      return new SqlSchemaImpl(ctx);
     }
     public static ClientQuery defaultSqlQuery(ClientQuerySqlContext ctx) {
       return new ClientQuerySqlPool(ctx);

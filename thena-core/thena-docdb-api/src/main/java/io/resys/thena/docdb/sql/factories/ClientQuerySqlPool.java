@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql;
+package io.resys.thena.docdb.sql.factories;
 
 import org.immutables.value.Value;
 
@@ -24,12 +24,14 @@ import org.immutables.value.Value;
 
 import io.resys.thena.docdb.spi.ClientQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
-import io.resys.thena.docdb.sql.builders.BlobHistoryQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.BlobQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.CommitQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.RefQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.TagQuerySqlPool;
-import io.resys.thena.docdb.sql.builders.TreeQuerySqlPool;
+import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.queries.BlobHistoryQuerySqlPool;
+import io.resys.thena.docdb.sql.queries.BlobQuerySqlPool;
+import io.resys.thena.docdb.sql.queries.CommitQuerySqlPool;
+import io.resys.thena.docdb.sql.queries.RefQuerySqlPool;
+import io.resys.thena.docdb.sql.queries.TagQuerySqlPool;
+import io.resys.thena.docdb.sql.queries.TreeQuerySqlPool;
 import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import lombok.RequiredArgsConstructor;
 

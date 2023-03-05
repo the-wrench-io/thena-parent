@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.statement;
 
 /*-
  * #%L
@@ -20,59 +20,68 @@ package io.resys.thena.docdb.sql.defaults;
  * #L%
  */
 
-import java.util.Arrays;
-
-import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
-import io.resys.thena.docdb.sql.SqlBuilder.CommitSqlBuilder;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
+import io.resys.thena.docdb.sql.SqlBuilder.TagSqlBuilder;
+import io.resys.thena.docdb.sql.support.SqlStatement;
 import io.vertx.mutiny.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
+public class DefaultTagSqlBuilder implements TagSqlBuilder {
+  
   private final ClientCollections options;
- 
+  
   @Override
   public Sql findAll() {
     return ImmutableSql.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getCommits())
+        .append("SELECT * FROM ").append(options.getTags())
         .build())
         .build();
   }
   @Override
-  public SqlTuple getById(String id) {
+  public SqlTuple getByName(String name) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getCommits())
+        .append("SELECT * FROM ").append(options.getTags())
         .append(" WHERE id = $1")
         .append(" FETCH FIRST ROW ONLY")
         .build())
-        .props(Tuple.of(id))
+        .props(Tuple.of(name))
         .build();
   }
   @Override
-  public SqlTuple insertOne(Commit commit) {
-    
-    var message = commit.getMessage();
-    if(commit.getMessage().length() > 100) {
-      message = message.substring(0, 100);
-    }
-    
+  public SqlTuple deleteByName(String name) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("INSERT INTO ").append(options.getCommits())
-        .append(" (id, datetime, author, message, tree, parent, merge) VALUES($1, $2, $3, $4, $5, $6, $7)")
+        .append("DELETE FROM ").append(options.getTags())
+        .append(" WHERE id = $1")
         .build())
-        .props(Tuple.from(Arrays.asList(
-            commit.getId(), commit.getDateTime().toString(), commit.getAuthor(), message, 
-            commit.getTree(), commit.getParent().orElse(null), commit.getMerge().orElse(null))))
+        .props(Tuple.of(name))
         .build();
   }
-  
-  
+  @Override
+  public Sql getFirst() {
+    return ImmutableSql.builder()
+        .value(new SqlStatement()
+        .append("SELECT * FROM ").append(options.getTags())
+        .append(" FETCH FIRST ROW ONLY")
+        .build())
+        .build();
+  }
+  @Override
+  public SqlTuple insertOne(Tag newTag) {
+    return ImmutableSqlTuple.builder()
+        .value(new SqlStatement()
+        .append("INSERT INTO ").append(options.getTags())
+        .append(" (id, commit, datetime, author, message) VALUES($1, $2, $3, $4, $5)")
+        .build())
+        .props(Tuple.of(newTag.getName(), newTag.getCommit(), newTag.getDateTime().toString(), newTag.getAuthor(), newTag.getMessage()))
+        .build();
+  }
 }

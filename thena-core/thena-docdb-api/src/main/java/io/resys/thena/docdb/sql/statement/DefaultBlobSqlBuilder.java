@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.statement;
 
 import java.util.ArrayList;
 
@@ -38,6 +38,7 @@ import io.resys.thena.docdb.sql.SqlBuilder.BlobSqlBuilder;
 import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
+import io.resys.thena.docdb.sql.support.SqlStatement;
 import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Tuple;
 import lombok.RequiredArgsConstructor;

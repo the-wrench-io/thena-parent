@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.sql.defaults;
+package io.resys.thena.docdb.sql.factories;
 
 /*-
  * #%L
@@ -22,10 +22,24 @@ package io.resys.thena.docdb.sql.defaults;
 
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.BlobSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.CommitSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.RefSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.RepoSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.TagSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.TreeItemSqlBuilder;
+import io.resys.thena.docdb.sql.SqlBuilder.TreeSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultBlobSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultCommitSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultRefSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultRepoSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultTagSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultTreeItemSqlBuilder;
+import io.resys.thena.docdb.sql.statement.DefaultTreeSqlBuilder;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DefaultSqlBuilder implements SqlBuilder {
+public class SqlBuilderImpl implements SqlBuilder {
   private final ClientCollections ctx;
 
   @Override
@@ -58,6 +72,6 @@ public class DefaultSqlBuilder implements SqlBuilder {
   }
   @Override
   public SqlBuilder withOptions(ClientCollections options) {
-    return new DefaultSqlBuilder(options);
+    return new SqlBuilderImpl(options);
   }
 }
