@@ -22,13 +22,6 @@ package io.resys.thena.docdb.sql.factories;
 
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.BlobSqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.CommitSqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.RefSqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.RepoSqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.TagSqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.TreeItemSqlBuilder;
-import io.resys.thena.docdb.sql.SqlBuilder.TreeSqlBuilder;
 import io.resys.thena.docdb.sql.statement.DefaultBlobSqlBuilder;
 import io.resys.thena.docdb.sql.statement.DefaultCommitSqlBuilder;
 import io.resys.thena.docdb.sql.statement.DefaultRefSqlBuilder;
