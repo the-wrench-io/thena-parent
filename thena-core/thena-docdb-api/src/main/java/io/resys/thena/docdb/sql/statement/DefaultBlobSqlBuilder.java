@@ -25,12 +25,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
 import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
@@ -66,41 +66,63 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple findByIds(Collection<String> blobId) {
-    StringBuilder params = new StringBuilder();
-    List<String> tuple = new ArrayList<>();
+  public SqlTuple findByIds(Collection<String> blobId, List<BlobCriteria> criteria) {
+    final var conditions = createWhereCriteria(criteria);
+    final var tuple = new ArrayList<>(conditions.getProps());
     
-    int index = 1;
+    final var ides = new StringBuilder();
+    int index = conditions.getProps().size() + 1;
     for(final var id : blobId) {
-      if(params.length() == 0) {
-        params.append(" WHERE ");
-      } else {
-        params.append(" OR ");
+      if(ides.length() > 0) {
+        ides.append(" OR ");
       }
-      params.append(" id = $").append(index++);
+      ides.append(" id = $").append(index++);
       tuple.add(id);
+    }
+    if(!ides.isEmpty()) {
+      ides.insert(0, "(").append(")");
+    }
+    
+    final var where = new StringBuilder(conditions.getValue());
+    if(!ides.isEmpty()) {
+      if(!where.isEmpty()) {
+        where.append(" AND ");
+      }
+      where.append(ides.toString());
+    }
+    
+    if(!where.isEmpty()) {
+      where.insert(0, " WHERE ");
     }
     
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getBlobs())
-        .append(params.toString())
+        .append("SELECT blob.* FROM ").append(options.getBlobs()).append(" as blob ").ln()
+        .append(where.toString())
         .build())
         .props(Tuple.from(tuple))
         .build();
   }
   @Override
-  public SqlTuple findByTree(Tree tree) {
+  public SqlTuple findByTree(String treeId, List<BlobCriteria> criteria) {
+    final var conditions = createWhereCriteria(criteria);
+    final var props = new LinkedList<>(conditions.getProps());
+    props.add(treeId);
+    final var treeIdPos = props.size() + 1;
+    
+    
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("SELECT blob.* ").ln()
         .append("  FROM ").append(options.getBlobs()).append(" AS blob ").ln()
         .append("  LEFT JOIN ").append(options.getTreeItems()).append(" AS item ").ln()
         .append("  ON blob.id = item.blob").ln()
-        .append("  WHERE item.tree = $1").ln()
+        .append("  WHERE ").ln()
+        .append("  ").append(conditions.getValue()).ln()
+        .append("  item.tree = $").append(String.valueOf(treeIdPos)).ln()
         .append(" ")
         .build())
-        .props(Tuple.of(tree.getId()))
+        .props(Tuple.of(treeId))
         .build();
   }
   @Override
@@ -129,7 +151,7 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
   }
   
   
-  /**
+/**
 
 WITH RECURSIVE generation AS (
     SELECT id, parent, 0 AS order_no
@@ -169,82 +191,67 @@ WHERE blobs.value LIKE $1
 ) WHERE RANK = 1
 
    */
-  
-  
-/*
-
-WITH RECURSIVE generation AS (
-    SELECT id, parent, 0 AS order_no
-    FROM nested_10_commits
-    WHERE parent IS NULL
-UNION ALL
-    SELECT child.id, child.parent, order_no+1 AS order_no
-    FROM nested_10_commits as child
-    JOIN generation g ON g.id = child.parent
-)
- 
-select 
-  item.name,
-  blobs.value,
-  item.blob,
-  item.tree,
-  commit.parent,
-  commit.id as commit_id,
-  generation.order_no
-from 
-  nested_10_treeitems as item
-  left join nested_10_commits as commit
-  on(commit.tree = item.tree)
-  left join generation on(generation.id = commit.id)
-  left join nested_10_blobs as blobs on(blobs.id = item.blob)
-where 
- blobs.value @> '{"bodyType": "PROJECT"}'
- */
   @Override
-  public SqlTuple findByCriteria(String name, boolean latestOnly, Map<String, String> criteria) {
-    final var criteriaString = new StringBuilder();
-    int paramIndex = 1;
-    final var params = new LinkedList<>();
-    for(final var entry : criteria.entrySet()) {
-      if(paramIndex > 1) {
-        criteriaString.append(" AND ");        
-      }
-      criteriaString
-        .append("blobs.value LIKE $").append(paramIndex++);
-      params.add(new StringBuilder()
-          .append("%")
-          .append("\"").append(entry.getKey()).append("\"")
-          .append(":")
-          .append("\"%").append(entry.getValue()).append("%\"")
-          .append("%")
-          .toString());
-    }
-    
-    if(!criteriaString.isEmpty()) {
-      criteriaString.insert(0, "WHERE ");
+  public SqlTuple find(String name, boolean latestOnly, List<BlobCriteria> criteria) {
+
+    final String sql;
+    final var conditions = createWhereCriteria(criteria);
+    final var where = new StringBuilder(conditions.getValue());
+    if(!where.isEmpty()) {
+      where.insert(0, "WHERE ");
     }
 
-    
-    final String sql;
     
     if(latestOnly) {
       final var fromData = new SqlStatement()
           .append(createRecursionSelect())
-          .append(criteriaString.toString()).ln()
+          .append(where.toString()).ln()
           .build();
       sql = new SqlStatement().append(createRecursion()).append(createLatest(fromData)).build();
     } else {
       sql = new SqlStatement()
           .append(createRecursion())
           .append(createRecursionSelect())
-          .append(criteriaString.toString()).ln()
+          .append(where.toString()).ln()
           .build();      
     }
     return ImmutableSqlTuple.builder()
         .value(sql)
-        .props(Tuple.from(params))
+        .props(Tuple.from(conditions.getProps()))
         .build();
   }
+  
+  @RequiredArgsConstructor @lombok.Data
+  private static class WhereSqlFragment {
+    private final String value;
+    private final List<Object> props;
+  }
+  
+  private WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
+
+    final var where = new StringBuilder();
+    
+    int paramIndex = 1;
+    final var props = new LinkedList<>();
+    for(final var entry : criteria) {
+      if(paramIndex > 1) {
+        where.append(" AND ");        
+      }
+      where.append("blobs.value LIKE $").append(paramIndex++);
+      var param = new StringBuilder()
+          .append("\"").append(entry.getKey()).append("\"")
+          .append(":");
+      
+      if(entry.getType() == CriteriaType.LIKE) {
+        param.append("\"%").append(entry.getValue()).append("%\"");
+      } else {
+        param.append("\"").append(entry.getValue()).append("\"");
+      }
+      props.add(param.insert(0, "%").append("%").toString());
+    }
+    return new WhereSqlFragment(where.toString(), props);
+  }
+  
 
   protected String createLatest(String fromData) {
     return new SqlStatement()

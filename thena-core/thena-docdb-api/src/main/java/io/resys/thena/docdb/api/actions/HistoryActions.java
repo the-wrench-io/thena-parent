@@ -10,6 +10,7 @@ import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.smallrye.mutiny.Uni;
 
 public interface HistoryActions {
@@ -18,7 +19,9 @@ public interface HistoryActions {
   
   interface BlobHistoryBuilder {
     BlobHistoryBuilder repo(String repo, String headName);
-    BlobHistoryBuilder entry(String key, String value);
+    BlobHistoryBuilder criteria(BlobCriteria ... criteria);
+    BlobHistoryBuilder criteria(List<BlobCriteria> criteria);
+
     BlobHistoryBuilder blobName(String blobName); // entity name
     BlobHistoryBuilder latestOnly(); // search only from last known version
     BlobHistoryBuilder latestOnly(boolean latest); // search only from last known version

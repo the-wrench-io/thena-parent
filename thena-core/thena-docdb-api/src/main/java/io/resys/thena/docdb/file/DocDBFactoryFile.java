@@ -92,6 +92,10 @@ public class DocDBFactoryFile {
             .build();
         return new ClientRepoState() {
           @Override
+          public String getRepoName() {
+            return repo.getName();
+          }
+          @Override
           public ClientQuery query() {
             return new ClientQueryFilePool(wrapper, sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }

@@ -106,6 +106,10 @@ public class DocDBFactorySql implements ClientState {
         .build();
     return new ClientRepoState() {
       @Override
+      public String getRepoName() {
+        return repo.getName();
+      }
+      @Override
       public ClientQuery query() {
         final var ctx = ImmutableClientQuerySqlContext.builder()
             .mapper(sqlMapper.apply(wrapper.getNames()))

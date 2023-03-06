@@ -24,6 +24,7 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import io.resys.thena.docdb.api.models.ImmutableBlob;
+import io.resys.thena.docdb.api.models.ImmutableBlobHistory;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableRepo;
@@ -106,9 +107,15 @@ public class SqlMapperImpl implements SqlMapper {
         .build();
   }
   @Override
-  public BlobHistory blobHistory(Row row) {
-    // TODO Auto-generated method stub
-    System.err.println(row.deepToString()); 
-    return null;
+  public BlobHistory blobHistory(Row row) { 
+    return ImmutableBlobHistory.builder()
+        .treeId(row.getString("tree"))
+        .treeValueName(row.getString("blob_name"))
+        .commit(row.getString("commit_id"))
+        .blob(ImmutableBlob.builder()
+            .id(row.getString("blob_id"))
+            .value(new JsonObject(row.getString("blob_value")))
+            .build())
+        .build();
   }
 }

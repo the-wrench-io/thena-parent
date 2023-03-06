@@ -34,6 +34,7 @@ import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.smallrye.mutiny.Uni;
 
 public interface ObjectsActions {
@@ -48,6 +49,8 @@ public interface ObjectsActions {
     BlobStateBuilder anyId(String refOrCommitOrTag);
     BlobStateBuilder blobNames(List<String> blobName);
     BlobStateBuilder blobName(String blobName);
+    BlobStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
+    
     Uni<ObjectsResult<BlobObject>> get();
     Uni<ObjectsResult<BlobObjects>> list();
   }
@@ -64,6 +67,7 @@ public interface ObjectsActions {
     CommitStateBuilder anyId(String refOrCommitOrTag);
     CommitStateBuilder blobs();
     CommitStateBuilder blobs(boolean load);
+    CommitStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
     Uni<ObjectsResult<CommitObjects>> build();
   }
   
@@ -73,6 +77,7 @@ public interface ObjectsActions {
     RefStateBuilder ref(String ref);
     RefStateBuilder blobs();
     RefStateBuilder blobs(boolean load);
+    RefStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
     Uni<ObjectsResult<RefObjects>> build();
   }
 
@@ -97,7 +102,7 @@ public interface ObjectsActions {
   interface BlobObject {
     Repo getRepo();
     Commit getCommit();
-    Tree getTree();
+    //Tree getTree();
     Blob getBlob();
   }
 

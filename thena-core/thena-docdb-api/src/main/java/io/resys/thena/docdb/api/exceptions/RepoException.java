@@ -24,6 +24,7 @@ import java.util.List;
 
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Message;
+import io.resys.thena.docdb.api.models.Repo;
 
 
 public class RepoException extends DocDBException {
@@ -84,6 +85,28 @@ public class RepoException extends DocDBException {
           .append(" '").append(dbRev).append("' (db) != (user) '").append(userRev).append("'")
           .append("!")
           .toString();
+    }
+    
+    
+    public Message noCommit(Repo repo, String refCriteria) {
+      return ImmutableMessage.builder()
+        .text(new StringBuilder()
+        .append("Repo with name: '").append(repo.getName()).append("'")
+        .append(" does not contain: tag, ref or commit with id:")
+        .append(" '").append(refCriteria).append("'")
+        .toString())
+        .build();
+    }
+    
+    public Message noBlob(Repo repo, String tree, String refCriteria, String ...blobName) {
+      return ImmutableMessage.builder()
+        .text(new StringBuilder()
+        .append("Repo with name: '").append(repo.getName()).append("'")
+        .append(", tag, ref or commit with id: ").append(" '").append(refCriteria).append("'")
+        .append(" and tree: ").append(tree)
+        .append(" does not contain a blob with name: ").append("'").append(blobName).append("'").append("!")
+        .toString())
+        .build();
     }
   }
 }

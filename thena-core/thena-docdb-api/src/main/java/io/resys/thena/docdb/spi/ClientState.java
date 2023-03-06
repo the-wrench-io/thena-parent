@@ -47,6 +47,7 @@ public interface ClientState {
   }
   
   interface ClientRepoState {
+    String getRepoName();
     ClientInsertBuilder insert();
     ClientQuery query();
   }

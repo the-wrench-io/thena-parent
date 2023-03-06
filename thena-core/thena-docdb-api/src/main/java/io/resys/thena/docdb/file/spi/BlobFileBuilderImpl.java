@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.file.FileBuilder.BlobFileBuilder;
 import io.resys.thena.docdb.file.tables.BlobTable.BlobTableRow;
 import io.resys.thena.docdb.file.tables.ImmutableBlobTableRow;
@@ -89,12 +88,12 @@ public class BlobFileBuilderImpl implements BlobFileBuilder {
         .build();
   }
   @Override
-  public FileTuple findByTree(Tree tree) {
+  public FileTuple findByTreeId(String tree) {
     return ImmutableFileTuple.builder()
         .value("Select by tree from BLOB and TREE_ITEM table")
         .command((root) -> {
           final var ids = root.getRepoTable(ctx).getTreeItems().getRows().stream()
-            .filter(item -> item.getTree().equals(tree.getId()))
+            .filter(item -> item.getTree().equals(tree))
             .map(item -> item.getBlob())
             .collect(Collectors.toList());
           
@@ -102,7 +101,7 @@ public class BlobFileBuilderImpl implements BlobFileBuilder {
               .stream().filter(r -> ids.contains(r.getId())).collect(Collectors.toList());
           
         })
-        .props(Tuple.of(tree.getId()))
+        .props(Tuple.of(tree))
         .build();
   }
   @Override

@@ -23,7 +23,6 @@ import java.util.Collection;
  */
 
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
@@ -37,6 +36,7 @@ import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.vertx.mutiny.sqlclient.Tuple;
 
 public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
@@ -61,11 +61,13 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
   
   interface BlobSqlBuilder {
     SqlTuple getById(String blobId);
-    SqlTuple findByIds(Collection<String> blobId);
-    SqlTuple findByTree(Tree tree);
+    
     SqlTuple insertOne(Blob blob);
-    SqlTuple findByCriteria(@Nullable String name, boolean latestOnly, Map<String, String> criteria);
     SqlTupleList insertAll(Collection<Blob> blobs);
+    
+    SqlTuple findByTree(String treeId, List<BlobCriteria> criteria);
+    SqlTuple findByIds(Collection<String> blobId, List<BlobCriteria> criteria);
+    SqlTuple find(@Nullable String name, boolean latestOnly, List<BlobCriteria> criteria);
     Sql findAll();
   }
   

@@ -1,7 +1,6 @@
 package io.resys.thena.docdb.spi;
 
 import java.util.List;
-import java.util.Map;
 
 /*-
  * #%L
@@ -53,16 +52,20 @@ public interface ClientQuery {
   interface BlobHistoryQuery {
     BlobHistoryQuery latestOnly(boolean latestOnly);
     BlobHistoryQuery blobName(String name);
-    BlobHistoryQuery criteria(Map<String, String> criteria);
+    BlobHistoryQuery criteria(BlobCriteria ... criteria);
+    BlobHistoryQuery criteria(List<BlobCriteria> criteria);
     Multi<BlobHistory> find();
   }
   
   interface BlobQuery {
-    Uni<Blob> id(String blobId);
-    Uni<List<Blob>> id(List<String> blobId);
+    BlobQuery criteria(BlobCriteria ... criteria);
+    BlobQuery criteria(List<BlobCriteria> criteria);
+    
+    Uni<Blob> getById(String blobId);
+    Uni<List<Blob>> findById(List<String> blobId);
     
     Multi<Blob> find();
-    Multi<Blob> find(Tree tree);
+    Multi<Blob> findByTreeId(String treeId);
   }
   interface CommitQuery {
     Uni<Commit> id(String commitId);
@@ -84,5 +87,16 @@ public interface ClientQuery {
   @Value.Immutable
   interface DeleteResult {
     long getDeletedCount();
+  }
+  
+  @Value.Immutable  
+  interface BlobCriteria {
+    CriteriaType getType();
+    String getKey();
+    String getValue();
+  }
+  
+  enum CriteriaType {
+    EXACT, LIKE
   }
 }

@@ -79,7 +79,7 @@ where
  blobs.value @> '{"bodyType": "PROJECT"}'
  */
   @Override
-  public SqlTuple findByCriteria(String name, boolean latestOnly, Map<String, String> criteria) {
+  public SqlTuple findByNameAndLike(String name, boolean latestOnly, Map<String, String> criteria) {
     
     final var criteriaString = new JsonObject();
     int paramIndex = 1;

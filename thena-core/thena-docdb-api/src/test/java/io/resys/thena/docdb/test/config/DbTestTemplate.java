@@ -1,7 +1,8 @@
 package io.resys.thena.docdb.test.config;
 
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
 
 /*-
  * #%L
@@ -34,19 +35,23 @@ import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBPrettyPrinter;
 import io.resys.thena.docdb.sql.DocDBFactorySql;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j
 public class DbTestTemplate {
   private DocDB client;
   @Inject
   io.vertx.mutiny.pgclient.PgPool pgPool;
   
   private static AtomicInteger index = new AtomicInteger(1);
-  
-  private Consumer<DocDB> callback;
+  private String db;
+  private BiConsumer<DocDB, Repo> callback;
+  private Repo repo;
   
   public DbTestTemplate() {
   }
-  public DbTestTemplate(Consumer<DocDB> callback) {
+  public DbTestTemplate(BiConsumer<DocDB, Repo> callback) {
     this.callback = callback;
   }  
   
@@ -58,9 +63,9 @@ public class DbTestTemplate {
         .client(pgPool)
         .errorHandler(new PgTestErrors())
         .build();
-    this.client.repo().create().name("junit" + index.incrementAndGet()).build();
+    repo = this.client.repo().create().name("junit" + index.incrementAndGet()).build().await().atMost(Duration.ofSeconds(10)).getRepo();
     if(callback != null) {
-      callback.accept(client);
+      callback.accept(client, repo);
     }
   }
   
@@ -73,13 +78,16 @@ public class DbTestTemplate {
   }
   
   public ClientState createState() {
-    final var ctx = ClientCollections.defaults("junit");
+    final var ctx = ClientCollections.defaults(db);
     return DocDBFactorySql.state(ctx, pgPool, new PgTestErrors());
   }
   
   public void printRepo(Repo repo) {
     final String result = new DocDBPrettyPrinter(createState()).print(repo);
-    System.out.println(result);
+    log.debug(result);
+  }
+  public Repo getRepo() {
+    return repo;
   }
 
 }

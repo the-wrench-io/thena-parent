@@ -58,7 +58,7 @@ public interface FileBuilder extends ClientCollections.WithOptions<FileBuilder>{
     FileStatement create();
     FileTuple getById(String blobId);
     FileTuple findByIds(Collection<String> blobId);
-    FileTuple findByTree(Tree tree);
+    FileTuple findByTreeId(String treeId);
     FileTuple insertOne(Blob blob);
     FileTupleList insertAll(Collection<Blob> blobs);
     FileStatement findAll();

@@ -21,14 +21,15 @@ package io.resys.thena.docdb.file.builders;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.smallrye.mutiny.Multi;
@@ -42,9 +43,10 @@ public class BlobQueryFilePool implements BlobQuery {
   private final FileMapper mapper;
   private final FileBuilder builder;
   private final ErrorHandler errorHandler;
+  private final List<BlobCriteria> blobCriteria = new ArrayList<>();
 
   @Override
-  public Uni<Blob> id(String blobId) {
+  public Uni<Blob> getById(String blobId) {
     final var sql = builder.blobs().getById(blobId);
     return client.preparedQuery(sql)
         .mapping(row -> mapper.blob(row))
@@ -61,7 +63,7 @@ public class BlobQueryFilePool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id': '" + blobId + "'!", e));
   }
   @Override
-  public Uni<List<Blob>> id(List<String> blobId) {
+  public Uni<List<Blob>> findById(List<String> blobId) {
     final var sql = builder.blobs().findByIds(blobId);
     return client.preparedQuery(sql)
         .mapping(row -> mapper.blob(row))
@@ -88,13 +90,23 @@ public class BlobQueryFilePool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
   }
   @Override
-  public Multi<Blob> find(Tree tree) {
-    final var sql = builder.blobs().findByTree(tree);
+  public Multi<Blob> findByTreeId(String treeId) {
+    final var sql = builder.blobs().findByTreeId(treeId);
     return client.preparedQuery(sql)
         .mapping(row -> mapper.blob(row))
         .execute()
         .onItem()
         .transformToMulti((Collection<Blob> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + tree.getId() + "!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
+  }
+  @Override
+  public BlobQuery criteria(BlobCriteria... criteria) {
+    this.blobCriteria.addAll(Arrays.asList(criteria));
+    return this;
+  }
+  @Override
+  public BlobQuery criteria(List<BlobCriteria> criteria) {
+    this.blobCriteria.addAll(criteria);
+    return this;
   }
 }

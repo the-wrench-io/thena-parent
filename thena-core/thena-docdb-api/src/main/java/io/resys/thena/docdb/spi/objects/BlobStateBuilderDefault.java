@@ -22,7 +22,6 @@ package io.resys.thena.docdb.spi.objects;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
@@ -35,41 +34,35 @@ import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
 import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsResult;
 import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.exceptions.RepoException;
-import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Data @Accessors(fluent = true)
 @RequiredArgsConstructor
 public class BlobStateBuilderDefault implements BlobStateBuilder {
   private final ClientState state;
-  private String repoName;
-  private String refOrCommitOrTag;
+  private final List<BlobCriteria> blobCriteria = new ArrayList<>();
+  private String repo;
+  private String anyId; //anyId;
   private List<String> blobName = new ArrayList<>();
+
   
   @Value.Immutable
   public static interface BlobAndTree {
     List<Blob> getBlob();
-    Tree getTree();
-  }
-  @Override
-  public BlobStateBuilderDefault repo(String repoName) {
-    this.repoName = repoName;
-    return this;
-  }
-  @Override
-  public BlobStateBuilderDefault anyId(String refOrCommitOrTag) {
-    this.refOrCommitOrTag = refOrCommitOrTag;
-    return this;
+    String getTreeId();
   }
   @Override
   public BlobStateBuilderDefault blobName(String blobName) {
@@ -81,134 +74,81 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
     this.blobName.addAll(blobName);
     return this;
   }
+  @Override
+  public BlobStateBuilder blobCriteria(List<BlobCriteria> blobCriteria) {
+    this.blobCriteria.addAll(blobCriteria);
+    return this;
+  }
   
   @Override
   public Uni<ObjectsResult<BlobObjects>> list() {
-    RepoAssert.notEmpty(repoName, () -> "repoName is not defined!");
-    RepoAssert.notEmpty(refOrCommitOrTag, () -> "refOrCommitOrTag is not defined!");
+    RepoAssert.notEmpty(repo, () -> "repoName is not defined!");
+    RepoAssert.notEmpty(anyId, () -> "anyId is not defined!");
     RepoAssert.isTrue(!blobName.isEmpty(), () -> "blobName is not defined!");
     
-    return state.repos().getByNameOrId(repoName).onItem()
+    return state.repos().getByNameOrId(repo).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
-        final var ex = RepoException.builder().notRepoWithName(repoName);
-        log.warn(ex.getText());
-        return Uni.createFrom().item(ImmutableObjectsResult
-            .<BlobObjects>builder()
-            .status(ObjectsStatus.ERROR)
-            .addMessages(ex)
-            .build());
+        return objectsError(RepoException.builder().notRepoWithName(repo));
       }
       final var ctx = state.withRepo(existing);
-      
-      return getTagCommit(refOrCommitOrTag, ctx)
-        .onItem().transformToUni(tag -> {
-          if(tag == null) {
-            return getRefCommit(refOrCommitOrTag, ctx);
-          }
-          return Uni.createFrom().item(tag);
-        })
-        .onItem().transformToUni(commitId -> {
-          if(commitId == null) {
-            return getCommit(refOrCommitOrTag, ctx);
-          }
-          return getCommit(commitId, ctx);
-        }).onItem().transformToUni(commit -> {
-          if(commit == null) {
-            return Uni.createFrom().item(ImmutableObjectsResult
-                .<BlobObjects>builder()
-                .status(ObjectsStatus.ERROR)
-                .addMessages(noCommit(existing))
-                .build()); 
-          }
-          return getListState(existing, commit, ctx);
-        });
+      return ObjectsUtils.findCommit(ctx, anyId).onItem().transformToUni(commit -> {
+        if(commit == null) {
+          final var error = RepoException.builder().noCommit(existing, anyId);
+          return objectsError(error); 
+        }
+        return getListState(existing, commit, ctx);
+      });
     });
   }
   
   @Override
   public Uni<ObjectsResult<BlobObject>> get() {
-    RepoAssert.notEmpty(repoName, () -> "repoName is not defined!");
-    RepoAssert.notEmpty(refOrCommitOrTag, () -> "refOrCommitOrTag is not defined!");
+    RepoAssert.notEmpty(repo, () -> "repoName is not defined!");
+    RepoAssert.notEmpty(anyId, () -> "anyId is not defined!");
     RepoAssert.isTrue(!blobName.isEmpty(), () -> "blobName is not defined!");
     
-    return state.repos().getByNameOrId(repoName).onItem()
+    return state.repos().getByNameOrId(repo).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
-        final var ex = RepoException.builder().notRepoWithName(repoName);
-        log.warn(ex.getText());
-        return Uni.createFrom().item(ImmutableObjectsResult
-            .<BlobObject>builder()
-            .status(ObjectsStatus.ERROR)
-            .addMessages(ex)
-            .build());
+        final var error = RepoException.builder().notRepoWithName(repo);
+        return objectsError(error);
       }
       final var ctx = state.withRepo(existing);
-      
-      return getTagCommit(refOrCommitOrTag, ctx)
-        .onItem().transformToUni(tag -> {
-          if(tag == null) {
-            return getRefCommit(refOrCommitOrTag, ctx);
-          }
-          return Uni.createFrom().item(tag);
-        })
-        .onItem().transformToUni(commitId -> {
-          if(commitId == null) {
-            return getCommit(refOrCommitOrTag, ctx);
-          }
-          return getCommit(commitId, ctx);
-        }).onItem().transformToUni(commit -> {
+      return ObjectsUtils.findCommit(ctx, anyId).onItem().transformToUni(commit -> {
           if(commit == null) {
-            return Uni.createFrom().item(ImmutableObjectsResult
-                .<BlobObject>builder()
-                .status(ObjectsStatus.ERROR)
-                .addMessages(noCommit(existing))
-                .build()); 
+            final var error = RepoException.builder().noCommit(existing, anyId);
+            return objectsError(error); 
           }
           return getState(existing, commit, ctx);
         });
     });
   }
-  
-  private Message noCommit(Repo repo) {
-    return ImmutableMessage.builder()
-      .text(new StringBuilder()
-      .append("Repo with name: '").append(repo.getName()).append("'")
-      .append(" does not contain: tag, ref or commit with id:")
-      .append(" '").append(refOrCommitOrTag).append("'")
-      .toString())
-      .build();
+
+  private <T> Uni<ObjectsResult<T>> objectsError(Message error) {
+    log.error(error.getText());
+    return Uni.createFrom().item(ImmutableObjectsResult
+        .<T>builder()
+        .status(ObjectsStatus.ERROR)
+        .addMessages(error)
+        .build());
   }
-  
-  private Message noBlob(Repo repo, Tree tree) {
-    return ImmutableMessage.builder()
-      .text(new StringBuilder()
-      .append("Repo with name: '").append(repo.getName()).append("'")
-      .append(", tag, ref or commit with id: ").append(" '").append(refOrCommitOrTag).append("'")
-      .append(" and tree: ").append(tree.toString())
-      .append(" does not contain a blob with name: ").append("'").append(blobName).append("'").append("!")
-      .toString())
-      .build();
-  }
+
   
   private Uni<ObjectsResult<BlobObject>> getState(Repo repo, Commit commit, ClientRepoState ctx) {
-    return getTree(commit, ctx).onItem()
-        .transformToUni(tree -> getBlob(tree, ctx)).onItem()
+    return getBlob(commit.getTree(), ctx, blobCriteria, blobName).onItem()
         .transformToUni(blobTree -> {
           
           if(blobTree.getBlob().size() != 1) {
-            return Uni.createFrom().item(ImmutableObjectsResult
-                .<BlobObject>builder()
-                .status(ObjectsStatus.ERROR)
-                .addMessages(noBlob(repo, blobTree.getTree()))
-                .build()); 
+            final var error = RepoException.builder()
+                .noBlob(repo, commit.getTree(), commit.getId(), blobName.toArray(new String[] {}));
+            return objectsError(error); 
           }
           
           return Uni.createFrom().item(ImmutableObjectsResult.<BlobObject>builder()
             .repo(repo)
             .objects(ImmutableBlobObject.builder()
                 .repo(repo)
-                .tree(blobTree.getTree())
                 .commit(commit)
                 .blob(blobTree.getBlob().isEmpty() ? null : blobTree.getBlob().get(0))
                 .build())
@@ -219,23 +159,18 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
   }
   
   private Uni<ObjectsResult<BlobObjects>> getListState(Repo repo, Commit commit, ClientRepoState ctx) {
-    return getTree(commit, ctx).onItem()
-        .transformToUni(tree -> getBlob(tree, ctx)).onItem()
+    return getBlob(commit.getTree(), ctx, blobCriteria, blobName).onItem()
         .transformToUni(blobAndTree -> {
           
           if(blobAndTree.getBlob().isEmpty()) {
-            return Uni.createFrom().item(ImmutableObjectsResult
-                .<BlobObjects>builder()
-                .status(ObjectsStatus.ERROR)
-                .addMessages(noBlob(repo, blobAndTree.getTree()))
-                .build()); 
+            final var error = RepoException.builder()
+                .noBlob(repo, blobAndTree.getTreeId(), commit.getId(), blobName.toArray(new String[] {}));
+            return objectsError(error); 
           }
-          
           return Uni.createFrom().item(ImmutableObjectsResult.<BlobObjects>builder()
             .repo(repo)
             .objects(ImmutableBlobObjects.builder()
                 .repo(repo)
-                .tree(blobAndTree.getTree())
                 .commit(commit)
                 .blob(blobAndTree.getBlob())
                 .build())
@@ -244,31 +179,13 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
         });
   
   }
-  private Uni<String> getTagCommit(String tagName, ClientRepoState ctx) {
-    return ctx.query().tags().name(tagName).get()
-        .onItem().transform(tag -> tag == null ? null : tag.getCommit());
-  }
-  private Uni<String> getRefCommit(String refName, ClientRepoState ctx) {
-    return ctx.query().refs().name(refName)
-        .onItem().transform(ref -> ref == null ? null : ref.getCommit());
-  }
-  private Uni<Tree> getTree(Commit commit, ClientRepoState ctx) {
-    return ctx.query().trees().id(commit.getTree());
-  }
-  private Uni<Commit> getCommit(String commit, ClientRepoState ctx) {
-    return ctx.query().commits().id(commit);
-  }
-  private Uni<BlobAndTree> getBlob(Tree tree, ClientRepoState ctx) {
-    final var entry = tree.getValues().entrySet().stream()
-        .filter(e -> blobName.contains(e.getValue().getName()))
-        .map(e -> e.getValue().getBlob())
-        .collect(Collectors.toList());
-    
-    if(!entry.isEmpty()) {
-      return ctx.query().blobs().id(entry)
-          .onItem().transform(blobs -> ImmutableBlobAndTree.builder().blob(blobs).tree(tree).build());
+
+  private static Uni<BlobAndTree> getBlob(String treeId, ClientRepoState ctx, List<BlobCriteria> blobCriteria, List<String> blobName) {
+    if(!blobName.isEmpty()) {
+      return ctx.query().blobs().criteria(blobCriteria).findById(blobName)
+          .onItem().transform(blobs -> ImmutableBlobAndTree.builder().blob(blobs).treeId(treeId).build());
     }
     
-    return Uni.createFrom().item(ImmutableBlobAndTree.builder().tree(tree).build());
+    return Uni.createFrom().item(ImmutableBlobAndTree.builder().treeId(treeId).build());
   }
 }
