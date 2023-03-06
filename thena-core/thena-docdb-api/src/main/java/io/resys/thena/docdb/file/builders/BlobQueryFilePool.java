@@ -31,6 +31,7 @@ import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
+import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -72,7 +73,9 @@ public class BlobQueryFilePool implements BlobQuery {
         .transform((Collection<Blob> rowset) -> {
           List<Blob> result = new ArrayList<Blob>();
           for(final var item : rowset) {
-            result.add(item);
+            if(isMatch(item, blobCriteria)) {
+              result.add(item);
+            }
           }
           return result;
         })
@@ -96,7 +99,17 @@ public class BlobQueryFilePool implements BlobQuery {
         .mapping(row -> mapper.blob(row))
         .execute()
         .onItem()
-        .transformToMulti((Collection<Blob> rowset) -> Multi.createFrom().iterable(rowset))
+        .transform((Collection<Blob> rowset) -> {
+          List<Blob> result = new ArrayList<Blob>();
+          for(final var item : rowset) {
+            if(isMatch(item, blobCriteria)) {
+              result.add(item);
+            }
+          }
+          return result;
+        })
+        .onItem()
+        .transformToMulti((List<Blob> rowset) -> Multi.createFrom().iterable(rowset))
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
   }
   @Override
@@ -108,5 +121,30 @@ public class BlobQueryFilePool implements BlobQuery {
   public BlobQuery criteria(List<BlobCriteria> criteria) {
     this.blobCriteria.addAll(criteria);
     return this;
+  }
+  
+  public static boolean isMatch(Blob item, List<BlobCriteria> blobCriteria) {
+    var found = true;
+    for(final var crit : blobCriteria) {
+      final var field = crit.getKey();
+      if(!item.getValue().containsKey(field)) {
+        found = false;
+        break;
+      }
+      final var jsonValue = item.getValue().getValue(field);
+      if(jsonValue == null) {
+        found = false;
+        break;
+      }
+      if(crit.getType() == CriteriaType.EXACT && jsonValue.toString().equals(crit.getValue())) {
+        continue;
+      }
+      if(crit.getType() == CriteriaType.LIKE && jsonValue.toString().indexOf(crit.getValue()) > -1) {
+        continue;
+      }
+      found = false;
+      break;
+    }
+    return found;
   }
 }

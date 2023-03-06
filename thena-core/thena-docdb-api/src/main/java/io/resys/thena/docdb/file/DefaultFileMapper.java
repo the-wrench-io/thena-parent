@@ -31,6 +31,7 @@ import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
@@ -121,5 +122,9 @@ public class DefaultFileMapper implements FileMapper {
         .id(row.getId())
         .value(row.getValue())
         .build();
+  }
+  @Override
+  public BlobHistory blobHistory(Row row) {
+    throw new IllegalArgumentException("Not required for filebase impl.");
   }
 }

@@ -98,7 +98,8 @@ public class BlobFileBuilderImpl implements BlobFileBuilder {
             .collect(Collectors.toList());
           
           return root.getRepoTable(ctx).getBlobs().getRows()
-              .stream().filter(r -> ids.contains(r.getId())).collect(Collectors.toList());
+              .stream().filter(r -> ids.contains(r.getId()))
+              .collect(Collectors.toList());
           
         })
         .props(Tuple.of(tree))

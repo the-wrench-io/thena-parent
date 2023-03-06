@@ -2,9 +2,9 @@ package io.resys.thena.docdb.test;
 
 /*-
  * #%L
- * thena-docdb-api
+ * thena-docdb-mongo
  * %%
- * Copyright (C) 2021 - 2022 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,20 +26,26 @@ import java.time.Duration;
 import org.immutables.value.Value;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.junit.TestProfile;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
-import io.resys.thena.docdb.test.config.FileTestTemplate;
+import io.resys.thena.docdb.test.config.DbTestTemplate;
+import io.resys.thena.docdb.test.config.PgProfile;
 import io.vertx.core.json.JsonObject;
-import lombok.extern.slf4j.Slf4j;
 
 
-@Slf4j
-public class FileDBTest extends FileTestTemplate {
+@QuarkusTest
+@TestProfile(PgProfile.class)
+public class SaveAndGetDBTest extends DbTestTemplate {
 
-
+  private static final Logger LOGGER = LoggerFactory.getLogger(SaveAndGetDBTest.class);
+  
   @Value.Immutable
   public interface TestContent extends Serializable {
     String getId();
@@ -49,11 +55,15 @@ public class FileDBTest extends FileTestTemplate {
   @Test
   public void crateRepoAddAndDeleteFile() {
     // create project
-    RepoResult repo = createRepo("crateRepoAddAndDeleteFile");
+    RepoResult repo = getClient().repo().create()
+        .name("crateRepoAddAndDeleteFile")
+        .build()
+        .await().atMost(Duration.ofMinutes(1));
+    LOGGER.debug("created repo {}", repo);
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient(repo.getRepo()).commit().head()
+    CommitResult commit_0 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .author("same vimes")
@@ -62,12 +72,12 @@ public class FileDBTest extends FileTestTemplate {
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
 
-    log.debug("created commit {}", commit_0);
+    LOGGER.debug("created commit {}", commit_0);
     Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient(repo.getRepo()).commit().head()
+    CommitResult commit_1 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .remove("readme.md")
@@ -77,7 +87,7 @@ public class FileDBTest extends FileTestTemplate {
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
     
-    log.debug("created commit 1 {}", commit_1);
+    LOGGER.debug("created commit 1 {}", commit_1);
     Assertions.assertEquals(CommitStatus.OK, commit_1.getStatus());
     super.printRepo(repo.getRepo());
   }
@@ -85,11 +95,15 @@ public class FileDBTest extends FileTestTemplate {
   @Test
   public void crateRepoWithOneCommit() {
     // create project
-    RepoResult repo = createRepo("project-x");
+    RepoResult repo = getClient().repo().create()
+        .name("project-x")
+        .build()
+        .await().atMost(Duration.ofMinutes(1));
+    LOGGER.debug("created repo {}", repo);
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient(repo.getRepo()).commit().head()
+    CommitResult commit_0 = getClient().commit().head()
       .head("project-x", "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .append("file1.json", JsonObject.of("content", ""))
@@ -101,7 +115,7 @@ public class FileDBTest extends FileTestTemplate {
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
 
-    log.debug("created commit {}", commit_0);
+    LOGGER.debug("created commit {}", commit_0);
     Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
     super.printRepo(repo.getRepo());
   }
@@ -110,11 +124,15 @@ public class FileDBTest extends FileTestTemplate {
   @Test
   public void createRepoWithTwoCommits() {
     // create project
-    RepoResult repo = createRepo("project-xy");
+    RepoResult repo = getClient().repo().create()
+        .name("project-xy")
+        .build()
+        .await().atMost(Duration.ofMinutes(1));
+    LOGGER.debug("created repo {}", repo);
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient(repo.getRepo()).commit().head()
+    CommitResult commit_0 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .append("file1.json", JsonObject.of("content", ""))
@@ -125,12 +143,12 @@ public class FileDBTest extends FileTestTemplate {
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
 
-    log.debug("created commit 0 {}", commit_0);
+    LOGGER.debug("created commit 0 {}", commit_0);
     Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient(repo.getRepo()).commit().head()
+    CommitResult commit_1 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .append("readme.md", JsonObject.of("content", "readme content"))
@@ -142,7 +160,7 @@ public class FileDBTest extends FileTestTemplate {
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
     
-    log.debug("created commit 1 {}", commit_1);
+    LOGGER.debug("created commit 1 {}", commit_1);
     Assertions.assertEquals(CommitStatus.OK, commit_1.getStatus());
     
     super.printRepo(repo.getRepo());

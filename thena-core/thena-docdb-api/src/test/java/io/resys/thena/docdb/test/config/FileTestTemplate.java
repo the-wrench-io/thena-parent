@@ -23,6 +23,8 @@ package io.resys.thena.docdb.test.config;
 import java.io.File;
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
 
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -60,6 +62,21 @@ public class FileTestTemplate {
       new GuavaModule(),
       new VertxModule(),
       new VertexExtModule());
+  private static AtomicInteger index = new AtomicInteger(1);
+  private BiConsumer<DocDB, Repo> callback;
+  private Repo repo;
+  
+  public FileTestTemplate() {
+  }
+  public FileTestTemplate(BiConsumer<DocDB, Repo> callback) {
+    this.callback = callback;
+  }  
+  public DocDB getClient() {
+    return client;
+  }
+  public Repo getRepo() {
+    return repo;
+  }
   
   @BeforeEach
   public void setUp() {
@@ -78,6 +95,11 @@ public class FileTestTemplate {
         .client(new FilePoolImpl(this.file, objectMapper))
         .errorHandler(new FileErrors())
         .build();
+    
+    repo = this.client.repo().create().name("junit" + index.incrementAndGet()).build().await().atMost(Duration.ofSeconds(10)).getRepo();
+    if(callback != null) {
+      callback.accept(client, repo);
+    }
   }
   
   @AfterEach

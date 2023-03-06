@@ -8,11 +8,9 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
-import io.quarkus.test.junit.TestProfile;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
-import io.resys.thena.docdb.test.config.DbTestTemplate;
-import io.resys.thena.docdb.test.config.PgProfile;
+import io.resys.thena.docdb.test.config.FileTestTemplate;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -20,11 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @QuarkusTest
-@TestProfile(PgProfile.class)
-public class SearchBlobFromHistoryTest extends DbTestTemplate {
+public class SearchFileTest extends FileTestTemplate {
 
   
-  public SearchBlobFromHistoryTest() {
+  public SearchFileTest() {
     super((client, repo) -> {
       
       client.commit().head()

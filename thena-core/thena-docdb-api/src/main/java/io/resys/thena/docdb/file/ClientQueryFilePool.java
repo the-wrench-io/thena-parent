@@ -1,5 +1,6 @@
 package io.resys.thena.docdb.file;
 
+import io.resys.thena.docdb.file.builders.BlobHistoryFilePool;
 import io.resys.thena.docdb.file.builders.BlobQueryFilePool;
 import io.resys.thena.docdb.file.builders.CommitQueryFilePool;
 import io.resys.thena.docdb.file.builders.RefQueryFilePool;
@@ -67,7 +68,6 @@ public class ClientQueryFilePool implements ClientQuery {
 
   @Override
   public BlobHistoryQuery blobHistory() {
-    // TODO::
-    return null;
+    return new BlobHistoryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
   }
 }
