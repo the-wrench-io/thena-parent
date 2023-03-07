@@ -1,3 +1,11 @@
+CREATE TABLE IF NOT EXISTS repos
+(
+  id VARCHAR(40) PRIMARY KEY,
+  rev VARCHAR(40) NOT NULL,
+  prefix VARCHAR(40) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  UNIQUE(name), UNIQUE(rev), UNIQUE(prefix)
+)
 
 CREATE TABLE blobs
 (

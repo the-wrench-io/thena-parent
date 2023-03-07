@@ -26,6 +26,7 @@ import io.resys.thena.docdb.sql.SqlBuilder.Sql;
 public interface SqlSchema extends ClientCollections.WithOptions<SqlSchema>{
   SqlSchema withOptions(ClientCollections options);
   
+  Sql repo();
   Sql blobs();
 
   Sql commits();

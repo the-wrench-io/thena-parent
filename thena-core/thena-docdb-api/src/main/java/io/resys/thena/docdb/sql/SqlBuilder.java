@@ -52,7 +52,6 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
 
   interface RepoSqlBuilder {
     SqlTuple exists();
-    Sql create();
     Sql findAll();
     SqlTuple getByName(String name);
     SqlTuple getByNameOrId(String name);

@@ -44,6 +44,7 @@ public class SqlDbSchemaPrintTest {
     
 
     final var schema = new StringBuilder()
+      .append(sqlSchema.repo().getValue())
       .append(sqlSchema.blobs().getValue())
       .append(sqlSchema.commits().getValue())
       .append(sqlSchema.treeItems().getValue())

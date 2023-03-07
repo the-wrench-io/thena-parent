@@ -33,6 +33,19 @@ public class SqlSchemaImpl implements SqlSchema {
   protected final ClientCollections options;
   
   @Override
+  public Sql repo() {
+    return ImmutableSql.builder().value(new SqlStatement()
+        .append("CREATE TABLE IF NOT EXISTS ").append(options.getRepos()).ln()
+        .append("(").ln()
+        .append("  id VARCHAR(40) PRIMARY KEY,").ln()
+        .append("  rev VARCHAR(40) NOT NULL,").ln()
+        .append("  prefix VARCHAR(40) NOT NULL,").ln()
+        .append("  name VARCHAR(255) NOT NULL,").ln()
+        .append("  UNIQUE(name), UNIQUE(rev), UNIQUE(prefix)").ln()
+        .append(")").ln()
+        .build()).build();
+  }
+  @Override
   public Sql blobs() {
     return ImmutableSql.builder().value(new SqlStatement().ln()
     .append("CREATE TABLE ").append(options.getBlobs()).ln()

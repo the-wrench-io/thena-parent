@@ -115,7 +115,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
             .toString());
       }
       
-      final Uni<Void> create = client.preparedQuery(sqlBuilder.repo().create().getValue()).execute()
+      final Uni<Void> create = client.preparedQuery(sqlSchema.repo().getValue()).execute()
           .onItem().transformToUni(data -> Uni.createFrom().voidItem())
           .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));;
       
@@ -148,7 +148,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
 
   @Override
   public Uni<Void> create() {
-    return client.preparedQuery(this.sqlBuilder.repo().create().getValue()).execute()
+    return client.preparedQuery(this.sqlSchema.repo().getValue()).execute()
     .onItem().transformToUni(data -> Uni.createFrom().voidItem())
     .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));
   }
