@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.test;
+package io.resys.thena.docdb.spi.pgsql;
 
 /*-
  * #%L
@@ -26,13 +26,14 @@ import java.util.Map;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.skyscreamer.jsonassert.JSONAssert;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
-import io.resys.thena.docdb.test.config.DbTestTemplate;
-import io.resys.thena.docdb.test.config.PgProfile;
+import io.resys.thena.docdb.spi.pgsql.config.PgDbTestTemplate;
+import io.resys.thena.docdb.spi.pgsql.config.PgProfile;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
@@ -41,10 +42,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @QuarkusTest
 @TestProfile(PgProfile.class)
-public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
+public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
 
   
-  public SearchBlobFromHistoryDBTest() {
+  public SearchBlobFromHistoryPGDBTest() {
     super((client, repo) -> {
       
       client.commit().head()
@@ -129,11 +130,11 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
     
     final var first = history.getValues().get(0);
     Assertions.assertEquals("ID-1", first.getTreeValueName());
-    Assertions.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode());
+    JSONAssert.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode(), false);
   }
   
   @Test
-  public void findByLikeMatchFromAllPossibleCases() {
+  public void findByLikeMatchFromAllPossibleCases() throws JSONException {
     addSamVimesChanges(20, "ID-1");
     addCassandraChaseChanges(20, "ID-2");
     
@@ -149,7 +150,7 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
     
     final var first = history.getValues().get(0);
     Assertions.assertEquals("ID-1", first.getTreeValueName());
-    Assertions.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode());
+    JSONAssert.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode(), false);
   }
  
   

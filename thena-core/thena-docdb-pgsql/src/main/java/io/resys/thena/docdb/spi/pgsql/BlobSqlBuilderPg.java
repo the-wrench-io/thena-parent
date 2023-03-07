@@ -1,12 +1,34 @@
 package io.resys.thena.docdb.spi.pgsql;
 
+/*-
+ * #%L
+ * thena-docdb-pgsql
+ * %%
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import java.util.Collection;
 import java.util.LinkedList;
-import java.util.Map;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
 import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
 import io.resys.thena.docdb.sql.SqlBuilder.BlobSqlBuilder;
@@ -14,8 +36,8 @@ import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.resys.thena.docdb.sql.statement.DefaultBlobSqlBuilder;
 import io.resys.thena.docdb.sql.support.SqlStatement;
-import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Tuple;
+import lombok.RequiredArgsConstructor;
 
 
 public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBuilder {
@@ -49,79 +71,68 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
         .build();
   }
   
-/*
-
-WITH RECURSIVE generation AS (
-    SELECT id, parent, 0 AS order_no
-    FROM nested_10_commits
-    WHERE parent IS NULL
-UNION ALL
-    SELECT child.id, child.parent, order_no+1 AS order_no
-    FROM nested_10_commits as child
-    JOIN generation g ON g.id = child.parent
-)
- 
-select 
-  item.name,
-  blobs.value,
-  item.blob,
-  item.tree,
-  commit.parent,
-  commit.id as commit_id,
-  generation.order_no
-from 
-  nested_10_treeitems as item
-  left join nested_10_commits as commit
-  on(commit.tree = item.tree)
-  left join generation on(generation.id = commit.id)
-  left join nested_10_blobs as blobs on(blobs.id = item.blob)
-where 
- blobs.value @> '{"bodyType": "PROJECT"}'
- */
-  @Override
-  public SqlTuple findByNameAndLike(String name, boolean latestOnly, Map<String, String> criteria) {
-    
-    final var criteriaString = new JsonObject();
+  @RequiredArgsConstructor @lombok.Data
+  private static class WhereSqlFragment {
+    private final String value;
+    private final List<Object> props;
+  }
+  
+  private WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
+    final var props = new LinkedList<>();
+    final var where = new SqlStatement();
     int paramIndex = 1;
-    final var params = new LinkedList<>();
-    for(final var entry : criteria.entrySet()) {
-      final var parsed = new JsonObject();
-      criteriaString.put(entry.getKey(), entry.getValue());
-      //criteriaString.add(parsed);
+    for(final var entry : criteria) {
+      if(paramIndex > 1) {
+        where.append(" AND ").ln();
+      }
+      
+      props.add(entry.getKey());
+      if(entry.getType() == CriteriaType.EXACT) {
+        props.add(entry.getValue());
+        where.append("blobs.value -> $")
+          .append(String.valueOf(paramIndex++))
+          .append(" = $")
+          .append(String.valueOf(paramIndex++)).ln();
+      } else {
+        props.add("%"+ entry.getValue() + "%");
+        where.append("blobs.value ->> $")
+        .append(String.valueOf(paramIndex++))
+        .append(" like $")
+        .append(String.valueOf(paramIndex++)).ln();
+      }
     }
+  
+    return new WhereSqlFragment(where.toString(), props);
+  }
     
-    final var sql = new SqlStatement()
-    .append("WITH RECURSIVE generation AS (").ln()
-    .append("    SELECT id, parent, 0 AS order_no").ln()
-    .append("    FROM ").append(options.getCommits()).ln()
-    .append("    WHERE parent IS NULL").ln()
-    .append("UNION ALL").ln()
-    .append("    SELECT child.id, child.parent, order_no+1 AS order_no").ln()
-    .append("    FROM ").append(options.getCommits()).append(" as child").ln()
-    .append("    JOIN generation g ON g.id = child.parent").ln()
-    .append(")").ln()
-    .append("SELECT ").ln()
-    .append("  item.name as blob_name,").ln()
-    .append("  blobs.value as blob_value,").ln()
-    .append("  item.blob as blob_id,").ln()
-    .append("  item.tree as tree,").ln()
-    .append("  commit.parent as commit_parent,").ln()
-    .append("  commit.id as commit_id,").ln()
-    .append("  generation.order_no as order_no").ln()
-    .append("FROM ").ln()
-    .append("  ").append(options.getTreeItems()).append(" as item").ln()
-    .append("  LEFT JOIN ").append(options.getCommits()).append(" AS commit").ln()
-    .append("  ON(commit.tree = item.tree)").ln()
-    .append("  LEFT JOIN generation ON(generation.id = commit.id)").ln()
-    .append("  LEFT JOIN ").append(options.getBlobs()).append(" AS blobs ON(blobs.id = item.blob)").ln()
-    .append("WHERE ").ln()
+  
+  @Override
+  public SqlTuple find(String name, boolean latestOnly, List<BlobCriteria> criteria) {
+
+    final String sql;
+    final var conditions = createWhereCriteria(criteria);
+    final var where = new StringBuilder(conditions.getValue());
+    if(!where.isEmpty()) {
+      where.insert(0, "WHERE ");
+    }
+
     
-    .append("blobs.value @> '").append(criteriaString.toString()).append("'").ln()
-    .build();
-    
+    if(latestOnly) {
+      final var fromData = new SqlStatement()
+          .append(createRecursionSelect())
+          .append(where.toString()).ln()
+          .build();
+      sql = new SqlStatement().append(createRecursion()).append(createLatest(fromData)).build();
+    } else {
+      sql = new SqlStatement()
+          .append(createRecursion())
+          .append(createRecursionSelect())
+          .append(where.toString()).ln()
+          .build();      
+    }
     return ImmutableSqlTuple.builder()
         .value(sql)
-        .props(Tuple.of(params))
+        .props(Tuple.from(conditions.getProps()))
         .build();
   }
 }

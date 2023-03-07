@@ -36,14 +36,14 @@ import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
-import io.resys.thena.docdb.spi.pgsql.config.DbTestTemplate;
+import io.resys.thena.docdb.spi.pgsql.config.PgDbTestTemplate;
 import io.resys.thena.docdb.spi.pgsql.config.PgProfile;
 import io.vertx.core.json.JsonObject;
 
 
 @QuarkusTest
 @TestProfile(PgProfile.class)
-public class SimpleTest extends DbTestTemplate {
+public class SimpleTest extends PgDbTestTemplate {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(SimpleTest.class);
   
@@ -69,7 +69,7 @@ public class SimpleTest extends DbTestTemplate {
       .append("readme.md", new JsonObject(Map.of(
           "type", "person",
           "name", "sam", 
-          "lastName", "vimes")).toString())
+          "lastName", "vimes")))
       .author("same vimes")
       .message("first commit!")
       .build()
@@ -109,9 +109,9 @@ public class SimpleTest extends DbTestTemplate {
     // Create head and first commit
     CommitResult commit_0 = getClient().commit().head()
       .head("project-x", "main")
-      .append("readme.md", "readme content")
-      .append("file1.json", "[{}]")
-      .append("fileFromObject.txt", ImmutableTestContent.builder().id("10").name("sam vimes").build().toString())
+      .append("readme.md", JsonObject.of("doc", "readme content"))
+      .append("file1.json", JsonObject.of())
+      .append("fileFromObject.txt", JsonObject.mapFrom(ImmutableTestContent.builder().id("10").name("sam vimes").build()))
       .author("same vimes")
       .head("project-x", "main")
       .message("first commit!")
@@ -138,9 +138,9 @@ public class SimpleTest extends DbTestTemplate {
     // Create head and first commit
     CommitResult commit_0 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
-      .append("readme.md", "readme content")
-      .append("file1.json", "[{}]")
-      .append("fileFromObject.txt", ImmutableTestContent.builder().id("10").name("sam vimes").build().toString())
+      .append("readme.md", JsonObject.of("doc", "readme content"))
+      .append("file1.json", JsonObject.of())
+      .append("fileFromObject.txt", JsonObject.mapFrom(ImmutableTestContent.builder().id("10").name("sam vimes").build()))
       .author("same vimes")
       .message("first commit!")
       .build()
@@ -155,9 +155,9 @@ public class SimpleTest extends DbTestTemplate {
     CommitResult commit_1 = getClient().commit().head()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
-      .append("readme.md", "readme content")
-      .append("file1.json", "[{}, {}]")
-      .append("fileFromObject.txt", ImmutableTestContent.builder().id("10").name("sam vimes 1").build().toString())
+      .append("readme.md", JsonObject.of("doc", "readme content"))
+      .append("file1.json", JsonObject.of())
+      .append("fileFromObject.txt", JsonObject.mapFrom(ImmutableTestContent.builder().id("10").name("sam vimes 1").build()))
       .author("same vimes")
       .message("second commit!")
       .build()

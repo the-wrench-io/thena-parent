@@ -29,14 +29,12 @@ import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool;
-import io.resys.thena.docdb.sql.factories.SqlBuilderImpl;
-import io.resys.thena.docdb.sql.factories.SqlMapperImpl;
-import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool.ClientQuerySqlContext;
 import io.resys.thena.docdb.sql.DocDBFactorySql;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.resys.thena.docdb.sql.SqlSchema;
+import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool;
+import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool.ClientQuerySqlContext;
 import io.vertx.mutiny.sqlclient.Pool;
 
 
@@ -79,10 +77,10 @@ public class DocDBFactoryPgSql extends DocDBFactorySql implements ClientState {
     }
 
     public static SqlBuilder defaultSqlBuilder(ClientCollections ctx) {
-      return new SqlBuilderImpl(ctx);
+      return new SqlBuilderPg(ctx);
     }
     public static SqlMapper defaultSqlMapper(ClientCollections ctx) {
-      return new SqlMapperImpl(ctx);
+      return new SqlMapperPg(ctx);
     }
     public static SqlSchema defaultSqlSchema(ClientCollections ctx) {
       return new SqlSchemaPg(ctx);

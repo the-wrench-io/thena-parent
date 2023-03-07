@@ -31,8 +31,9 @@ import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
-import io.resys.thena.docdb.spi.pgsql.config.DbTestTemplate;
+import io.resys.thena.docdb.spi.pgsql.config.PgDbTestTemplate;
 import io.resys.thena.docdb.spi.pgsql.config.PgProfile;
+import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 
 //-Djava.util.logging.manager=org.jboss.logmanager.LogManager
@@ -40,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @QuarkusTest
 @TestProfile(PgProfile.class)
-public class MetricsDBtest extends DbTestTemplate {
+public class MetricsDBtest extends PgDbTestTemplate {
 
   //@org.junit.jupiter.api.Test
   public void metrics() {
@@ -92,7 +93,7 @@ public class MetricsDBtest extends DbTestTemplate {
     var start = System.currentTimeMillis();
     final var now = LocalDateTime.now().toString();
     for(int index = 0; index < total; index++) {
-      builder.append(now + "-" + index + "-readme.md", now + "-" + index + "readme content");
+      builder.append(now + "-" + index + "-readme.md", JsonObject.of("value", now + "-" + index + "readme content"));
     }
     var end = System.currentTimeMillis();
     final var loopTime = end - start;
