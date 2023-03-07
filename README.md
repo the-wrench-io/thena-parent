@@ -3,8 +3,14 @@
 Thena is a JSON storage framework with GIT-like features on top of a relational database.
 * **Project Scope**: 
 Multiple projects in the same installation with a separate set of tables for each project.
+* **Immutability**: 
+TODO::
 * **CRUD operation based on commits**: 
-Any changes to data are done using the commit concept.
+Any changes to data are done using the commit concept. TODO::
+* **Tagging**: 
+TODO::
+* **Branching**: 
+TODO::
 * **Full audit**:
 Every change of the JSON that is manipulated(created, edited and even deleted) is stored and linked with the author.
 * **Search from all versions**:
