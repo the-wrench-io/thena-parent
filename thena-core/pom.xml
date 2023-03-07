@@ -15,7 +15,6 @@
 
 	<modules>
 		<module>thena-docdb-api</module>
-		<module>thena-docdb-mongo</module>
     <module>thena-docdb-pgsql</module>
 	</modules>
 

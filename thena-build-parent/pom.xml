@@ -4,7 +4,7 @@
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>io.resys.hdes</groupId>
-    <artifactId>thena</artifactId>
+    <artifactId>thena-parent</artifactId>
     <version>999-SNAPSHOT</version>
   </parent>
 
@@ -28,11 +28,8 @@
     <junit.jupiter.version>5.8.2</junit.jupiter.version>
     <junit.platform.version>1.9.2</junit.platform.version>
     <jsonassert.version>1.5.0</jsonassert.version>
-    <flapdoodle.version>3.0.0</flapdoodle.version>
 
     <lombok.version>1.18.22</lombok.version>
-    <mongodb.version>3.12.8</mongodb.version>
-
 
     <commons-io.version>2.7</commons-io.version>
     <commons-csv.version>1.5</commons-csv.version>
@@ -325,13 +322,6 @@
         <scope>provided</scope>
       </dependency>
 
-      <!-- DB-s -->
-      <dependency>
-        <groupId>org.mongodb</groupId>
-        <artifactId>mongo-java-driver</artifactId>
-        <version>${mongodb.version}</version>
-      </dependency>
-
       <!-- Commons -->
       <dependency>
         <groupId>commons-io</groupId>
@@ -360,13 +350,6 @@
       </dependency>
 
       <!-- Testing -->
-      <dependency>
-        <groupId>de.flapdoodle.embed</groupId>
-        <artifactId>de.flapdoodle.embed.mongo</artifactId>
-        <scope>test</scope>
-        <version>${flapdoodle.version}</version>
-      </dependency>
-
       <dependency>
         <groupId>org.junit.platform</groupId>
         <artifactId>junit-platform-commons</artifactId>
