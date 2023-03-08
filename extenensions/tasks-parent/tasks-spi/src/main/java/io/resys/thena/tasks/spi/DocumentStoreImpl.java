@@ -11,9 +11,10 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.resys.thena.docdb.api.DocDB;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
 import io.resys.thena.docdb.spi.OidUtils;
+import io.resys.thena.docdb.spi.pgsql.DocDBFactoryPgSql;
 import io.resys.thena.docdb.spi.pgsql.PgErrors;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.docdb.sql.DocDBFactorySql;
+import io.resys.thena.tasks.api.model.Document.DocumentType;
 import io.resys.thena.tasks.spi.store.DocumentConfig;
 import io.resys.thena.tasks.spi.store.DocumentConfig.DocumentAuthorProvider;
 import io.resys.thena.tasks.spi.store.DocumentConfig.DocumentGidProvider;
@@ -179,9 +180,9 @@ public class DocumentStoreImpl implements DocumentStore {
         
         final io.vertx.mutiny.pgclient.PgPool pgPool = io.vertx.mutiny.pgclient.PgPool.pool(connectOptions, poolOptions);
         
-        thena = DocDBFactorySql.create().client(pgPool).db(repoName).errorHandler(new PgErrors()).build();
+        thena = DocDBFactoryPgSql.create().client(pgPool).db(repoName).errorHandler(new PgErrors()).build();
       } else {
-        thena = DocDBFactorySql.create().client(pgPool).db(repoName).errorHandler(new PgErrors()).build();
+        thena = DocDBFactoryPgSql.create().client(pgPool).db(repoName).errorHandler(new PgErrors()).build();
       }
       
       final ObjectMapper objectMapper = getObjectMapper();

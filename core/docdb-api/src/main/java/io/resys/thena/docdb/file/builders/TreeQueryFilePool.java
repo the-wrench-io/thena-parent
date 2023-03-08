@@ -43,7 +43,7 @@ public class TreeQueryFilePool implements TreeQuery {
   private final ErrorHandler errorHandler;
   
   @Override
-  public Uni<Tree> id(String tree) {
+  public Uni<Tree> getById(String tree) {
     final var sql = sqlBuilder.treeItems().getByTreeId(tree);
     return client.preparedQuery(sql)
         .mapping(row -> mapper.treeItem(row))
@@ -61,14 +61,14 @@ public class TreeQueryFilePool implements TreeQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find/load 'TREE': " + tree + "!", e));
   }
   @Override
-  public Multi<Tree> find() {
+  public Multi<Tree> findAll() {
     final var sql = sqlBuilder.trees().findAll();
     return client.preparedQuery(sql)
         .mapping(row -> mapper.tree(row))
         .execute()
         .onItem()
         .transformToMulti((Collection<Tree> rowset) -> Multi.createFrom().iterable(rowset))
-        .onItem().transformToUni((Tree tree) -> id(tree.getId()))
+        .onItem().transformToUni((Tree tree) -> getById(tree.getId()))
         .concatenate()
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'TREE'!", e));
   }

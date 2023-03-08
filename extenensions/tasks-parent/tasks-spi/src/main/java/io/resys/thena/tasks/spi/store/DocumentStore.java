@@ -6,7 +6,6 @@ public interface DocumentStore {
   RepositoryQuery repo();
   DocumentConfig getConfig();
   
-  enum DocumentType { PROJECT, TASK }
   
   interface RepositoryQuery {
     RepositoryQuery repoName(String repoName);

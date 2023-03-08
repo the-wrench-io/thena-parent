@@ -85,7 +85,7 @@ public class RefStateBuilderDefault implements RefStateBuilder {
     return ctx.query().refs().name(refName).onItem()
         .transformToUni(ref -> {
           if(ref == null) {
-            return ctx.query().refs().find().collect().asList().onItem().transform(allRefs -> 
+            return ctx.query().refs().findAll().collect().asList().onItem().transform(allRefs -> 
               (ObjectsResult<RefObjects>) ImmutableObjectsResult
               .<RefObjects>builder()
               .repo(repo)

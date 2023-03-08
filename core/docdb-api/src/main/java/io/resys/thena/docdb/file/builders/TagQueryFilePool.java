@@ -59,7 +59,7 @@ public class TagQueryFilePool implements TagQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't delete 'TAG' by name: '" + name + "'!", e));
   }
   @Override
-  public Uni<Tag> get() {
+  public Uni<Tag> getFirst() {
     final var sql = sqlBuilder.tags().getFirst();
     return client.preparedQuery(sql)
         .mapping(row -> mapper.tag(row))

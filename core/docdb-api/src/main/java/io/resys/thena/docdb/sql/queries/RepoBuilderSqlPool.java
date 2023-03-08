@@ -50,6 +50,12 @@ public class RepoBuilderSqlPool implements RepoBuilder {
   @Override
   public Uni<Repo> getByName(String name) {
     final var sql = sqlBuilder.repo().getByName(name);
+    if(log.isDebugEnabled()) {
+      log.debug("Repo by name query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
+    
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.repo(row))
         .execute(sql.getProps())
@@ -72,6 +78,14 @@ public class RepoBuilderSqlPool implements RepoBuilder {
   @Override
   public Uni<Repo> getByNameOrId(String nameOrId) {
     final var sql = sqlBuilder.repo().getByNameOrId(nameOrId);
+    
+    if(log.isDebugEnabled()) {
+      log.debug("Repo by nameOrId query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
+    
+    
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.repo(row))
         .execute(sql.getProps())
@@ -136,20 +150,21 @@ public class RepoBuilderSqlPool implements RepoBuilder {
   }
 
   @Override
-  public Multi<Repo> find() {
-    return client.preparedQuery(this.sqlBuilder.repo().findAll().getValue())
+  public Multi<Repo> findAll() {
+    final var sql = this.sqlBuilder.repo().findAll();
+    if(log.isDebugEnabled()) {
+      log.debug("Fina all repos query, with props: {} \r\n{}", 
+          "", 
+          sql.getValue());
+    }
+    
+    
+    return client.preparedQuery(sql.getValue())
     .mapping(row -> sqlMapper.repo(row))
     .execute()
     .onItem()
     .transformToMulti((RowSet<Repo> rowset) -> Multi.createFrom().iterable(rowset))
     .onFailure(e -> errorHandler.notFound(e)).recoverWithCompletion()
     .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REPOS'!", e));
-  }
-
-  @Override
-  public Uni<Void> create() {
-    return client.preparedQuery(this.sqlSchema.repo().getValue()).execute()
-    .onItem().transformToUni(data -> Uni.createFrom().voidItem())
-    .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));
   }
 }

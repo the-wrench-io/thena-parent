@@ -41,7 +41,7 @@ public class RepoQueryBuilder implements RepoActions.QueryBuilder {
 
   @Override
   public Multi<Repo> find() {
-   return state.repos().find(); 
+   return state.repos().findAll(); 
   }
 
   @Override

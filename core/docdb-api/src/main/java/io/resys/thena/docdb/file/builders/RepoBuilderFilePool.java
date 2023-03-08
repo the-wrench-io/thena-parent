@@ -147,7 +147,7 @@ public class RepoBuilderFilePool implements RepoBuilder {
   }
 
   @Override
-  public Multi<Repo> find() {
+  public Multi<Repo> findAll() {
     return client.preparedQuery(this.builder.repo().findAll())
     .mapping(row -> mapper.repo(row))
     .execute()

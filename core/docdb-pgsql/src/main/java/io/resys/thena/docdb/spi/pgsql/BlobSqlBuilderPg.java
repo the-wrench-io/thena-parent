@@ -37,7 +37,6 @@ import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.resys.thena.docdb.sql.statement.DefaultBlobSqlBuilder;
 import io.resys.thena.docdb.sql.support.SqlStatement;
 import io.vertx.mutiny.sqlclient.Tuple;
-import lombok.RequiredArgsConstructor;
 
 
 public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBuilder {
@@ -71,13 +70,8 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
         .build();
   }
   
-  @RequiredArgsConstructor @lombok.Data
-  private static class WhereSqlFragment {
-    private final String value;
-    private final List<Object> props;
-  }
-  
-  private WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
+  @Override
+  protected WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
     final var props = new LinkedList<>();
     final var where = new SqlStatement();
     int paramIndex = 1;

@@ -83,7 +83,7 @@ public class BlobQueryFilePool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id'-s: '" + String.join(",", blobId) + "'!", e));
   }
   @Override
-  public Multi<Blob> find() {
+  public Multi<Blob> findAll() {
     final var sql = builder.blobs().findAll();
     return client.preparedQuery(sql)
         .mapping(row -> mapper.blob(row))

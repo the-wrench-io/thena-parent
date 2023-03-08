@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.queries;
 
+import io.resys.thena.docdb.api.LogConstants;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -21,8 +23,8 @@ package io.resys.thena.docdb.sql.queries;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ClientQuery.RefQuery;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
@@ -30,8 +32,10 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 
+@Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class RefQuerySqlPool implements RefQuery {
 
@@ -44,6 +48,11 @@ public class RefQuerySqlPool implements RefQuery {
   public Uni<Ref> nameOrCommit(String refNameOrCommit) {
     RepoAssert.notEmpty(refNameOrCommit, () -> "refNameOrCommit must be defined!");
     final var sql = sqlBuilder.refs().getByNameOrCommit(refNameOrCommit);
+    if(log.isDebugEnabled()) {
+      log.debug("Ref refNameOrCommit query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute(sql.getProps())
@@ -60,6 +69,12 @@ public class RefQuerySqlPool implements RefQuery {
   @Override
   public Uni<Ref> get() {
     final var sql = sqlBuilder.refs().getFirst();
+    if(log.isDebugEnabled()) {
+      log.debug("Ref get query, with props: {} \r\n{}", 
+          "",
+          sql.getValue());
+    }
+
     return client.preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute()
@@ -74,8 +89,13 @@ public class RefQuerySqlPool implements RefQuery {
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF'!", e));
   }
   @Override
-  public Multi<Ref> find() {
+  public Multi<Ref> findAll() {
     final var sql = sqlBuilder.refs().findAll();
+    if(log.isDebugEnabled()) {
+      log.debug("Ref findAll query, with props: {} \r\n{}", 
+          "",
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute()
@@ -87,6 +107,12 @@ public class RefQuerySqlPool implements RefQuery {
   public Uni<Ref> name(String name) {
     RepoAssert.notEmpty(name, () -> "name must be defined!");
     final var sql = sqlBuilder.refs().getByName(name);
+    
+    if(log.isDebugEnabled()) {
+      log.debug("Ref getByName query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute(sql.getProps())

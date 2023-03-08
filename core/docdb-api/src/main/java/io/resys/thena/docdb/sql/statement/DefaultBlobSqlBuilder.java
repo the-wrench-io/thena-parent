@@ -107,22 +107,21 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
   public SqlTuple findByTree(String treeId, List<BlobCriteria> criteria) {
     final var conditions = createWhereCriteria(criteria);
     final var props = new LinkedList<>(conditions.getProps());
-    props.add(treeId);
     final var treeIdPos = props.size() + 1;
-    
+    props.add(treeId);
     
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("SELECT blob.* ").ln()
-        .append("  FROM ").append(options.getBlobs()).append(" AS blob ").ln()
+        .append("SELECT blobs.* ").ln()
+        .append("  FROM ").append(options.getBlobs()).append(" AS blobs ").ln()
         .append("  LEFT JOIN ").append(options.getTreeItems()).append(" AS item ").ln()
-        .append("  ON blob.id = item.blob").ln()
-        .append("  WHERE ").ln()
-        .append("  ").append(conditions.getValue()).ln()
-        .append("  item.tree = $").append(String.valueOf(treeIdPos)).ln()
+        .append("  ON blobs.id = item.blob").ln()
+        .append("  WHERE ").append(conditions.getValue())
+        .append(conditions.getValue().isEmpty() ? "  " : "  AND ")
+        .append("item.tree = $").append(String.valueOf(treeIdPos)).ln()
         .append(" ")
         .build())
-        .props(Tuple.of(treeId))
+        .props(Tuple.from(props))
         .build();
   }
   @Override
@@ -222,13 +221,12 @@ WHERE blobs.value LIKE $1
   }
   
   @RequiredArgsConstructor @lombok.Data
-  private static class WhereSqlFragment {
+  protected static class WhereSqlFragment {
     private final String value;
     private final List<Object> props;
   }
   
-  private WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
-
+  protected WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
     final var where = new StringBuilder();
     
     int paramIndex = 1;

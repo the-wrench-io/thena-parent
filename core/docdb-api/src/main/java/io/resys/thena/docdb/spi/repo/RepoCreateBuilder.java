@@ -58,7 +58,7 @@ public class RepoCreateBuilder implements RepoActions.CreateBuilder {
             .addMessages(RepoException.builder().nameNotUnique(existing.getName(), existing.getId()))
             .build());
       } else {
-        result = state.repos().find()
+        result = state.repos().findAll()
         .collect().asList().onItem()
         .transformToUni((allRepos) -> { 
           

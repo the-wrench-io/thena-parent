@@ -91,7 +91,7 @@ public class RepoStateBuilderDefault implements RepoStateBuilder {
   }
   
   private Uni<Objects> getRefs(Repo repo, ClientRepoState ctx) {
-    return ctx.query().refs().find().collect().asList().onItem()
+    return ctx.query().refs().findAll().collect().asList().onItem()
         .transform(refs -> ImmutableObjects.builder()
             .putAllRefs(refs.stream().collect(Collectors.toMap(r -> r.getName(), r -> r)))
             .build());
@@ -103,7 +103,7 @@ public class RepoStateBuilderDefault implements RepoStateBuilder {
             .build());
   }
   private Uni<Objects> getBlobs(Repo repo, ClientRepoState ctx) {
-    return ctx.query().blobs().find().collect().asList().onItem()
+    return ctx.query().blobs().findAll().collect().asList().onItem()
         .transform(blobs -> {
           
           final var objects = ImmutableObjects.builder();
@@ -112,13 +112,13 @@ public class RepoStateBuilderDefault implements RepoStateBuilder {
         });
   }
   private Uni<Objects> getTrees(Repo repo, ClientRepoState ctx) {
-    return ctx.query().trees().find().collect().asList().onItem()
+    return ctx.query().trees().findAll().collect().asList().onItem()
         .transform(trees -> ImmutableObjects.builder()
             .putAllValues(trees.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)))
             .build());
   }
   private Uni<Objects> getCommits(Repo repo, ClientRepoState ctx) {
-    return ctx.query().commits().find().collect().asList().onItem()
+    return ctx.query().commits().findAll().collect().asList().onItem()
         .transform(commits -> ImmutableObjects.builder()
             .putAllValues(commits.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)))
             .build());

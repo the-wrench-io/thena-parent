@@ -1,10 +1,12 @@
-package io.resys.thena.tasks.spi.createupdate;
+package io.resys.thena.tasks.spi.changes;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.tasks.api.actions.ChangeActions;
+import io.resys.thena.tasks.api.model.Document.DocumentType;
 import io.resys.thena.tasks.api.model.ImmutableTask;
 import io.resys.thena.tasks.api.model.ImmutableTaskStatusEvent;
 import io.resys.thena.tasks.api.model.Task;
@@ -18,14 +20,14 @@ import lombok.RequiredArgsConstructor;
 public class ChangeActionsImpl implements ChangeActions {
   private final DocumentStore ctx;
   
-  
   @Override
   public Uni<Task> create(CreateTask command) {
     final var gen = ctx.getConfig().getGid();
-    
+    final var targetDate = Optional.ofNullable(command.getTargetDate()).orElseGet(() -> LocalDateTime.now());
     final var entity = ImmutableTask.builder()
-        .id(gen.getNextId(DocumentStore.DocumentType.TASK))
-        .version(gen.getNextVersion(DocumentStore.DocumentType.TASK))
+        .id(gen.getNextId(DocumentType.TASK))
+        .version(gen.getNextVersion(DocumentType.TASK))
+        .documentType(DocumentType.TASK)
         .assigneeId(command.getAssigneeId())
         .assigneeRoles(command.getAssigneeRoles().stream().distinct().toList())
         .labels(command.getLabels().stream().distinct().toList())
@@ -37,7 +39,7 @@ public class ChangeActionsImpl implements ChangeActions {
         .priority(command.getPriority())
         .dueDate(command.getDueDate())
         .created(ImmutableTaskStatusEvent.builder()
-            .dateTime(LocalDateTime.now())
+            .dateTime(targetDate)
             .userId(command.getUserId())
             .build())
         .build();

@@ -4,7 +4,8 @@ import io.resys.thena.tasks.api.TaskClient;
 import io.resys.thena.tasks.api.actions.ChangeActions;
 import io.resys.thena.tasks.api.actions.QueryActions;
 import io.resys.thena.tasks.api.actions.StatisticsActions;
-import io.resys.thena.tasks.spi.createupdate.ChangeActionsImpl;
+import io.resys.thena.tasks.spi.changes.ChangeActionsImpl;
+import io.resys.thena.tasks.spi.query.QueryActionsImpl;
 import io.resys.thena.tasks.spi.store.DocumentStore;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
@@ -20,8 +21,7 @@ public class TaskClientImpl implements TaskClient {
 
   @Override
   public QueryActions query() {
-    // TODO Auto-generated method stub
-    return null;
+    return new QueryActionsImpl(ctx);
   }
 
   @Override

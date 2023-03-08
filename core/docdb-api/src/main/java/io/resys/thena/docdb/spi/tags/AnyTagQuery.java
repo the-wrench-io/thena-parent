@@ -52,7 +52,7 @@ public class AnyTagQuery implements TagQuery {
     RepoAssert.notEmpty(tagName, () -> "tagName can't be empty!");
     
     return state.query(repo)
-        .onItem().transformToUni(f -> f.tags().name(tagName).get())
+        .onItem().transformToUni(f -> f.tags().name(tagName).getFirst())
         .onItem().transform(tag -> Optional.ofNullable(tag));
   }
   @Override
@@ -62,7 +62,7 @@ public class AnyTagQuery implements TagQuery {
     
     return state.query(repo)
     .onItem().transformToUni(query -> 
-      query.tags().name(tagName).get().onItem().transformToUni(tag -> {
+      query.tags().name(tagName).getFirst().onItem().transformToUni(tag -> {
         if(tag == null) {
           return Uni.createFrom().item(Optional.empty());
         }

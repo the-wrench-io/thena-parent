@@ -46,7 +46,7 @@ public interface ClientQuery {
     Uni<Ref> name(String name);
     Uni<Ref> nameOrCommit(String refNameOrCommit);
     Uni<Ref> get();
-    Multi<Ref> find();
+    Multi<Ref> findAll();
   }
   
   interface BlobHistoryQuery {
@@ -64,23 +64,23 @@ public interface ClientQuery {
     Uni<Blob> getById(String blobId);
     Uni<List<Blob>> findById(List<String> blobId);
     
-    Multi<Blob> find();
+    Multi<Blob> findAll();
     Multi<Blob> findByTreeId(String treeId);
   }
   interface CommitQuery {
-    Uni<Commit> id(String commitId);
-    Multi<Commit> find();
+    Uni<Commit> getById(String commitId);
+    Multi<Commit> findAll();
   }
   
   interface TreeQuery {
-    Uni<Tree> id(String treeId);
-    Multi<Tree> find();
+    Uni<Tree> getById(String treeId);
+    Multi<Tree> findAll();
   }  
   
   interface TagQuery {
     TagQuery name(String name);
     Uni<DeleteResult> delete();
-    Uni<Tag> get();
+    Uni<Tag> getFirst();
     Multi<Tag> find();
   }
   

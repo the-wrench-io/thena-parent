@@ -1,5 +1,6 @@
 package io.resys.thena.tasks.tests.config;
 
+import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.inject.Inject;
@@ -25,7 +26,8 @@ public class TaskTestCase {
   private TaskClientImpl client;
   private static final String DB = "junit-tasks-"; 
   private static final AtomicInteger ID = new AtomicInteger();
-
+  private static final LocalDateTime targetDate = LocalDateTime.of(2023, 01, 01, 1, 1);
+  
   @BeforeEach
   public void setUp() {
     
@@ -54,6 +56,10 @@ public class TaskTestCase {
 
   public TaskClientImpl getClient() {
     return client;
+  }
+
+  public static LocalDateTime getTargetDate() {
+    return targetDate;
   }
 
 }

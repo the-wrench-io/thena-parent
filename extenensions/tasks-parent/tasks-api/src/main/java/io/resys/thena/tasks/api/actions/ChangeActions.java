@@ -2,6 +2,7 @@ package io.resys.thena.tasks.api.actions;
 
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ public interface ChangeActions {
   
   interface Command extends Serializable {
     String getUserId();
+    @Nullable LocalDateTime getTargetDate();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableCreateTask.class) @JsonDeserialize(as = ImmutableCreateTask.class)
@@ -49,6 +51,7 @@ public interface ChangeActions {
   interface UpdateCommand extends Command {
     String getUserId();
     String getTaskId();
+    @Nullable LocalDateTime getTargetDate();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTask.class) @JsonDeserialize(as = ImmutableAssignTask.class)

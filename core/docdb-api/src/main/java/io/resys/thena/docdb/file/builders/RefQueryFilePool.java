@@ -76,7 +76,7 @@ public class RefQueryFilePool implements RefQuery {
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF'!", e));
   }
   @Override
-  public Multi<Ref> find() {
+  public Multi<Ref> findAll() {
     final var sql = sqlBuilder.refs().findAll();
     return client.preparedQuery(sql)
       .mapping(row -> mapper.ref(row))

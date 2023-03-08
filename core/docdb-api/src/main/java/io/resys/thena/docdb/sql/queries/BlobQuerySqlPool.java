@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.resys.thena.docdb.api.LogConstants;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
@@ -34,7 +35,9 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class BlobQuerySqlPool implements BlobQuery {
 
@@ -48,6 +51,12 @@ public class BlobQuerySqlPool implements BlobQuery {
   @Override
   public Uni<Blob> getById(String blobId) {
     final var sql = sqlBuilder.blobs().getById(blobId);
+    if(log.isDebugEnabled()) {
+      log.debug("Blob: {} get byId query, with props: {} \r\n{}",
+          BlobQuerySqlPool.class,
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute(sql.getProps())
@@ -65,6 +74,12 @@ public class BlobQuerySqlPool implements BlobQuery {
   @Override
   public Uni<List<Blob>> findById(List<String> blobId) {
     final var sql = sqlBuilder.blobs().findByIds(blobId, criteria);
+    if(log.isDebugEnabled()) {
+      log.debug("Blob: {} find all blobs byId query, with props: {} \r\n{}",
+          BlobQuerySqlPool.class,
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute(sql.getProps())
@@ -80,8 +95,13 @@ public class BlobQuerySqlPool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id'-s: '" + String.join(",", blobId) + "'!", e));
   }
   @Override
-  public Multi<Blob> find() {
+  public Multi<Blob> findAll() {
     final var sql = sqlBuilder.blobs().findAll();
+    if(log.isDebugEnabled()) {
+      log.debug("Blob findAll query, with props: {} \r\n{}", 
+          "", 
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute()
@@ -92,6 +112,12 @@ public class BlobQuerySqlPool implements BlobQuery {
   @Override
   public Multi<Blob> findByTreeId(String treeId) {
     final var sql = sqlBuilder.blobs().findByTree(treeId, criteria);
+    if(log.isDebugEnabled()) {
+      log.debug("Blob: {} findByTreeId query, with props: {} \r\n{}",
+          BlobQuerySqlPool.class,
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute(sql.getProps())

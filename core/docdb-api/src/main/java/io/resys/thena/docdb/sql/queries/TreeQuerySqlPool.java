@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.queries;
 
+import io.resys.thena.docdb.api.LogConstants;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -31,7 +33,9 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class TreeQuerySqlPool implements TreeQuery {
 
@@ -40,8 +44,14 @@ public class TreeQuerySqlPool implements TreeQuery {
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
   @Override
-  public Uni<Tree> id(String tree) {
+  public Uni<Tree> getById(String tree) {
     final var sql = sqlBuilder.treeItems().getByTreeId(tree);
+    if(log.isDebugEnabled()) {
+      log.debug("Tree: {} getById query, with props: {} \r\n{}",
+          TreeQuerySqlPool.class,
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.treeItem(row))
         .execute(sql.getProps())
@@ -58,14 +68,20 @@ public class TreeQuerySqlPool implements TreeQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find/load 'TREE': " + tree + "!", e));
   }
   @Override
-  public Multi<Tree> find() {
+  public Multi<Tree> findAll() {
     final var sql = sqlBuilder.trees().findAll();
+    if(log.isDebugEnabled()) {
+      log.debug("Tree: {} findAll query, with props: {} \r\n{}", 
+          TreeQuerySqlPool.class,
+          "",
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.tree(row))
         .execute()
         .onItem()
         .transformToMulti((RowSet<Tree> rowset) -> Multi.createFrom().iterable(rowset))
-        .onItem().transformToUni((Tree tree) -> id(tree.getId()))
+        .onItem().transformToUni((Tree tree) -> getById(tree.getId()))
         .concatenate()
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'TREE'!", e));
   }

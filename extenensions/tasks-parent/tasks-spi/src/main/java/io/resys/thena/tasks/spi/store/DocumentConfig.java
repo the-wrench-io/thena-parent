@@ -3,7 +3,7 @@ package io.resys.thena.tasks.spi.store;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.DocDB;
-import io.resys.thena.tasks.spi.store.DocumentStore.DocumentType;
+import io.resys.thena.tasks.api.model.Document.DocumentType;
 
 
 @Value.Immutable

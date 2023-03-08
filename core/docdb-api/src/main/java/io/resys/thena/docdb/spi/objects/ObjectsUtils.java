@@ -35,7 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ObjectsUtils {
   public static Uni<String> getTagCommit(String tagName, ClientRepoState ctx) {
-    return ctx.query().tags().name(tagName).get()
+    return ctx.query().tags().name(tagName).getFirst()
         .onItem().transform(tag -> tag == null ? null : tag.getCommit());
   }
   public static Uni<String> getRefCommit(String refName, ClientRepoState ctx) {
@@ -43,10 +43,10 @@ public class ObjectsUtils {
         .onItem().transform(ref -> ref == null ? null : ref.getCommit());
   }
   public static Uni<Tree> getTree(Commit commit, ClientRepoState ctx) {
-    return ctx.query().trees().id(commit.getTree());
+    return ctx.query().trees().getById(commit.getTree());
   }
   public static Uni<Commit> getCommit(String commit, ClientRepoState ctx) {
-    return ctx.query().commits().id(commit);
+    return ctx.query().commits().getById(commit);
   }
   public static Uni<Commit> findCommit(ClientRepoState ctx, String anyId) {
     

@@ -127,7 +127,7 @@ public class CreateTagBuilder implements TagBuilder {
   }
 
   private Uni<Tag> findTag(ClientRepoState state, String tagName) {
-    return state.query().tags().name(tagName).get();
+    return state.query().tags().name(tagName).getFirst();
   }
 
   private Uni<Ref> findRef(ClientRepoState state, String refNameOrCommit) {
@@ -135,7 +135,7 @@ public class CreateTagBuilder implements TagBuilder {
   }
   
   private Uni<Commit> findCommit(ClientRepoState state, String commit) {
-    return state.query().commits().id(commit);
+    return state.query().commits().getById(commit);
   }
   
   private Uni<TagResult> createTag(ClientRepoState state, String commit) {

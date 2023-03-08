@@ -40,7 +40,7 @@ public class CommitQueryFilePool implements CommitQuery {
   private final ErrorHandler errorHandler;
 
   @Override
-  public Uni<Commit> id(String commit) {
+  public Uni<Commit> getById(String commit) {
     final var sql = builder.commits().getById(commit);
     return client.preparedQuery(sql)
         .mapping(row -> mapper.commit(row))
@@ -57,7 +57,7 @@ public class CommitQueryFilePool implements CommitQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
   }
   @Override
-  public Multi<Commit> find() {
+  public Multi<Commit> findAll() {
     final var sql = builder.commits().findAll();
     return client.preparedQuery(sql)
         .mapping(row -> mapper.commit(row))

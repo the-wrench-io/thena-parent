@@ -71,7 +71,7 @@ public class DocDBPrettyPrinter {
     .append("Refs").append(System.lineSeparator());
     
     ctx.query().refs()
-    .find().onItem()
+    .findAll().onItem()
     .transform(item -> {
       result.append("  - ")
       .append(item.getCommit()).append(": ").append(item.getName())
@@ -103,7 +103,7 @@ public class DocDBPrettyPrinter {
     .append("Commits").append(System.lineSeparator());
     
     ctx.query().commits()
-    .find().onItem()
+    .findAll().onItem()
     .transform(item -> {
       result.append("  - id: ").append(item.getId())
       .append(System.lineSeparator())
@@ -123,7 +123,7 @@ public class DocDBPrettyPrinter {
     .append("Trees").append(System.lineSeparator());
     
     ctx.query().trees()
-    .find().onItem()
+    .findAll().onItem()
     .transform(item -> {
       result.append("  - id: ").append(item.getId()).append(System.lineSeparator());
       item.getValues().entrySet().forEach(e -> {
@@ -144,7 +144,7 @@ public class DocDBPrettyPrinter {
     .append("Blobs").append(System.lineSeparator());
     
     ctx.query().blobs()
-    .find().onItem()
+    .findAll().onItem()
     .transform(item -> {
       result.append("  - ").append(item.getId()).append(": ").append(item.getValue()).append(System.lineSeparator());
       return item;

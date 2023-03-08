@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.queries;
 
+import io.resys.thena.docdb.api.LogConstants;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -21,15 +23,18 @@ package io.resys.thena.docdb.sql.queries;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
+import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+
+@Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class CommitQuerySqlPool implements CommitQuery {
   private final io.vertx.mutiny.sqlclient.Pool client;
@@ -38,8 +43,13 @@ public class CommitQuerySqlPool implements CommitQuery {
   private final ErrorHandler errorHandler;
 
   @Override
-  public Uni<Commit> id(String commit) {
+  public Uni<Commit> getById(String commit) {
     final var sql = sqlBuilder.commits().getById(commit);
+    if(log.isDebugEnabled()) {
+      log.debug("Commit byId query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.commit(row))
         .execute(sql.getProps())
@@ -55,8 +65,13 @@ public class CommitQuerySqlPool implements CommitQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
   }
   @Override
-  public Multi<Commit> find() {
+  public Multi<Commit> findAll() {
     final var sql = sqlBuilder.commits().findAll();
+    if(log.isDebugEnabled()) {
+      log.debug("Commit findAll query, with props: {} \r\n{}", 
+          "",
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.commit(row))
         .execute()

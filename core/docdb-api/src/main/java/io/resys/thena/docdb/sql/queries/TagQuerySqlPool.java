@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.queries;
 
+import io.resys.thena.docdb.api.LogConstants;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -31,7 +33,9 @@ import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class TagQuerySqlPool implements TagQuery {
   
@@ -50,6 +54,11 @@ public class TagQuerySqlPool implements TagQuery {
   @Override
   public Uni<DeleteResult> delete() {
     final var sql = sqlBuilder.tags().deleteByName(name);
+    if(log.isDebugEnabled()) {
+      log.debug("Tag delete query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .execute(sql.getProps())
         .onItem()
@@ -57,8 +66,13 @@ public class TagQuerySqlPool implements TagQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't delete 'TAG' by name: '" + name + "'!", e));
   }
   @Override
-  public Uni<Tag> get() {
+  public Uni<Tag> getFirst() {
     final var sql = sqlBuilder.tags().getFirst();
+    if(log.isDebugEnabled()) {
+      log.debug("Tag getFirst query, with props: {} \r\n{}", 
+          "",
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.tag(row))
         .execute()
@@ -76,6 +90,11 @@ public class TagQuerySqlPool implements TagQuery {
   public Multi<Tag> find() {
     if(name == null || name.isBlank()) {
       final var sql = sqlBuilder.tags().findAll();
+      if(log.isDebugEnabled()) {
+        log.debug("Tag findAll query, with props: {} \r\n{}", 
+            "",
+            sql.getValue());
+      }
       return client.preparedQuery(sql.getValue())
           .mapping(row -> sqlMapper.tag(row))
           .execute()
@@ -84,6 +103,12 @@ public class TagQuerySqlPool implements TagQuery {
           .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'TAG'!", e));      
     }
     final var sql = sqlBuilder.tags().getByName(name);
+    
+    if(log.isDebugEnabled()) {
+      log.debug("Tag getByName query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
     return client.preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.tag(row))
         .execute(sql.getProps())

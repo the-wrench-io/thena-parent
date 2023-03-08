@@ -33,10 +33,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 @Value.Immutable @JsonSerialize(as = ImmutableTask.class) @JsonDeserialize(as = ImmutableTask.class)
-public interface Task {
-  String getId();
-  String getVersion();
-  
+public interface Task extends Document {
   TaskStatusEvent getCreated();
   
   @Nullable TaskStatusEvent getCompleted();
