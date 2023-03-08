@@ -51,9 +51,9 @@
 	</distributionManagement>
 
 	<modules>
-		<module>thena-build-parent</module>
-		<module>thena-bom</module>
-		<module>thena-core</module>
+    <module>bom</module>
+		<module>build-parent</module>
+		<module>core</module>
 	</modules>
 
 	<properties>

@@ -7,15 +7,15 @@
 		<groupId>io.resys.hdes</groupId>
 		<artifactId>thena-build-parent</artifactId>
 		<version>999-SNAPSHOT</version>
-		<relativePath>../thena-build-parent/pom.xml</relativePath>
+		<relativePath>../build-parent/pom.xml</relativePath>
 	</parent>
 
 	<artifactId>thena-core</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>thena-docdb-api</module>
-    <module>thena-docdb-pgsql</module>
+		<module>docdb-api</module>
+    <module>docdb-pgsql</module>
 	</modules>
 
 </project>
