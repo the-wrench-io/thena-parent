@@ -1,25 +1,5 @@
 package io.resys.thena.tasks.api.actions;
 
-/*-
- * #%L
- * thena-tasks-api
- * %%
- * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.List;
@@ -37,16 +17,20 @@ import io.resys.thena.tasks.api.model.Task.TaskExtension;
 import io.smallrye.mutiny.Uni;
 
 
-public interface CreateUpdateActions {
-  Uni<Task> create(CreateTask ...command);
+public interface ChangeActions {
+  Uni<Task> create(CreateTask command);
   Uni<List<Task>> create(List<CreateTask> commands);
   
   Uni<Task> updateOne(UpdateCommand ...command);
   Uni<Task> updateOne(List<UpdateCommand> commands);
 
   
+  interface Command extends Serializable {
+    String getUserId();
+  }
+  
   @Value.Immutable @JsonSerialize(as = ImmutableCreateTask.class) @JsonDeserialize(as = ImmutableCreateTask.class)
-  interface CreateTask extends Serializable {
+  interface CreateTask extends Command {
     List<String> getAssigneeRoles();
     @Nullable String getAssigneeId();
     
@@ -62,8 +46,7 @@ public interface CreateUpdateActions {
   }
 
   
-  interface UpdateCommand extends Serializable {
-    LocalDate getTargetDate();
+  interface UpdateCommand extends Command {
     String getUserId();
     String getTaskId();
   }

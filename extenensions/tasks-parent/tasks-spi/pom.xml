@@ -11,6 +11,15 @@
 
   <dependencies>
     <dependency>
+      <groupId>io.resys.hdes</groupId>
+      <artifactId>thena-tasks-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>io.resys.hdes</groupId>
+      <artifactId>thena-docdb-pgsql</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>io.smallrye.reactive</groupId>
       <artifactId>smallrye-mutiny-vertx-sql-client</artifactId>
     </dependency>
@@ -37,10 +46,10 @@
       <artifactId>commons-io</artifactId>
     </dependency>
 
+
     <dependency>
       <groupId>io.quarkus</groupId>
       <artifactId>quarkus-reactive-pg-client</artifactId>
-      <scope>test</scope>
     </dependency>
 
   </dependencies>

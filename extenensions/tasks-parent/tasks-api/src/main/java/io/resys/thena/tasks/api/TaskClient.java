@@ -20,12 +20,24 @@ package io.resys.thena.tasks.api;
  * #L%
  */
 
-import io.resys.thena.tasks.api.actions.CreateUpdateActions;
+import io.resys.thena.tasks.api.actions.ChangeActions;
 import io.resys.thena.tasks.api.actions.QueryActions;
 import io.resys.thena.tasks.api.actions.StatisticsActions;
+import io.smallrye.mutiny.Uni;
 
 public interface TaskClient {
-  CreateUpdateActions createUpdate();
+  ChangeActions changes();
   QueryActions query();
   StatisticsActions statistics();
+  TaskRepositoryQuery repo();
+  
+  
+  interface TaskRepositoryQuery {
+    TaskRepositoryQuery repoName(String repoName);
+    TaskRepositoryQuery headName(String headName);
+    Uni<TaskClient> create();    
+    TaskClient build();
+    Uni<Boolean> createIfNot();
+  } 
+  
 }
