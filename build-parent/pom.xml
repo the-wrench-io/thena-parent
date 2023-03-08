@@ -36,6 +36,11 @@
     <commons-codec.version>1.13</commons-codec.version>
     <commons-lang.version>3.9</commons-lang.version>
 
+    <eirslett.version>1.12.0</eirslett.version>
+    <eirslett-node.version>v16.13.1</eirslett-node.version>
+    <eirslett-yarn.version>v1.22.5</eirslett-yarn.version>
+
+
     <surefire-plugin.version>3.0.0-M5</surefire-plugin.version>
   </properties>
 
@@ -87,7 +92,16 @@
 
     <pluginManagement>
       <plugins>
-
+        <plugin>
+          <groupId>com.github.eirslett</groupId>
+          <artifactId>frontend-maven-plugin</artifactId>
+          <version>${eirslett.version}</version>
+          <configuration>
+            <installDirectory>target</installDirectory>
+            <nodeVersion>${eirslett-node.version}</nodeVersion>
+            <yarnVersion>${eirslett-yarn.version}</yarnVersion>
+          </configuration>
+        </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
@@ -105,9 +119,46 @@
                 <artifactId>value</artifactId>
                 <version>${immutables.version}</version>
               </path>
+              <path>
+                <groupId>io.quarkus</groupId>
+                <artifactId>quarkus-extension-processor</artifactId>
+                <version>${quarkus.version}</version>
+              </path>
             </annotationProcessorPaths>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>build</goal>
+                <goal>generate-code</goal>
+                <goal>generate-code-tests</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        <plugin>
+          <groupId>io.quarkus</groupId>
+          <artifactId>quarkus-bootstrap-maven-plugin</artifactId>
+          <version>${quarkus.version}</version>
+          <executions>
+            <execution>
+              <id>generate-extension-descriptor</id>
+              <goals>
+                <goal>extension-descriptor</goal>
+              </goals>
+              <phase>process-resources</phase>
+              <configuration>
+                <deployment>${project.groupId}:${project.artifactId}-deployment:${project.version}</deployment>
+              </configuration>
+            </execution>
+          </executions>
+        </plugin>
+
 
         <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself. -->
         <plugin>

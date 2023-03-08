@@ -10,12 +10,11 @@
 		<relativePath>../build-parent/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>thena-core</artifactId>
+	<artifactId>thena-extensions</artifactId>
 	<packaging>pom</packaging>
 
 	<modules>
-		<module>docdb-api</module>
-    <module>docdb-pgsql</module>
+		<module>tasks-parent</module>
 	</modules>
 
 </project>
