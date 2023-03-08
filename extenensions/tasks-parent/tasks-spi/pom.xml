@@ -7,7 +7,7 @@
     <version>999-SNAPSHOT</version>
   </parent>
   <packaging>jar</packaging>
-  <artifactId>thena-tasks-api</artifactId>
+  <artifactId>thena-tasks-spi</artifactId>
 
   <dependencies>
     <dependency>
