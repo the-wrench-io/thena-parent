@@ -8,7 +8,7 @@
     <version>999-SNAPSHOT</version>
   </parent>
 
-  <artifactId>tasks-parent</artifactId>
+  <artifactId>thena-tasks-parent</artifactId>
   <packaging>pom</packaging>
 
   <modules>

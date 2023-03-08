@@ -1,0 +1,9 @@
+quarkus:
+
+  log:
+    level: DEBUG
+    category: 
+      io.resys:
+        level: DEBUG
+
+      
