@@ -156,11 +156,4 @@ public class RepoBuilderFilePool implements RepoBuilder {
     .onFailure(e -> errorHandler.notFound(e)).recoverWithCompletion()
     .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REPOS'!", e));
   }
-
-  @Override
-  public Uni<Void> create() {
-    return client.preparedQuery(this.builder.repo().create()).execute()
-    .onItem().transformToUni(data -> Uni.createFrom().voidItem())
-    .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));
-  }
 }
