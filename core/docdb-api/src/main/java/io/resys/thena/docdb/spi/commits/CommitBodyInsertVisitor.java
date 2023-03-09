@@ -28,7 +28,7 @@ import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class CommitSaveVisitor {  
+public class CommitBodyInsertVisitor {  
   private final ClientRepoState state;
 
   public Uni<CommitOutput> visit(CommitOutput output) {

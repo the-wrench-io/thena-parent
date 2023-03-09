@@ -214,7 +214,7 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
           .repo(state.getRepo())
           .parent(Optional.ofNullable(state.getObjects()))
           .build());
-    return new CommitSaveVisitor(this.state.withRepo(state.getRepo())).visit(toBeSaved)
+    return new CommitBodyInsertVisitor(this.state.withRepo(state.getRepo())).visit(toBeSaved)
         .onItem().transform(saved -> (CommitResult) ImmutableCommitResult.builder()
           .gid(gid)
           .commit(saved.getCommit())
