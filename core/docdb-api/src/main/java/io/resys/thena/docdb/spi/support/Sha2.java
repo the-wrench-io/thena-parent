@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.commits;
+package io.resys.thena.docdb.spi.support;
 
 /*-
  * #%L

@@ -44,6 +44,7 @@ import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
+import io.resys.thena.docdb.spi.support.Sha2;
 import io.resys.thena.docdb.api.models.Repo;
 import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
