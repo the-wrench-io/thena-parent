@@ -26,13 +26,13 @@ import io.resys.thena.docdb.spi.ClientState;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class CommitActionsDefault implements CommitActions {
+public class CommitActionsImpl implements CommitActions {
 
   private final ClientState state;
   private final ObjectsActions objectsActions;
 
   @Override
   public HeadCommitBuilder head() {
-    return new HeadCommitBuilderDefault(state, objectsActions);
+    return new HeadCommitBuilderImpl(state, objectsActions);
   }
 }

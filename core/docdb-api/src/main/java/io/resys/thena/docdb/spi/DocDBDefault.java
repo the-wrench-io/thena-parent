@@ -27,7 +27,7 @@ import io.resys.thena.docdb.api.actions.HistoryActions;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.api.actions.RepoActions;
 import io.resys.thena.docdb.api.actions.TagActions;
-import io.resys.thena.docdb.spi.commits.CommitActionsDefault;
+import io.resys.thena.docdb.spi.commits.CommitActionsImpl;
 import io.resys.thena.docdb.spi.diff.DiffActionsDefault;
 import io.resys.thena.docdb.spi.history.HistoryActionsDefault;
 import io.resys.thena.docdb.spi.objects.ObjectsActionsDefault;
@@ -58,7 +58,7 @@ public class DocDBDefault implements DocDB {
   @Override
   public CommitActions commit() {
     if(commitActions == null) {
-      commitActions = new CommitActionsDefault(state, objects()); 
+      commitActions = new CommitActionsImpl(state, objects()); 
     }
     return commitActions;
   }

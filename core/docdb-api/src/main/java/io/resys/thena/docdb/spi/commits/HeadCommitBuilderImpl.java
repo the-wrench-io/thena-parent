@@ -46,7 +46,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class HeadCommitBuilderDefault implements HeadCommitBuilder {
+public class HeadCommitBuilderImpl implements HeadCommitBuilder {
 
   private final ClientState state;
   private final ObjectsActions objectsActions;
