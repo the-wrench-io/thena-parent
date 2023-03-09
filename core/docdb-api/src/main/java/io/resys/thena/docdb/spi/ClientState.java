@@ -49,5 +49,12 @@ public interface ClientState {
     String getRepoName();
     ClientInsertBuilder insert();
     ClientQuery query();
+    
+    <R> Uni<R> inTransaction(TransactionFunction<R> callback);
+  }
+  
+  @FunctionalInterface
+  interface TransactionFunction<R> {
+    Uni<R> apply(ClientRepoState repoState);
   }
 }

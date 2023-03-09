@@ -30,9 +30,9 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableInsertResult;
 import io.resys.thena.docdb.spi.ImmutableUpsertResult;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutput;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutputStatus;
-import io.resys.thena.docdb.spi.commits.ImmutableCommitOutput;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse.CommitResponseStatus;
+import io.resys.thena.docdb.spi.commits.body.ImmutableCommitInternalResponse;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.resys.thena.docdb.sql.support.Execute;
@@ -269,7 +269,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
  
   
   @Override
-  public Uni<CommitOutput> output(CommitOutput output) {    
+  public Uni<CommitInternalResponse> output(CommitInternalResponse output) {    
     final var blobsInsert = sqlBuilder.blobs().insertAll(output.getBlobs());
     final var treeInsert = sqlBuilder.trees().insertOne(output.getTree());
     final var treeValueInsert = sqlBuilder.treeItems().insertAll(output.getTree());
@@ -280,7 +280,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
     
     return SqlClientHelper.inTransactionUni(client, tx -> {
       
-      final Uni<CommitOutput> start;
+      final Uni<CommitInternalResponse> start;
       if(blobsInsert.getProps().isEmpty()) {
         start = Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
       } else {
@@ -291,14 +291,14 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
       
       return start
       .chain(next -> {
-        if(next.getStatus() == CommitOutputStatus.OK) {
+        if(next.getStatus() == CommitResponseStatus.OK) {
           return Execute.apply(tx, treeInsert).onItem()
               .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.rowCount()))
               .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
         }
         return Uni.createFrom().item(next);
       }).chain(next -> {
-        if(next.getStatus() == CommitOutputStatus.OK) {
+        if(next.getStatus() == CommitResponseStatus.OK) {
           if(treeValueInsert.getProps().isEmpty()) {
             return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
           }
@@ -309,14 +309,14 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
         }
         return Uni.createFrom().item(next);
       }).chain(next -> {
-        if(next.getStatus() == CommitOutputStatus.OK) {
+        if(next.getStatus() == CommitResponseStatus.OK) {
           return Execute.apply(tx, commitsInsert).onItem()
               .transform(row -> successOutput(next, "Commit saved, number of new entries: " + row.rowCount()))
               .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create commit", e));
         }
         return Uni.createFrom().item(next);
       }).chain(next -> {
-        if(next.getStatus() == CommitOutputStatus.OK) {
+        if(next.getStatus() == CommitResponseStatus.OK) {
           return Execute.apply(tx, findRefByName).onItem().transformToUni(item -> {
             final var exists = item.iterator();
             if(!exists.hasNext()) {
@@ -333,18 +333,18 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
     });
   }
   
-  private CommitOutput successOutput(CommitOutput current, String msg) {
-    return ImmutableCommitOutput.builder()
+  private CommitInternalResponse successOutput(CommitInternalResponse current, String msg) {
+    return ImmutableCommitInternalResponse.builder()
       .from(current)
-      .status(CommitOutputStatus.OK)
+      .status(CommitResponseStatus.OK)
       .addMessages(ImmutableMessage.builder().text(msg).build())
       .build();
   }
   
-  private CommitOutput failOutput(CommitOutput current, String msg, Throwable t) {
-    return ImmutableCommitOutput.builder()
+  private CommitInternalResponse failOutput(CommitInternalResponse current, String msg, Throwable t) {
+    return ImmutableCommitInternalResponse.builder()
         .from(current)
-        .status(CommitOutputStatus.ERROR)
+        .status(CommitResponseStatus.ERROR)
         .addMessages(ImmutableMessage.builder().text(msg).build())
         .build(); 
   }

@@ -36,8 +36,9 @@ import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.spi.ClientState;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitBody;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutputStatus;
+import io.resys.thena.docdb.spi.commits.body.CommitBodyVisitor;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalRequest;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse.CommitResponseStatus;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -205,7 +206,7 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
   
   private Uni<CommitResult> createCommit(ObjectsResult<RefObjects> state, String gid) {
     final var toBeSaved = new CommitBodyVisitor().visit(
-        CommitBody.builder()
+        CommitInternalRequest.builder()
           .commitAuthor(this.author)
           .commitMessage(this.message)
           .ref(headName)
@@ -224,10 +225,10 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
           .build());
   }
   
-  private CommitStatus visitStatus(CommitOutputStatus src) {
-    if(src == CommitOutputStatus.OK) {
+  private CommitStatus visitStatus(CommitResponseStatus src) {
+    if(src == CommitResponseStatus.OK) {
       return CommitStatus.OK;
-    } else if(src == CommitOutputStatus.CONFLICT) {
+    } else if(src == CommitResponseStatus.CONFLICT) {
       return CommitStatus.CONFLICT;
     }
     return CommitStatus.ERROR;

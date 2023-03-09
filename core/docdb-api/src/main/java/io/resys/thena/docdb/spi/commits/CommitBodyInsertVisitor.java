@@ -22,8 +22,9 @@ package io.resys.thena.docdb.spi.commits;
 
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutput;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutputStatus;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse.CommitResponseStatus;
+import io.resys.thena.docdb.spi.commits.body.ImmutableCommitInternalResponse;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
@@ -31,7 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class CommitBodyInsertVisitor {  
   private final ClientRepoState state;
 
-  public Uni<CommitOutput> visit(CommitOutput output) {
+  public Uni<CommitInternalResponse> visit(CommitInternalResponse output) {
     // check for consistency
     return state.query().refs().nameOrCommit(output.getRef().getName())
         .onItem().transformToUni(item -> {
@@ -63,9 +64,9 @@ public class CommitBodyInsertVisitor {
               .append("'!");            
           }
           
-          return Uni.createFrom().item((CommitOutput) ImmutableCommitOutput.builder()
+          return Uni.createFrom().item((CommitInternalResponse) ImmutableCommitInternalResponse.builder()
             .from(output)
-            .status(CommitOutputStatus.CONFLICT)
+            .status(CommitResponseStatus.CONFLICT)
             .addMessages(ImmutableMessage.builder().text(error.toString()).build())
             .build());
         });

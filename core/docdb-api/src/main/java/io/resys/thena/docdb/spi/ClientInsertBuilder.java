@@ -28,7 +28,7 @@ import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.spi.commits.CommitBodyVisitor.CommitOutput;
+import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse;
 import io.smallrye.mutiny.Uni;
 
 public interface ClientInsertBuilder {
@@ -38,8 +38,7 @@ public interface ClientInsertBuilder {
   Uni<UpsertResult> ref(Ref ref, Commit commit);
   Uni<UpsertResult> tree(Tree tree);
   Uni<UpsertResult> commit(Commit commit);
-  Uni<CommitOutput> output(CommitOutput output);
-  
+  Uni<CommitInternalResponse> output(CommitInternalResponse output);
   
   enum UpsertStatus { OK, DUPLICATE, ERROR, CONFLICT }
   
