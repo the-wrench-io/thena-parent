@@ -23,7 +23,6 @@ import java.util.List;
  */
 
 import io.resys.thena.docdb.api.actions.CommitActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.api.exceptions.RepoException;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Tree;
@@ -38,11 +37,9 @@ import lombok.extern.slf4j.Slf4j;
 public class CommitActionsImpl implements CommitActions {
 
   private final ClientState state;
-  private final ObjectsActions objectsActions;
-
   @Override
   public HeadCommitBuilder head() {
-    return new HeadCommitBuilderImpl(state, objectsActions);
+    return new HeadCommitBuilderImpl(state);
   }
 
   @Override

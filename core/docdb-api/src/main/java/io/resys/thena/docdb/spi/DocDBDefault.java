@@ -59,7 +59,7 @@ public class DocDBDefault implements DocDB {
   @Override
   public CommitActions commit() {
     if(commitActions == null) {
-      commitActions = new CommitActionsImpl(state, objects()); 
+      commitActions = new CommitActionsImpl(state); 
     }
     return commitActions;
   }

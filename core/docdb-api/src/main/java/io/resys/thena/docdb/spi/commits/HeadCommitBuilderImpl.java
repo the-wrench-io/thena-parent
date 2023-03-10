@@ -30,7 +30,6 @@ import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.api.actions.CommitActions.HeadCommitBuilder;
 import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Objects.CommitLock;
 import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
@@ -50,7 +49,6 @@ import lombok.RequiredArgsConstructor;
 public class HeadCommitBuilderImpl implements HeadCommitBuilder {
 
   private final ClientState state;
-  private final ObjectsActions objectsActions;
   private final Map<String, JsonObject> appendBlobs = new HashMap<>();
   private final List<String> deleteBlobs = new ArrayList<>();
   
