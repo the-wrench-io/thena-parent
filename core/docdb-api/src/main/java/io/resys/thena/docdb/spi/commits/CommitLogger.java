@@ -1,8 +1,8 @@
-package io.resys.thena.tasks.api.model;
+package io.resys.thena.docdb.spi.commits;
 
 /*-
  * #%L
- * thena-tasks-api
+ * thena-docdb-api
  * %%
  * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
@@ -20,6 +20,26 @@ package io.resys.thena.tasks.api.model;
  * #L%
  */
 
-public interface Project {
+import io.resys.thena.docdb.api.LogConstants;
+import lombok.extern.slf4j.Slf4j;
 
-}
+@Slf4j(topic = LogConstants.SHOW_COMMIT)
+public class CommitLogger {
+  private final StringBuilder data = new StringBuilder();
+  
+  public CommitLogger append(String data) {
+    if(log.isDebugEnabled()) {
+      this.data.append(data);
+    }
+    return this;
+  }
+  @Override
+  public String toString() {
+    if(log.isDebugEnabled()) {
+      log.debug(data.toString());
+    } else {
+      data.append("Log DEBUG disabled for: " + LogConstants.SHOW_COMMIT + "!");
+    }
+    return data.toString();
+  }
+} 

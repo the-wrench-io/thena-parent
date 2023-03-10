@@ -43,6 +43,7 @@ public class DocDBDefault implements DocDB {
   private ObjectsActions objectsActions;
   private DiffActions diffActions;
   
+  
   public DocDBDefault(ClientState state) {
     super();
     this.state = state;
@@ -91,5 +92,9 @@ public class DocDBDefault implements DocDB {
       diffActions = new DiffActionsDefault(state, objects()); 
     }
     return diffActions;
+  }
+
+  public ClientState getState() {
+    return state;
   }
 }

@@ -1,6 +1,12 @@
 package io.resys.thena.docdb.sql.queries;
 
+import java.util.Optional;
+
 import io.resys.thena.docdb.api.LogConstants;
+import io.resys.thena.docdb.api.models.ImmutableCommit;
+import io.resys.thena.docdb.api.models.ImmutableCommitLock;
+import io.resys.thena.docdb.api.models.ImmutableRef;
+import io.resys.thena.docdb.api.models.ImmutableTree;
 
 /*-
  * #%L
@@ -23,10 +29,14 @@ import io.resys.thena.docdb.api.LogConstants;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.CommitLock;
+import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
+import io.resys.thena.docdb.api.models.Objects.CommitTree;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
@@ -37,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class CommitQuerySqlPool implements CommitQuery {
-  private final io.vertx.mutiny.sqlclient.Pool client;
+  private final SqlClientWrapper wrapper;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
@@ -50,7 +60,7 @@ public class CommitQuerySqlPool implements CommitQuery {
           sql.getProps().deepToString(),
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.commit(row))
         .execute(sql.getProps())
         .onItem()
@@ -62,7 +72,7 @@ public class CommitQuerySqlPool implements CommitQuery {
           return null;
         })
         .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't get 'COMMIT' by 'id': '" + commit + "'!", e));
   }
   @Override
   public Multi<Commit> findAll() {
@@ -72,11 +82,61 @@ public class CommitQuerySqlPool implements CommitQuery {
           "",
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.commit(row))
         .execute()
         .onItem()
         .transformToMulti((RowSet<Commit> rowset) -> Multi.createFrom().iterable(rowset))
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT'!", e));
+  }
+  @Override
+  public Uni<CommitLock> getLock(String commit, String headName) {
+    final var sql = sqlBuilder.commits().getLock(commit, headName);
+    if(log.isDebugEnabled()) {
+      log.debug("Commit getLock query, with props: {} \r\n{}", 
+          "",
+          sql.getValue());
+    }
+    return wrapper.getClient().preparedQuery(sql.getValue())
+        .mapping(row -> sqlMapper.commitTree(row))
+        .execute(sql.getProps())
+        .onItem()
+        .transform((RowSet<CommitTree> rowset) -> {
+          final var builder = ImmutableCommitLock.builder();
+          final var it = rowset.iterator();
+          
+          ImmutableTree.Builder tree = null;
+          while(it.hasNext()) {
+            final var commitTree = it.next();
+            if(tree == null) {
+              tree = ImmutableTree.builder().id(commitTree.getTreeId());
+              
+              builder
+                .ref(ImmutableRef.builder()
+                    .commit(commitTree.getCommitId())
+                    .name(commitTree.getRefName())
+                    .build())
+                .commit(ImmutableCommit.builder()
+                  .author(commitTree.getCommitAuthor())
+                  .dateTime(commitTree.getCommitDateTime())
+                  .id(commitTree.getCommitId())
+                  .merge(Optional.ofNullable(commitTree.getCommitMerge()))
+                  .message(commitTree.getCommitMessage())
+                  .parent(Optional.ofNullable(commitTree.getCommitParent()))
+                  .tree(commitTree.getTreeId())
+                  .build());
+            }
+            
+            tree.putValues(commitTree.getTreeValue().getName(), commitTree.getTreeValue());
+            builder.putBlobs(commitTree.getBlob().getId(), commitTree.getBlob());
+          }
+          if(tree != null) {
+            builder.status(CommitLockStatus.LOCK_TAKEN).tree(tree.build());
+          } else {
+            builder.status(CommitLockStatus.NOT_FOUND);
+          }
+          return (CommitLock) builder.build();
+        })
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
   }
 }

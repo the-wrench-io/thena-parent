@@ -16,7 +16,9 @@ import io.resys.thena.tasks.spi.store.DocumentStoreException;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ChangeActionsImpl implements ChangeActions {
   private final DocumentStore ctx;

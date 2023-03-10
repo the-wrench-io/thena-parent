@@ -35,11 +35,9 @@ import io.resys.thena.docdb.file.tables.Table.FileTuple;
 import io.resys.thena.docdb.file.tables.Table.FileTupleList;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ErrorHandler;
+import io.resys.thena.docdb.spi.ImmutableBatch;
 import io.resys.thena.docdb.spi.ImmutableInsertResult;
 import io.resys.thena.docdb.spi.ImmutableUpsertResult;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse.CommitResponseStatus;
-import io.resys.thena.docdb.spi.commits.body.ImmutableCommitInternalResponse;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -273,78 +271,78 @@ public class ClientInsertBuilderFilePool implements ClientInsertBuilder {
  
   
   @Override
-  public Uni<CommitInternalResponse> output(CommitInternalResponse output) {    
+  public Uni<Batch> batch(Batch output) {
+    final var ref = output.getRef().getRef();
     final var blobsInsert = sqlBuilder.blobs().insertAll(output.getBlobs());
     final var treeInsert = sqlBuilder.trees().insertOne(output.getTree());
     final var treeValueInsert = sqlBuilder.treeItems().insertAll(output.getTree());
     final var commitsInsert = sqlBuilder.commits().insertOne(output.getCommit());
-    final var findRefByName = sqlBuilder.refs().getByName(output.getRef().getName());
+    final var findRefByName = sqlBuilder.refs().getByName(ref.getName());
+  
+    final Uni<Batch> start;
+    if(blobsInsert.getProps().isEmpty()) {
+      start = Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
+    } else {
+      start = apply(client, blobsInsert).onItem()
+      .transform(row -> successOutput(output, "Blobs saved, number of new entries: " + row.size()))
+      .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create blobs", e));
+    }
     
-    
-      final Uni<CommitInternalResponse> start;
-      if(blobsInsert.getProps().isEmpty()) {
-        start = Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
-      } else {
-        start = apply(client, blobsInsert).onItem()
-        .transform(row -> successOutput(output, "Blobs saved, number of new entries: " + row.size()))
-        .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create blobs", e));
-      }
+    return start.chain(next -> {
       
-      return start.chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        return apply(client, treeInsert).onItem()
+            .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.size()))
+            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
+      }
+      return Uni.createFrom().item(next);
+    }).chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        if(treeValueInsert.getProps().isEmpty()) {
+          return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
+        }
         
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          return apply(client, treeInsert).onItem()
-              .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.size()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
-        }
-        return Uni.createFrom().item(next);
-      }).chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          if(treeValueInsert.getProps().isEmpty()) {
-            return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
+        return apply(client, treeValueInsert).onItem()
+            .transform(row -> successOutput(next, "Tree Values saved, number of new entries: " + row.size()))
+            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree values", e));
+      }
+      return Uni.createFrom().item(next);
+    }).chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        return apply(client, commitsInsert).onItem()
+            .transform(row -> successOutput(next, "Commit saved, number of new entries: " + row.size()))
+            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create commit", e));
+      }
+      return Uni.createFrom().item(next);
+    }).chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        return apply(client, findRefByName).onItem().transformToUni(item -> {
+          final var exists = item.iterator();
+          if(!exists.hasNext()) {
+            return apply(client, sqlBuilder.refs().insertOne(ref))
+                .onItem().transform(row -> successOutput(next, "New ref created: " + ref.getName() + ": " + ref.getCommit()));
           }
-          
-          return apply(client, treeValueInsert).onItem()
-              .transform(row -> successOutput(next, "Tree Values saved, number of new entries: " + row.size()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree values", e));
-        }
-        return Uni.createFrom().item(next);
-      }).chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          return apply(client, commitsInsert).onItem()
-              .transform(row -> successOutput(next, "Commit saved, number of new entries: " + row.size()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create commit", e));
-        }
-        return Uni.createFrom().item(next);
-      }).chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          return apply(client, findRefByName).onItem().transformToUni(item -> {
-            final var exists = item.iterator();
-            if(!exists.hasNext()) {
-              return apply(client, sqlBuilder.refs().insertOne(next.getRef()))
-                  .onItem().transform(row -> successOutput(next, "New ref created: " + next.getRef().getName() + ": " + next.getRef().getCommit()));
-            }
-            return apply(client, sqlBuilder.refs().updateOne(next.getRef(), next.getCommit()))
-                .onItem().transform(row -> successOutput(next, "Existing ref: " + next.getRef().getName() + ", updated with commit: " + next.getRef().getCommit()));
-          })
-          .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create/update ref", e)); 
-        }
-        return Uni.createFrom().item(next);
-      });
+          return apply(client, sqlBuilder.refs().updateOne(ref, next.getCommit()))
+              .onItem().transform(row -> successOutput(next, "Existing ref: " + ref.getName() + ", updated with commit: " + ref.getCommit()));
+        })
+        .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create/update ref", e)); 
+      }
+      return Uni.createFrom().item(next);
+    });
   }
   
-  private CommitInternalResponse successOutput(CommitInternalResponse current, String msg) {
-    return ImmutableCommitInternalResponse.builder()
+  private Batch successOutput(Batch current, String msg) {
+    return ImmutableBatch.builder()
       .from(current)
-      .status(CommitResponseStatus.OK)
+      .status(BatchStatus.OK)
       .addMessages(ImmutableMessage.builder().text(msg).build())
       .build();
   }
   
-  private CommitInternalResponse failOutput(CommitInternalResponse current, String msg, Throwable t) {
-    return ImmutableCommitInternalResponse.builder()
+  private Batch failOutput(Batch current, String msg, Throwable t) {
+    return ImmutableBatch.builder()
         .from(current)
-        .status(CommitResponseStatus.ERROR)
+        .status(BatchStatus.ERROR)
         .addMessages(ImmutableMessage.builder().text(msg).build())
         .build(); 
   }

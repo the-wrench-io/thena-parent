@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.queries;
 
+import java.util.Optional;
+
 import io.resys.thena.docdb.api.LogConstants;
 
 /*-
@@ -23,11 +25,15 @@ import io.resys.thena.docdb.api.LogConstants;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.spi.ClientQuery.RefLock;
+import io.resys.thena.docdb.spi.ClientQuery.RefLockStatus;
 import io.resys.thena.docdb.spi.ClientQuery.RefQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
+import io.resys.thena.docdb.spi.ImmutableRefLock;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
@@ -39,7 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class RefQuerySqlPool implements RefQuery {
 
-  private final io.vertx.mutiny.sqlclient.Pool client;
+  private final SqlClientWrapper wrapper;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
@@ -53,7 +59,7 @@ public class RefQuerySqlPool implements RefQuery {
           sql.getProps().deepToString(),
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute(sql.getProps())
       .onItem()
@@ -75,7 +81,7 @@ public class RefQuerySqlPool implements RefQuery {
           sql.getValue());
     }
 
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute()
       .onItem()
@@ -96,7 +102,7 @@ public class RefQuerySqlPool implements RefQuery {
           "",
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute()
       .onItem()
@@ -113,7 +119,7 @@ public class RefQuerySqlPool implements RefQuery {
           sql.getProps().deepToString(),
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
       .mapping(row -> sqlMapper.ref(row))
       .execute(sql.getProps())
       .onItem()
@@ -124,6 +130,45 @@ public class RefQuerySqlPool implements RefQuery {
         }
         return null;
       })
+      .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
+  }
+  @Override
+  public Uni<RefLock> lockName(String name) {
+    RepoAssert.notEmpty(name, () -> "name must be defined!");
+    final var sql = sqlBuilder.refs().getLockByName(name);
+    
+    if(log.isDebugEnabled()) {
+      log.debug("Ref lockName query, with props: {} \r\n{}", 
+          sql.getProps().deepToString(),
+          sql.getValue());
+    }
+    return wrapper.getClient().preparedQuery(sql.getValue())
+      .mapping(row -> sqlMapper.ref(row))
+      .execute(sql.getProps())
+      .onItem()
+      .transform((RowSet<Ref> rowset) -> {
+        final var it = rowset.iterator();
+        if(it.hasNext()) {
+          return (RefLock) ImmutableRefLock.builder()
+              .ref(Optional.of(it.next()))
+              .status(RefLockStatus.LOCK_TAKEN)
+              .message(Optional.empty())
+              .build();
+        }
+        return (RefLock) ImmutableRefLock.builder()
+            .ref(Optional.empty())
+            .message(Optional.empty())
+            .status(RefLockStatus.NOT_FOUND)
+            .build();
+      })
+      /*
+      .onFailure(throwable -> errorHandler.isLocked(throwable)).recoverWithItem((error) -> (RefLock) 
+          ImmutableRefLock.builder()
+            .ref(Optional.empty())
+            .status(RefLockStatus.BLOCKED)
+            .message(Optional.ofNullable(error.getMessage()))
+            .build()
+      )*/
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
   }
 }

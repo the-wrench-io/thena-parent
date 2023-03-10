@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.statement;
 
+import java.util.ArrayList;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -21,6 +23,7 @@ package io.resys.thena.docdb.sql.statement;
  */
 
 import java.util.Arrays;
+import java.util.List;
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.spi.ClientCollections;
@@ -74,6 +77,42 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
             commit.getTree(), commit.getParent().orElse(null), commit.getMerge().orElse(null))))
         .build();
   }
-  
+  @Override
+  public SqlTuple getLock(String commitId, String headName) {
+    List<Object> props = new ArrayList<>();
+    StringBuilder where = new StringBuilder().append(" refs.name = $1 ");
+    props.add(headName);
+    
+    if(commitId != null) {
+      where.append(" AND commits.id = $2 ");
+      props.add(commitId);
+    }
+    
+    return ImmutableSqlTuple.builder()
+        .value(new SqlStatement()
+        .append("SELECT ")
+        .append("  refs.name as ref_name,").ln()
+        .append("  blobs.value as blob_value,").ln()
+        .append("  treeValues.name as blob_name,").ln()
+        .append("  treeValues.blob as blob_id,").ln()
+        .append("  treeValues.tree as tree_id,").ln()
+        .append("  commits.author as author,").ln()
+        .append("  commits.datetime as datetime,").ln()
+        .append("  commits.message as message,").ln()
+        .append("  commits.merge as merge,").ln()
+        .append("  commits.parent as commit_parent,").ln()
+        .append("  commits.id as commit_id").ln()
+        .append(" FROM ").append(options.getCommits()).append(" as commits").ln()
+        .append("  JOIN ").append(options.getTrees()).append(" as trees ON(trees.id = commits.tree)").ln()
+        .append("  JOIN ").append(options.getTreeItems()).append(" as treeValues ON(trees.id = treeValues.tree)").ln()
+        .append("  JOIN ").append(options.getRefs()).append(" as refs ON(refs.commit = commits.id)").ln()
+        .append("  JOIN ").append(options.getBlobs()).append(" as blobs ON(blobs.id = treeValues.blob)").ln()
+        .append(" WHERE ").ln()
+        .append(where.toString())
+        .append(" FOR UPDATE")
+        .build())
+        .props(Tuple.from(props))
+        .build();
+  }  
   
 }

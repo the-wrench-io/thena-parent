@@ -54,4 +54,14 @@ public class PgTestErrors implements ErrorHandler {
   public void deadEnd(String additionalMsg) {
     LOGGER.error(additionalMsg);
   }
+
+  @Override
+  public boolean isLocked(Throwable e) {
+    if(e instanceof PgException) {
+      PgException ogre = (PgException) e;
+      
+      return "40P01".equals(ogre.getCode());
+    }
+    return false;
+  }
 }

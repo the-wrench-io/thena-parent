@@ -37,6 +37,7 @@ public interface ClientState {
   
   ClientRepoState withRepo(Repo repo);
   Uni<ClientRepoState> withRepo(String repoNameOrId);
+  <R> Uni<R> withTransaction(String repoId, String headName, TransactionFunction<R> callback);
   
   interface RepoBuilder {
     Uni<Repo> getByName(String name);
@@ -47,10 +48,9 @@ public interface ClientState {
   
   interface ClientRepoState {
     String getRepoName();
+    Repo getRepo();
     ClientInsertBuilder insert();
     ClientQuery query();
-    
-    <R> Uni<R> inTransaction(TransactionFunction<R> callback);
   }
   
   @FunctionalInterface

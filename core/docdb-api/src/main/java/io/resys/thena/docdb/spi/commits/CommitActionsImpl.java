@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi.commits;
 
+import java.util.List;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -22,10 +24,17 @@ package io.resys.thena.docdb.spi.commits;
 
 import io.resys.thena.docdb.api.actions.CommitActions;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
+import io.resys.thena.docdb.api.exceptions.RepoException;
+import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientState;
+import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor
+@Slf4j
 public class CommitActionsImpl implements CommitActions {
 
   private final ClientState state;
@@ -34,5 +43,43 @@ public class CommitActionsImpl implements CommitActions {
   @Override
   public HeadCommitBuilder head() {
     return new HeadCommitBuilderImpl(state, objectsActions);
+  }
+
+  @Override
+  public CommitQuery query() {
+    return new CommitQuery() {
+      private String repoId; 
+      @Override
+      public CommitQuery head(String repoId) {
+        this.repoId = repoId;
+        return this;
+      }
+      @Override
+      public Uni<List<Commit>> findAllCommits() {
+        return state.repos().getByNameOrId(repoId).onItem()
+            .transformToUni((Repo existing) -> {
+              if(existing == null) {
+                final var ex = RepoException.builder().notRepoWithName(repoId);
+                log.error(ex.getText());
+                throw new RepoException(ex.getText());
+              }
+              final var repoCtx = state.withRepo(existing);      
+              return repoCtx.query().commits().findAll().collect().asList();
+            });
+      }
+      @Override
+      public Uni<List<Tree>> findAllCommitTrees() {
+        return state.repos().getByNameOrId(repoId).onItem()
+            .transformToUni((Repo existing) -> {
+              if(existing == null) {
+                final var ex = RepoException.builder().notRepoWithName(repoId);
+                log.error(ex.getText());
+                throw new RepoException(ex.getText());
+              }
+              final var repoCtx = state.withRepo(existing);      
+              return repoCtx.query().trees().findAll().collect().asList();
+            });
+      }
+    };
   }
 }

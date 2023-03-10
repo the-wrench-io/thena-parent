@@ -26,6 +26,7 @@ import java.util.Optional;
 import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.ImmutableBlobHistory;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
+import io.resys.thena.docdb.api.models.ImmutableCommitTree;
 import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableRepo;
 import io.resys.thena.docdb.api.models.ImmutableTag;
@@ -34,6 +35,7 @@ import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.CommitTree;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
@@ -115,6 +117,29 @@ public class SqlMapperImpl implements SqlMapper {
         .blob(ImmutableBlob.builder()
             .id(row.getString("blob_id"))
             .value(new JsonObject(row.getString("blob_value")))
+            .build())
+        .build();
+  }
+  @Override
+  public CommitTree commitTree(Row row) {
+    return ImmutableCommitTree.builder()
+        .treeId(row.getString("tree_id"))
+        .treeValue(ImmutableTreeValue.builder()
+            .blob(row.getString("blob_id"))
+            .name(row.getString("blob_name"))
+            .build())
+        .commitId(row.getString("commit_id"))
+        .commitParent(row.getString("commit_parent"))
+
+        .commitAuthor(row.getString("author"))
+        .commitDateTime(LocalDateTime.parse(row.getString("datetime")))
+        .commitMessage(row.getString("message"))
+        .commitMerge(row.getString("merge"))
+        .refName(row.getString("ref_name"))
+        .blob(ImmutableBlob.builder()
+            .id(row.getString("blob_id"))
+            //.value(new JsonObject(row.getString("blob_value")))
+            .value(row.getJsonObject("blob_value"))
             .build())
         .build();
   }

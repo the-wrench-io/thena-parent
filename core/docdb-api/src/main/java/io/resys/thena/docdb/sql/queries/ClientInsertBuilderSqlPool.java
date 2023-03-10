@@ -28,21 +28,23 @@ import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ErrorHandler;
+import io.resys.thena.docdb.spi.ImmutableBatch;
 import io.resys.thena.docdb.spi.ImmutableInsertResult;
 import io.resys.thena.docdb.spi.ImmutableUpsertResult;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse.CommitResponseStatus;
-import io.resys.thena.docdb.spi.commits.body.ImmutableCommitInternalResponse;
+import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.resys.thena.docdb.sql.support.Execute;
+import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.sqlclient.SqlClientHelper;
+import io.vertx.mutiny.sqlclient.SqlClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
-  private final io.vertx.mutiny.sqlclient.Pool client;
+  private final SqlClientWrapper wrapper;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
@@ -51,7 +53,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   @Override
   public Uni<InsertResult> tag(Tag tag) {
     final var tagInsert = sqlBuilder.tags().insertOne(tag);
-    return client.preparedQuery(tagInsert.getValue()).execute(tagInsert.getProps())
+    return wrapper.getClient().preparedQuery(tagInsert.getValue()).execute(tagInsert.getProps())
         .onItem().transform(inserted -> (InsertResult) ImmutableInsertResult.builder().duplicate(false).build())
         .onFailure(e -> errorHandler.duplicate(e))
         .recoverWithItem(e -> ImmutableInsertResult.builder().duplicate(true).build())
@@ -62,7 +64,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   public Uni<UpsertResult> blob(Blob blob) {
     final var blobsInsert = sqlBuilder.blobs().insertOne(blob);
     
-    return client.preparedQuery(blobsInsert.getValue()).execute(blobsInsert.getProps())
+    return wrapper.getClient().preparedQuery(blobsInsert.getValue()).execute(blobsInsert.getProps())
         .onItem()
         .transform(updateResult -> (UpsertResult) ImmutableUpsertResult.builder()
             .id(blob.getId())
@@ -97,7 +99,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
 
   public Uni<UpsertResult> ref(Ref ref, Commit commit) {
     final var findByName = sqlBuilder.refs().getByName(ref.getName());
-    return client.preparedQuery(findByName.getValue())
+    return wrapper.getClient().preparedQuery(findByName.getValue())
         .mapping(r -> sqlMapper.ref(r))
         .execute(findByName.getProps())
     .onItem().transformToUni(item -> {
@@ -113,7 +115,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   
   public Uni<UpsertResult> updateRef(Ref ref, Commit commit) {
     final var refInsert = sqlBuilder.refs().updateOne(ref, commit);
-    return client.preparedQuery(refInsert.getValue()).execute(refInsert.getProps())
+    return wrapper.getClient().preparedQuery(refInsert.getValue()).execute(refInsert.getProps())
         .onItem()
         .transform(updateResult -> {
 
@@ -152,7 +154,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   
   private Uni<UpsertResult> createRef(Ref ref, Commit commit) {
     final var refsInsert = sqlBuilder.refs().insertOne(ref);
-    return client.preparedQuery(refsInsert.getValue()).execute(refsInsert.getProps())
+    return wrapper.getClient().preparedQuery(refsInsert.getValue()).execute(refsInsert.getProps())
         .onItem()
         .transform(updateResult -> (UpsertResult) ImmutableUpsertResult.builder()
             .id(ref.getName())
@@ -189,12 +191,13 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   public Uni<UpsertResult> tree(Tree tree) {
     final var treeInsert = sqlBuilder.trees().insertOne(tree);
     final var treeValueInsert = sqlBuilder.treeItems().insertAll(tree);
-    return SqlClientHelper.inTransactionUni(client, tx -> {
-      return tx.preparedQuery(treeInsert.getValue()).execute(treeInsert.getProps())
-          .onItem().transformToUni(junk -> 
-            tx.preparedQuery(treeValueInsert.getValue()).executeBatch(treeValueInsert.getProps()));
-    }).onItem()
-    .transform(updateResult -> (UpsertResult) ImmutableUpsertResult.builder()
+    
+    RepoAssert.isTrue(this.wrapper.getTx().isPresent(), () -> "Transaction must be started!");
+    final var tx = wrapper.getClient();
+    
+    return tx.preparedQuery(treeInsert.getValue()).execute(treeInsert.getProps())
+    .onItem().transformToUni(junk -> tx.preparedQuery(treeValueInsert.getValue()).executeBatch(treeValueInsert.getProps()))
+    .onItem().transform(updateResult -> (UpsertResult) ImmutableUpsertResult.builder()
         .id(tree.getId())
         .isModified(true)
         .target(tree)
@@ -234,7 +237,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   @Override
   public Uni<UpsertResult> commit(Commit commit) {
     final var commitsInsert = sqlBuilder.commits().insertOne(commit);
-    return client.preparedQuery(commitsInsert.getValue()).execute(commitsInsert.getProps())
+    return wrapper.getClient().preparedQuery(commitsInsert.getValue()).execute(commitsInsert.getProps())
         .onItem()
         .transform(updateResult -> (UpsertResult) ImmutableUpsertResult.builder()
             .id(commit.getId())
@@ -269,82 +272,118 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
  
   
   @Override
-  public Uni<CommitInternalResponse> output(CommitInternalResponse output) {    
+  public Uni<Batch> batch(Batch output) {    
     final var blobsInsert = sqlBuilder.blobs().insertAll(output.getBlobs());
     final var treeInsert = sqlBuilder.trees().insertOne(output.getTree());
     final var treeValueInsert = sqlBuilder.treeItems().insertAll(output.getTree());
     final var commitsInsert = sqlBuilder.commits().insertOne(output.getCommit());
-    final var findRefByName = sqlBuilder.refs().getByName(output.getRef().getName());
+    
+    RepoAssert.isTrue(this.wrapper.getTx().isPresent(), () -> "Transaction must be started!");
     
     
+    final var tx = wrapper.getClient();    
     
-    return SqlClientHelper.inTransactionUni(client, tx -> {
+    System.err.println("--------------------" + treeValueInsert.getProps().size());
+    
+    
+    if(blobsInsert.getProps().isEmpty()) {
+      return Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
+    } 
+    
+    final var blobUni = Execute.apply(tx, blobsInsert).onItem()
+      .transform(row -> successOutput(output, "Blobs saved, number of new entries: " + row.rowCount()))
+      .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create blobs", e));
+    
+    final var treeUni = Execute.apply(tx, treeInsert).onItem()
+      .transform(row -> successOutput(output, "Tree saved, number of new entries: " + row.rowCount()))
+      .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create tree \r\n" + output.getTree(), e));
       
-      final Uni<CommitInternalResponse> start;
-      if(blobsInsert.getProps().isEmpty()) {
-        start = Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
-      } else {
-        start = Execute.apply(tx, blobsInsert).onItem()
-        .transform(row -> successOutput(output, "Blobs saved, number of new entries: " + row.rowCount()))
-        .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create blobs", e));
-      }
+    
+    final Uni<Batch> treeValueUni;
+    if(treeValueInsert.getProps().isEmpty()) {
+      treeValueUni = Uni.createFrom().item(successOutput(output, "Tree Values saved, number of new entries: 0"));    
+    } else {
+      treeValueUni = Execute.apply(tx, treeValueInsert).onItem()
+          .transform(row -> successOutput(output, "Tree Values saved, number of new entries: " + row.rowCount()))
+          .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create tree values", e)); 
+    }
+    
+    
+    final var commitUni = Execute.apply(tx, commitsInsert).onItem()
+        .transform(row -> successOutput(output, "Commit saved, number of new entries: " + row.rowCount()))
+        .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create commit", e));
+    
+    
+    final var refUni = createOrUpdateRef(output, tx);
+    
+    return Uni.combine().all().unis(blobUni, treeUni, treeValueUni, commitUni, refUni).asTuple().onItem().transform(tuple -> {
       
-      return start
-      .chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          return Execute.apply(tx, treeInsert).onItem()
-              .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.rowCount()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
-        }
-        return Uni.createFrom().item(next);
-      }).chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          if(treeValueInsert.getProps().isEmpty()) {
-            return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
-          }
-          
-          return Execute.apply(tx, treeValueInsert).onItem()
-              .transform(row -> successOutput(next, "Tree Values saved, number of new entries: " + row.rowCount()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree values", e));
-        }
-        return Uni.createFrom().item(next);
-      }).chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          return Execute.apply(tx, commitsInsert).onItem()
-              .transform(row -> successOutput(next, "Commit saved, number of new entries: " + row.rowCount()))
-              .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create commit", e));
-        }
-        return Uni.createFrom().item(next);
-      }).chain(next -> {
-        if(next.getStatus() == CommitResponseStatus.OK) {
-          return Execute.apply(tx, findRefByName).onItem().transformToUni(item -> {
-            final var exists = item.iterator();
-            if(!exists.hasNext()) {
-              return Execute.apply(tx, sqlBuilder.refs().insertOne(next.getRef()))
-                  .onItem().transform(row -> successOutput(next, "New ref created: " + next.getRef().getName() + ": " + next.getRef().getCommit()));
-            }
-            return Execute.apply(tx, sqlBuilder.refs().updateOne(next.getRef(), next.getCommit()))
-                .onItem().transform(row -> successOutput(next, "Existing ref: " + next.getRef().getName() + ", updated with commit: " + next.getRef().getCommit()));
-          })
-          .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create/update ref", e)); 
-        }
-        return Uni.createFrom().item(next);
-      });
+      return output;
     });
+    /*
+    return start
+    .chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        return Execute.apply(tx, treeInsert).onItem()
+            .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.rowCount()))
+            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
+      }
+      return Uni.createFrom().item(next);
+    }).chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        if(treeValueInsert.getProps().isEmpty()) {
+          return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
+        }
+        
+        return Execute.apply(tx, treeValueInsert).onItem()
+            .transform(row -> successOutput(next, "Tree Values saved, number of new entries: " + row.rowCount()))
+            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree values", e));
+      }
+      return Uni.createFrom().item(next);
+    }).chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        return Execute.apply(tx, commitsInsert).onItem()
+            .transform(row -> successOutput(next, "Commit saved, number of new entries: " + row.rowCount()))
+            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create commit", e));
+      }
+      return Uni.createFrom().item(next);
+    }).chain(next -> {
+      if(next.getStatus() == BatchStatus.OK) {
+        return createOrUpdateRef(next, tx); 
+      }
+      return Uni.createFrom().item(next);
+    });
+*/
   }
   
-  private CommitInternalResponse successOutput(CommitInternalResponse current, String msg) {
-    return ImmutableCommitInternalResponse.builder()
+  private Uni<Batch> createOrUpdateRef(Batch next, SqlClient tx) {
+    final var refExists = next.getRef().getCreated();
+    final var ref = next.getRef().getRef();
+    
+    if(refExists) {
+      return Execute.apply(tx, sqlBuilder.refs().updateOne(next.getRef().getRef(), next.getCommit()))
+          .onItem().transform(row -> successOutput(next, "Existing ref: " + ref.getName() + ", updated with commit: " + ref.getCommit()))
+          .onFailure().recoverWithItem(e -> failOutput(next, "Failed to update ref", e));
+    }
+
+    return Execute.apply(tx, sqlBuilder.refs().insertOne(next.getRef().getRef()))
+        .onItem().transform(row -> successOutput(next, "New ref created: " + ref.getName() + ": " + ref.getCommit()))
+        .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create ref", e));
+  }
+  
+  private Batch successOutput(Batch current, String msg) {
+    return ImmutableBatch.builder()
       .from(current)
-      .status(CommitResponseStatus.OK)
+      .status(BatchStatus.OK)
       .addMessages(ImmutableMessage.builder().text(msg).build())
       .build();
   }
   
-  private CommitInternalResponse failOutput(CommitInternalResponse current, String msg, Throwable t) {
-    return ImmutableCommitInternalResponse.builder()
+  private Batch failOutput(Batch current, String msg, Throwable t) {
+    log.error("Batch failed because of: " + msg, t);
+    return ImmutableBatch.builder()
         .from(current)
-        .status(CommitResponseStatus.ERROR)
+        .status(BatchStatus.ERROR)
         .addMessages(ImmutableMessage.builder().text(msg).build())
         .build(); 
   }

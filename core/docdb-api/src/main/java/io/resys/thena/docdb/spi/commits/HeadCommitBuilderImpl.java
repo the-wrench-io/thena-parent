@@ -21,24 +21,24 @@ package io.resys.thena.docdb.spi.commits;
  */
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.api.actions.CommitActions.HeadCommitBuilder;
 import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
+import io.resys.thena.docdb.api.models.Objects.CommitLock;
+import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
+import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
+import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ClientState;
-import io.resys.thena.docdb.spi.commits.body.CommitBodyVisitor;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalRequest;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse.CommitResponseStatus;
+import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
+import io.resys.thena.docdb.spi.commits.CommitBatchBuilderImpl.CommitTreeState;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -60,7 +60,7 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
   private String author;
   private String message;
   private String parentCommit;
-  private Boolean parentIsLatest;
+  private Boolean parentIsLatest = Boolean.FALSE;
 
   @Override
   public HeadCommitBuilder id(String headGid) {
@@ -112,6 +112,12 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     this.parentCommit = parentCommit;
     return this;
   }
+
+  @Override
+  public HeadCommitBuilder parentIsLatest() {
+    this.parentIsLatest = true;
+    return this;
+  }
   @Override
   public Uni<CommitResult> build() {
     RepoAssert.notEmpty(author, () -> "author can't be empty!");
@@ -125,38 +131,94 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     }
     RepoAssert.notEmpty(repoId, () -> "Can't resolve repoId!");
     RepoAssert.notEmpty(headName, () -> "Can't resolve headName!");
-    
-    final String gid = Identifiers.toRepoHeadGid(repoId, headName);
-    
-    return objectsActions.refState().repo(this.repoId).ref(headName).build()
-        .onItem().transformToUni(state -> {
-          final var result = validateState(state, gid);
-          if(result != null) {
-            return Uni.createFrom().item(result);
+
+    final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
+    return this.state.withTransaction(repoId, headName, tx -> {
+      
+      return tx.query().commits().getLock(parentCommit, headName)
+        .onItem().transformToUni(lock -> {
+
+          final var validation = validateRepo(lock, parentCommit);
+          if(validation != null) {
+            return Uni.createFrom().item(validation);
           }
-          return createCommit(state, gid);
+          
+          final var batch = doInLock(lock, tx);
+          return tx.insert().batch(batch)
+              .onItem().transform(rsp -> ImmutableCommitResult.builder()
+                .gid(gid)
+                .commit(rsp.getCommit())
+                .addMessages(rsp.getLog())
+                .addAllMessages(rsp.getMessages())
+                .status(visitStatus(rsp.getStatus()))
+                .build());
         });
+    
+    });
+    
   }
   
-  private CommitResult validateState(ObjectsResult<RefObjects> state, String gid) {
-    if(state.getStatus() == ObjectsStatus.ERROR) {
-      return ImmutableCommitResult.builder()
-          .gid(gid)
-          .addAllMessages(state.getMessages())
-          .status(CommitStatus.ERROR)
-          .build();
+  private Batch doInLock(CommitLock lock, ClientRepoState tx) {
+    final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
+    final CommitTreeState init;
+    if(lock.getStatus() == CommitLockStatus.NOT_FOUND) {
+      // first commit
+      init = CommitTreeState.builder().ref(lock.getRef()).refName(headName).gid(gid).repo(tx.getRepo()).build();
+    } else {
+      init = CommitTreeState.builder()
+        .ref(lock.getRef())
+        .refName(headName)
+        .gid(gid)
+        .repo(tx.getRepo())
+        .commit(lock.getCommit())
+        .tree(lock.getTree())
+        .build();
     }
     
+    return new CommitBatchBuilderImpl(init)
+        .commitParent(parentCommit)
+        .commitAuthor(author)
+        .commitMessage(message)
+        .toBeInserted(appendBlobs)
+        .toBeRemoved(deleteBlobs)
+        .build();
+  }
+  
+  
+  /**
+   * 
+   *     return CommitProcessorImpl.from(state).process(repoId, headName, parentCommit)
+        .onItem().transformToUni(process -> process
+            .commitAuthor(author)
+            .commitMessage(message)
+            .toBeInserted(appendBlobs)
+            .toBeRemoved(deleteBlobs)
+            .execute());
+
+return (CommitBatchBuilder) new CommitBatchBuilderImpl(repoCtx, init);
     
+      tx.insert().batch(batch);
+.onItem().transform(rsp -> ImmutableCommitResult.builder()
+          .gid(this.commitTree.getGid())
+          .commit(rsp.getCommit())
+          .addMessages(rsp.getLog())
+          .addAllMessages(rsp.getMessages())
+          .status(visitStatus(rsp.getStatus()))
+          .build())
+   */
+  
+
+  private CommitResult validateRepo(CommitLock state, String commitParent) {
+    final var gid = Identifiers.toRepoHeadGid(repoId, headName);
     // Unknown parent
-    if(state.getObjects() == null && parentCommit != null) {
+    if(state.getCommit().isEmpty() && commitParent != null) {
       return (CommitResult) ImmutableCommitResult.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
-                  .append("Commit to head: '").append(headName).append("'")
+                  .append("Commit to: '").append(gid).append("'")
                   .append(" is rejected.")
-                  .append(" Your head is: '").append(parentCommit).append("')")
+                  .append(" Your head is: '").append(commitParent).append("')")
                   .append(" but remote has no head.").append("'!")
                   .toString())
               .build())
@@ -167,15 +229,15 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     
     
     // No parent commit defined for existing head
-    if(state.getObjects() != null && parentCommit == null && !Boolean.TRUE.equals(this.parentIsLatest)) {
+    if(state.getCommit().isPresent() && commitParent == null && !Boolean.TRUE.equals(parentIsLatest)) {
       return (CommitResult) ImmutableCommitResult.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
                   .append("Parent commit can only be undefined for the first commit!")
-                  .append(" Parent commit for")
-                  .append(" head: '").append(headName).append("'")
-                  .append(" is: '").append(state.getObjects().getRef().getCommit()).append("'!")
+                  .append(" Parent commit for:")
+                  .append(" '").append(gid).append("'")
+                  .append(" is: '").append(state.getCommit().get().getId()).append("'!")
                   .toString())
               .build())
           .status(CommitStatus.ERROR)
@@ -183,15 +245,15 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     }
     
     // Wrong parent commit
-    if(state.getObjects() != null && parentCommit != null && 
-        !parentCommit.equals(state.getObjects().getRef().getCommit()) &&
-        !Boolean.TRUE.equals(this.parentIsLatest)) {
+    if(state.getCommit().isPresent() && commitParent != null && 
+        !commitParent.equals(state.getCommit().get().getId()) &&
+        !Boolean.TRUE.equals(parentIsLatest)) {
       
       final var text = new StringBuilder()
-        .append("Commit to head: '").append(headName).append("'")
+        .append("Commit to: '").append(gid).append("'")
         .append(" is rejected.")
-        .append(" Your head is: '").append(parentCommit).append("')")
-        .append(" but remote is: '").append(state.getObjects().getRef().getCommit()).append("'!")
+        .append(" Your head is: '").append(commitParent).append("')")
+        .append(" but remote is: '").append(state.getCommit().get().getId()).append("'!")
         .toString();
       
       return ImmutableCommitResult.builder()
@@ -204,39 +266,21 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     return null;
   }
   
-  private Uni<CommitResult> createCommit(ObjectsResult<RefObjects> state, String gid) {
-    final var toBeSaved = new CommitBodyVisitor().visit(
-        CommitInternalRequest.builder()
-          .commitAuthor(this.author)
-          .commitMessage(this.message)
-          .ref(headName)
-          .append(appendBlobs)
-          .remove(deleteBlobs)
-          .repo(state.getRepo())
-          .parent(Optional.ofNullable(state.getObjects()))
-          .build());
-    return new CommitBodyInsertVisitor(this.state.withRepo(state.getRepo())).visit(toBeSaved)
-        .onItem().transform(saved -> (CommitResult) ImmutableCommitResult.builder()
-          .gid(gid)
-          .commit(saved.getCommit())
-          .addAllMessages(saved.getMessages())
-          .addMessages(saved.getLog())
-          .status(visitStatus(saved.getStatus()))
-          .build());
-  }
-  
-  private CommitStatus visitStatus(CommitResponseStatus src) {
-    if(src == CommitResponseStatus.OK) {
+  private static CommitStatus visitStatus(BatchStatus src) {
+    if(src == BatchStatus.OK) {
       return CommitStatus.OK;
-    } else if(src == CommitResponseStatus.CONFLICT) {
+    } else if(src == BatchStatus.CONFLICT) {
       return CommitStatus.CONFLICT;
     }
     return CommitStatus.ERROR;
     
   }
-  @Override
-  public HeadCommitBuilder parentIsLatest() {
-    this.parentIsLatest = true;
-    return this;
+  
+  interface CommitBatchBuilder {
+    CommitBatchBuilder commitAuthor(String commitAuthor);
+    CommitBatchBuilder commitMessage(String commitMessage);
+    CommitBatchBuilder toBeInserted(Map<String, JsonObject> toBeInserted);
+    CommitBatchBuilder toBeRemoved(Collection<String> toBeRemoved);
+    Batch build();
   }
 }

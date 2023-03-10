@@ -51,27 +51,27 @@ public class ClientQuerySqlPool implements ClientQuery {
   
   @Override
   public TagQuery tags() {
-    return new TagQuerySqlPool(context.getWrapper().getClient(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
+    return new TagQuerySqlPool(context.getWrapper(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
   }
 
   @Override
   public CommitQuery commits() {
-    return new CommitQuerySqlPool(context.getWrapper().getClient(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
+    return new CommitQuerySqlPool(context.getWrapper(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
   }
 
   @Override
   public RefQuery refs() {
-    return new RefQuerySqlPool(context.getWrapper().getClient(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
+    return new RefQuerySqlPool(context.getWrapper(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
   }
 
   @Override
   public TreeQuery trees() {
-    return new TreeQuerySqlPool(context.getWrapper().getClient(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
+    return new TreeQuerySqlPool(context.getWrapper(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
   }
 
   @Override
   public BlobQuery blobs() {
-    return new BlobQuerySqlPool(context.getWrapper().getClient(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
+    return new BlobQuerySqlPool(context.getWrapper(), context.getMapper(), context.getBuilder(), context.getErrorHandler());
   }
   
   @Override

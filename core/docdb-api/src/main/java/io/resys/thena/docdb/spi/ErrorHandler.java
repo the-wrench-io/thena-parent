@@ -23,6 +23,7 @@ package io.resys.thena.docdb.spi;
 public interface ErrorHandler {    
   boolean notFound(Throwable e);
   boolean duplicate(Throwable e);
+  boolean isLocked(Throwable e);
   void deadEnd(String additionalMsg, Throwable e);
   void deadEnd(String additionalMsg);
 

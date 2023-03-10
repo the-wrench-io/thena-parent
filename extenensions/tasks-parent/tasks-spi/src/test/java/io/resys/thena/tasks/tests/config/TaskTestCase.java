@@ -1,5 +1,6 @@
 package io.resys.thena.tasks.tests.config;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
+import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.jackson.VertexExtModule;
 import io.resys.thena.tasks.spi.DocumentStoreImpl;
 import io.resys.thena.tasks.spi.TaskClientImpl;
@@ -22,6 +24,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TaskTestCase {
   @Inject io.vertx.mutiny.pgclient.PgPool pgPool;
+  public final Duration atMost = Duration.ofMinutes(5);
+  
   private DocumentStoreImpl store;
   private TaskClientImpl client;
   private static final String DB = "junit-tasks-"; 
@@ -30,7 +34,6 @@ public class TaskTestCase {
   
   @BeforeEach
   public void setUp() {
-    
     store = DocumentStoreImpl.builder().repoName(DB).pgPool(pgPool).pgDb(DB + ID.getAndIncrement()).build();
     client = new TaskClientImpl(store);
     
@@ -45,6 +48,14 @@ public class TaskTestCase {
     DatabindCodec.prettyMapper().registerModules(modules);    
   }
 
+  public void assertCommits(String repoName) {
+    final var config = getStore().getConfig();
+    final var state = ((DocDBDefault) config.getClient()).getState();
+    final var commits = config.getClient().commit().query().head(repoName).findAllCommits().await().atMost(atMost);
+    log.debug("Total commits: {}", commits.size());
+    
+  }
+  
   @AfterEach
   public void tearDown() {
     store = null;

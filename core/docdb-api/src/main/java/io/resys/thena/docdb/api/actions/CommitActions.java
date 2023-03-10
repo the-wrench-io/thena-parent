@@ -28,11 +28,19 @@ import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 
 public interface CommitActions {
   HeadCommitBuilder head();
+  CommitQuery query();
+  
+  interface CommitQuery {
+    CommitQuery head(String repoId); // head GID to what to append
+    Uni<List<Commit>> findAllCommits();
+    Uni<List<Tree>> findAllCommitTrees();
+  }
   
   interface HeadCommitBuilder {
     HeadCommitBuilder id(String headGid); // head GID to what to append

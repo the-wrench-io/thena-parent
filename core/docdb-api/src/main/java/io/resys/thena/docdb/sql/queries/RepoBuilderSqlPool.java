@@ -32,20 +32,29 @@ import io.resys.thena.docdb.sql.SqlSchema;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
-import io.vertx.mutiny.sqlclient.SqlClientHelper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+
 
 @Slf4j(topic = LogConstants.SHOW_SQL)
 @RequiredArgsConstructor
 public class RepoBuilderSqlPool implements RepoBuilder {
-  private final io.vertx.mutiny.sqlclient.Pool client;
+  private final io.vertx.mutiny.sqlclient.Pool pool;
+  private final io.vertx.mutiny.sqlclient.SqlClient client;
   private final ClientCollections names;
   private final SqlSchema sqlSchema;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
 
+  
+  private io.vertx.mutiny.sqlclient.SqlClient getClient() {
+    if(client == null) {
+      return pool;
+    }
+    return client;
+  }
 
   @Override
   public Uni<Repo> getByName(String name) {
@@ -56,7 +65,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
           sql.getValue());
     }
     
-    return client.preparedQuery(sql.getValue())
+    return getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.repo(row))
         .execute(sql.getProps())
         .onItem()
@@ -86,7 +95,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
     }
     
     
-    return client.preparedQuery(sql.getValue())
+    return getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.repo(row))
         .execute(sql.getProps())
         .onItem()
@@ -106,7 +115,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
     final var next = names.toRepo(newRepo);
     final var sqlSchema = this.sqlSchema.withOptions(next);
     
-    return SqlClientHelper.inTransactionUni(client, tx -> {
+    return pool.withTransaction(tx -> {
       final var repoInsert = this.sqlBuilder.withOptions(next).repo().insertOne(newRepo);
       final var tablesCreate = new StringBuilder()
           .append(sqlSchema.blobs().getValue())
@@ -129,7 +138,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
             .toString());
       }
       
-      final Uni<Void> create = client.preparedQuery(sqlSchema.repo().getValue()).execute()
+      final Uni<Void> create = getClient().preparedQuery(sqlSchema.repo().getValue()).execute()
           .onItem().transformToUni(data -> Uni.createFrom().voidItem())
           .onFailure().invoke(e -> errorHandler.deadEnd("Can't create table 'REPOS'!", e));;
       
@@ -159,7 +168,7 @@ public class RepoBuilderSqlPool implements RepoBuilder {
     }
     
     
-    return client.preparedQuery(sql.getValue())
+    return getClient().preparedQuery(sql.getValue())
     .mapping(row -> sqlMapper.repo(row))
     .execute()
     .onItem()

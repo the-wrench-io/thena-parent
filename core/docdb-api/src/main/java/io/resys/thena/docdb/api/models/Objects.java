@@ -24,6 +24,8 @@ import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
+import javax.annotation.Nullable;
+
 import org.immutables.value.Value;
 
 import io.vertx.core.json.JsonObject;
@@ -89,6 +91,39 @@ public interface Objects {
   interface Blob extends IsObject {
     JsonObject getValue();
   }
+  
+  
+  @Value.Immutable  
+  interface CommitTree {
+    String getCommitId();
+    
+    String getCommitAuthor();
+    LocalDateTime getCommitDateTime();
+    String getCommitMessage();
+    @Nullable String getCommitParent();
+    @Nullable String getCommitMerge();
+    
+    String getRefName();
+    
+    String getTreeId();
+    TreeValue getTreeValue();
+    Blob getBlob();
+  }
+  
+  @Value.Immutable  
+  interface CommitLock {
+    CommitLockStatus getStatus();
+    Optional<Ref> getRef();
+    Optional<Commit> getCommit();
+    Optional<Tree> getTree();
+    Map<String, Blob> getBlobs();
+    Optional<String> getMessage();
+  }
+  
+  enum CommitLockStatus { 
+    LOCK_TAKEN, BLOCKED, NOT_FOUND
+  }
+  
   
 
   @Value.Immutable

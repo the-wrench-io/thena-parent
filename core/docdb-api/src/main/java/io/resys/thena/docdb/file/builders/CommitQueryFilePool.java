@@ -1,6 +1,7 @@
 package io.resys.thena.docdb.file.builders;
 
 import java.util.Collection;
+import java.util.Optional;
 
 /*-
  * #%L
@@ -26,12 +27,17 @@ import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
+import io.resys.thena.docdb.spi.ClientQuery.CommitLock;
+import io.resys.thena.docdb.spi.ClientQuery.CommitLockStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
+import io.resys.thena.docdb.spi.ImmutableCommitLock;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class CommitQueryFilePool implements CommitQuery {
   private final FilePool client;
@@ -54,7 +60,7 @@ public class CommitQueryFilePool implements CommitQuery {
           return null;
         })
         .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't get 'COMMIT' by 'id': '" + commit + "'!", e));
   }
   @Override
   public Multi<Commit> findAll() {
@@ -65,5 +71,13 @@ public class CommitQueryFilePool implements CommitQuery {
         .onItem()
         .transformToMulti((Collection<Commit> rowset) -> Multi.createFrom().iterable(rowset))
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT'!", e));
+  }
+  @Override
+  public Uni<CommitLock> getLock(String commitId) {
+    log.warn("File pool is for local dev, no locking for commits");
+    return getById(commitId).onItem().transform(e -> ImmutableCommitLock.builder()
+        .commit(Optional.ofNullable(e)).message(Optional.empty())
+        .status(e == null ? CommitLockStatus.NOT_FOUND : CommitLockStatus.LOCK_TAKEN)
+        .build());
   }
 }

@@ -48,4 +48,9 @@ public class FileErrors implements ErrorHandler {
     
   }
 
+  @Override
+  public boolean isLocked(Throwable e) {
+    return false;
+  }
+
 }

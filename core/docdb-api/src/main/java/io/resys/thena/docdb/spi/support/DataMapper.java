@@ -23,6 +23,7 @@ package io.resys.thena.docdb.spi.support;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.CommitTree;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
@@ -37,5 +38,6 @@ public interface DataMapper<T> {
   Tag tag(T row);
   Ref ref(T row);
   Blob blob(T row);
+  CommitTree commitTree(T row);
   BlobHistory blobHistory(T row);
 }

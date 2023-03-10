@@ -29,6 +29,7 @@ import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableDeleteResult;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
@@ -39,7 +40,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class TagQuerySqlPool implements TagQuery {
   
-  private final io.vertx.mutiny.sqlclient.Pool client;
+  private final SqlClientWrapper wrapper;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
@@ -59,7 +60,7 @@ public class TagQuerySqlPool implements TagQuery {
           sql.getProps().deepToString(),
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .execute(sql.getProps())
         .onItem()
         .transform(result -> (DeleteResult) ImmutableDeleteResult.builder().deletedCount(1).build())
@@ -73,7 +74,7 @@ public class TagQuerySqlPool implements TagQuery {
           "",
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.tag(row))
         .execute()
         .onItem()
@@ -95,7 +96,7 @@ public class TagQuerySqlPool implements TagQuery {
             "",
             sql.getValue());
       }
-      return client.preparedQuery(sql.getValue())
+      return wrapper.getClient().preparedQuery(sql.getValue())
           .mapping(row -> sqlMapper.tag(row))
           .execute()
           .onItem()
@@ -109,7 +110,7 @@ public class TagQuerySqlPool implements TagQuery {
           sql.getProps().deepToString(),
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.tag(row))
         .execute(sql.getProps())
         .onItem()

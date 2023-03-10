@@ -1,5 +1,8 @@
 package io.resys.thena.docdb.spi;
 
+import java.util.Collection;
+import java.util.List;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -28,7 +31,7 @@ import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.spi.commits.body.CommitInternalResponse;
+import io.resys.thena.docdb.api.models.Repo;
 import io.smallrye.mutiny.Uni;
 
 public interface ClientInsertBuilder {
@@ -38,9 +41,29 @@ public interface ClientInsertBuilder {
   Uni<UpsertResult> ref(Ref ref, Commit commit);
   Uni<UpsertResult> tree(Tree tree);
   Uni<UpsertResult> commit(Commit commit);
-  Uni<CommitInternalResponse> output(CommitInternalResponse output);
+  Uni<Batch> batch(Batch output);
   
   enum UpsertStatus { OK, DUPLICATE, ERROR, CONFLICT }
+  enum BatchStatus { OK, EMPTY, ERROR, CONFLICT }
+  
+  @Value.Immutable
+  interface Batch {
+    BatchStatus getStatus();
+    Repo getRepo();
+    Message getLog();
+    BatchRef getRef();
+    Commit getCommit();
+    Tree getTree();
+    Collection<Blob> getBlobs();
+    List<Message> getMessages();
+  }
+  
+  @Value.Immutable
+  interface BatchRef {
+    Boolean getCreated(); 
+    Ref getRef();
+  }
+  
   
   @Value.Immutable
   interface InsertResult {

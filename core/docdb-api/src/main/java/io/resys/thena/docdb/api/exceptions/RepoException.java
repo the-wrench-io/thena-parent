@@ -47,6 +47,15 @@ public class RepoException extends DocDBException {
             .text(text)
           .build();
     }
+    public Message notRepoWithName(String repoId, List<Repo> others) {
+      final var text = new StringBuilder()
+          .append("Repo with name: '").append(repoId).append("' does not exist!")
+          .append(" known repos: '").append(String.join(",", others.stream().map(r -> r.getName()).toList())).append("'")
+          .toString();
+      return ImmutableMessage.builder()
+            .text(text)
+          .build();
+    }
     public Message noRepoRef(String repo, String ref) {
       return ImmutableMessage.builder()
             .text(new StringBuilder()

@@ -45,10 +45,13 @@ public class DocDBFactoryFile {
   public static ClientState state(ClientCollections ctx, FilePool client, ErrorHandler handler) {
     return new ClientState() {
       @Override
+      public <R> Uni<R> withTransaction(TransactionFunction<R> callback) {
+        return callback.apply(this);
+      }
+      @Override
       public ErrorHandler getErrorHandler() {
         return handler;
       }
-      
       @Override
       public ClientCollections getCollections() {
         return ctx;
@@ -91,6 +94,10 @@ public class DocDBFactoryFile {
             .names(ctx.toRepo(repo))
             .build();
         return new ClientRepoState() {
+          @Override
+          public Repo getRepo() {
+            return wrapper.getRepo();
+          }
           @Override
           public String getRepoName() {
             return repo.getName();

@@ -31,6 +31,7 @@ import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
+import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.sqlclient.RowSet;
@@ -41,7 +42,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class BlobQuerySqlPool implements BlobQuery {
 
-  private final io.vertx.mutiny.sqlclient.Pool client;
+  private final SqlClientWrapper wrapper;
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
@@ -57,7 +58,7 @@ public class BlobQuerySqlPool implements BlobQuery {
           sql.getProps().deepToString(), 
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute(sql.getProps())
         .onItem()
@@ -80,7 +81,7 @@ public class BlobQuerySqlPool implements BlobQuery {
           sql.getProps().deepToString(), 
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute(sql.getProps())
         .onItem()
@@ -102,7 +103,7 @@ public class BlobQuerySqlPool implements BlobQuery {
           "", 
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute()
         .onItem()
@@ -118,7 +119,7 @@ public class BlobQuerySqlPool implements BlobQuery {
           sql.getProps().deepToString(), 
           sql.getValue());
     }
-    return client.preparedQuery(sql.getValue())
+    return wrapper.getClient().preparedQuery(sql.getValue())
         .mapping(row -> sqlMapper.blob(row))
         .execute(sql.getProps())
         .onItem()

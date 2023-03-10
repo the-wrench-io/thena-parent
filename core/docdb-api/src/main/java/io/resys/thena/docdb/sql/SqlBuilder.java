@@ -74,6 +74,7 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
   
   interface RefSqlBuilder {
     SqlTuple getByName(String name);
+    SqlTuple getLockByName(String name);
     SqlTuple getByNameOrCommit(String refNameOrCommit);
     Sql getFirst();
     Sql findAll();
@@ -98,6 +99,7 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
   
   interface CommitSqlBuilder {
     SqlTuple getById(String id);
+    SqlTuple getLock(String commitId, String headName);
     Sql findAll();
     SqlTuple insertOne(Commit commit);
   }

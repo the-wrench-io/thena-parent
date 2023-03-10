@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.sql.support;
 
+import java.util.Optional;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -29,8 +31,11 @@ import io.resys.thena.docdb.spi.ClientCollections;
 @Value.Immutable
 public interface SqlClientWrapper {
   Repo getRepo();
-  io.vertx.mutiny.sqlclient.Pool getClient();
+  io.vertx.mutiny.sqlclient.Pool getPool();
+  Optional<io.vertx.mutiny.sqlclient.SqlClient> getTx();
   ClientCollections getNames();
   
-  
+  default io.vertx.mutiny.sqlclient.SqlClient getClient() {
+    return getTx().orElse(getPool());
+  }
 }
