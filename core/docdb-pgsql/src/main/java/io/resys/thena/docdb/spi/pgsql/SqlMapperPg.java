@@ -20,13 +20,10 @@ package io.resys.thena.docdb.spi.pgsql;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.ImmutableBlob;
-import io.resys.thena.docdb.api.models.ImmutableBlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.resys.thena.docdb.sql.factories.SqlMapperImpl;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Row;
 
 
@@ -35,23 +32,9 @@ public class SqlMapperPg extends SqlMapperImpl implements SqlMapper {
   public SqlMapperPg(ClientCollections ctx) {
     super(ctx);
   }
+  
   @Override
-  public Blob blob(Row row) {
-    return ImmutableBlob.builder()
-        .id(row.getString("id"))
-        .value(row.getJsonObject("value"))
-        .build();
-  }
-  @Override
-  public BlobHistory blobHistory(Row row) { 
-    return ImmutableBlobHistory.builder()
-        .treeId(row.getString("tree"))
-        .treeValueName(row.getString("blob_name"))
-        .commit(row.getString("commit_id"))
-        .blob(ImmutableBlob.builder()
-            .id(row.getString("blob_id"))
-            .value(row.getJsonObject("blob_value"))
-            .build())
-        .build();
+  public JsonObject jsonObject(Row row, String columnName) {
+    return row.getJsonObject(columnName);
   }
 }

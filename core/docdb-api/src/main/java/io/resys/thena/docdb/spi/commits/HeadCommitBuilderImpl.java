@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.spi.commits;
 
+import java.time.Duration;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -152,7 +154,13 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
                 .build());
         });
     
-    });
+    })
+    .onFailure(err -> state.getErrorHandler().isLocked(err)).retry().withBackOff(Duration.ofMillis(100)).atMost(10);
+   /*
+    .onFailure(err -> state.getErrorHandler().isLocked(err)).invoke(error -> {
+      error.printStackTrace();
+      System.err.println(error.getMessage());
+    });*/
     
   }
   
@@ -181,30 +189,6 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
         .toBeRemoved(deleteBlobs)
         .build();
   }
-  
-  
-  /**
-   * 
-   *     return CommitProcessorImpl.from(state).process(repoId, headName, parentCommit)
-        .onItem().transformToUni(process -> process
-            .commitAuthor(author)
-            .commitMessage(message)
-            .toBeInserted(appendBlobs)
-            .toBeRemoved(deleteBlobs)
-            .execute());
-
-return (CommitBatchBuilder) new CommitBatchBuilderImpl(repoCtx, init);
-    
-      tx.insert().batch(batch);
-.onItem().transform(rsp -> ImmutableCommitResult.builder()
-          .gid(this.commitTree.getGid())
-          .commit(rsp.getCommit())
-          .addMessages(rsp.getLog())
-          .addAllMessages(rsp.getMessages())
-          .status(visitStatus(rsp.getStatus()))
-          .build())
-   */
-  
 
   private CommitResult validateRepo(CommitLock state, String commitParent) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);

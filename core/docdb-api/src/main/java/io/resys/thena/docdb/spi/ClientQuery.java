@@ -1,7 +1,9 @@
 package io.resys.thena.docdb.spi;
 
 import java.util.List;
-import java.util.Optional;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /*-
  * #%L
@@ -46,25 +48,10 @@ public interface ClientQuery {
   
   interface RefQuery {
     Uni<Ref> name(String name);
-    Uni<RefLock> lockName(String name);
     Uni<Ref> nameOrCommit(String refNameOrCommit);
     Uni<Ref> get();
     Multi<Ref> findAll();
   }
-  
-
-  @Value.Immutable  
-  interface RefLock {
-    RefLockStatus getStatus();
-    Optional<Ref> getRef();
-    Optional<String> getMessage();
-    
-  }
-  
-  enum RefLockStatus { 
-    LOCK_TAKEN, BLOCKED, NOT_FOUND
-  }
-  
   
   interface BlobHistoryQuery {
     BlobHistoryQuery latestOnly(boolean latestOnly);
@@ -86,7 +73,7 @@ public interface ClientQuery {
   }
   interface CommitQuery {
     Uni<Commit> getById(String commitId);
-    Uni<CommitLock> getLock(String commitId, String headName);
+    Uni<CommitLock> getLock(@Nullable String commitId, @Nonnull String headName);
     Multi<Commit> findAll();
   }
   

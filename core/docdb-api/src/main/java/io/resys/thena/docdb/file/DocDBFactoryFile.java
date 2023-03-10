@@ -45,8 +45,15 @@ public class DocDBFactoryFile {
   public static ClientState state(ClientCollections ctx, FilePool client, ErrorHandler handler) {
     return new ClientState() {
       @Override
-      public <R> Uni<R> withTransaction(TransactionFunction<R> callback) {
-        return callback.apply(this);
+      public <R> Uni<R> withTransaction(String repoId, String headName, TransactionFunction<R> callback) {
+        return repos().getByNameOrId(repoId).onItem().transformToUni(repo -> {
+          final ClientRepoState repoState = withRepo(repo);
+          return callback.apply(repoState);
+        });
+      }
+      @Override
+      public Uni<ClientRepoState> withRepo(String repoNameOrId) {
+        return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
       }
       @Override
       public ErrorHandler getErrorHandler() {
@@ -111,10 +118,6 @@ public class DocDBFactoryFile {
             return new ClientInsertBuilderFilePool(wrapper.getClient(), sqlMapper(wrapper.getNames()), sqlBuilder(wrapper.getNames()), handler);
           }
         };
-      }
-      @Override
-      public Uni<ClientRepoState> withRepo(String repoNameOrId) {
-        return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
       }
     };
   }

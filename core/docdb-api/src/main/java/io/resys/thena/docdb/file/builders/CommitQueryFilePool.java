@@ -2,6 +2,9 @@ package io.resys.thena.docdb.file.builders;
 
 import java.util.Collection;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
+import io.resys.thena.docdb.api.models.ImmutableCommitLock;
 
 /*-
  * #%L
@@ -24,20 +27,17 @@ import java.util.Optional;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.CommitLock;
+import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
-import io.resys.thena.docdb.spi.ClientQuery.CommitLock;
-import io.resys.thena.docdb.spi.ClientQuery.CommitLockStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
-import io.resys.thena.docdb.spi.ImmutableCommitLock;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @RequiredArgsConstructor
 public class CommitQueryFilePool implements CommitQuery {
   private final FilePool client;
@@ -73,11 +73,34 @@ public class CommitQueryFilePool implements CommitQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT'!", e));
   }
   @Override
-  public Uni<CommitLock> getLock(String commitId) {
-    log.warn("File pool is for local dev, no locking for commits");
-    return getById(commitId).onItem().transform(e -> ImmutableCommitLock.builder()
-        .commit(Optional.ofNullable(e)).message(Optional.empty())
-        .status(e == null ? CommitLockStatus.NOT_FOUND : CommitLockStatus.LOCK_TAKEN)
-        .build());
+  public Uni<CommitLock> getLock(String commitId, String headName) {
+    
+    return new RefQueryFilePool(client, mapper, builder, errorHandler).nameOrCommit(headName).onItem().transformToUni(ref -> {
+      if(ref == null) {
+        return Uni.createFrom().item((CommitLock) ImmutableCommitLock.builder()
+          .ref(Optional.empty())
+          .commit(Optional.empty())
+          .tree(Optional.empty())
+          .message(Optional.empty())
+          .status(CommitLockStatus.NOT_FOUND)
+          .build());
+      }
+      
+      return getById(ref.getCommit()).onItem().transformToUni(commit -> {
+        final var treeUni = new TreeQueryFilePool(client, mapper, builder, errorHandler).getById(commit.getTree());
+        final var blobUni = new BlobQueryFilePool(client, mapper, builder, errorHandler).findByTreeId(commit.getTree()).collect().asList();        
+        
+        return Uni.combine().all().unis(treeUni, blobUni).asTuple().onItem().transform(tuple -> {
+          return (CommitLock) ImmutableCommitLock.builder()
+          .ref(ref)
+          .commit(commit)
+          .tree(tuple.getItem1())
+          .message(Optional.empty())
+          .status(CommitLockStatus.LOCK_TAKEN)
+          .blobs(tuple.getItem2().stream().collect(Collectors.toMap(e -> e.getId(), e -> e)))
+          .build();
+        });
+      });
+    });
   }
 }

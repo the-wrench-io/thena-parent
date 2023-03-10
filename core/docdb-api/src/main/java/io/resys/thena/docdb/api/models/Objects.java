@@ -121,7 +121,7 @@ public interface Objects {
   }
   
   enum CommitLockStatus { 
-    LOCK_TAKEN, BLOCKED, NOT_FOUND
+    LOCK_TAKEN, NOT_FOUND
   }
   
   

@@ -94,7 +94,7 @@ public class CommitQuerySqlPool implements CommitQuery {
     final var sql = sqlBuilder.commits().getLock(commit, headName);
     if(log.isDebugEnabled()) {
       log.debug("Commit getLock query, with props: {} \r\n{}", 
-          "",
+          sql.getProps(),
           sql.getValue());
     }
     return wrapper.getClient().preparedQuery(sql.getValue())
@@ -135,7 +135,8 @@ public class CommitQuerySqlPool implements CommitQuery {
           } else {
             builder.status(CommitLockStatus.NOT_FOUND);
           }
-          return (CommitLock) builder.build();
+          final CommitLock lock = builder.build();
+          return lock;
         })
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
   }

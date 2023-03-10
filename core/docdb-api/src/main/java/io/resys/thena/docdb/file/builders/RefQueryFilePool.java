@@ -1,7 +1,6 @@
 package io.resys.thena.docdb.file.builders;
 
 import java.util.Collection;
-import java.util.Optional;
 
 /*-
  * #%L
@@ -27,11 +26,8 @@ import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
-import io.resys.thena.docdb.spi.ClientQuery.RefLock;
-import io.resys.thena.docdb.spi.ClientQuery.RefLockStatus;
 import io.resys.thena.docdb.spi.ClientQuery.RefQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
-import io.resys.thena.docdb.spi.ImmutableRefLock;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -105,11 +101,5 @@ public class RefQueryFilePool implements RefQuery {
         return null;
       })
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
-  }
-  @Override
-  public Uni<RefLock> lockName(String name) {
-    return name(name).onItem().transform(r -> ImmutableRefLock.builder()
-        .ref(Optional.ofNullable(r)).message(Optional.empty()).status(r == null ? RefLockStatus.NOT_FOUND : RefLockStatus.LOCK_TAKEN)
-        .build());
   }
 }

@@ -105,7 +105,7 @@ public class SqlMapperImpl implements SqlMapper {
   public Blob blob(Row row) {
     return ImmutableBlob.builder()
         .id(row.getString("id"))
-        .value(new JsonObject(row.getString("value")))
+        .value(jsonObject(row, "value"))
         .build();
   }
   @Override
@@ -116,7 +116,7 @@ public class SqlMapperImpl implements SqlMapper {
         .commit(row.getString("commit_id"))
         .blob(ImmutableBlob.builder()
             .id(row.getString("blob_id"))
-            .value(new JsonObject(row.getString("blob_value")))
+            .value(jsonObject(row, "blob_value"))
             .build())
         .build();
   }
@@ -138,9 +138,12 @@ public class SqlMapperImpl implements SqlMapper {
         .refName(row.getString("ref_name"))
         .blob(ImmutableBlob.builder()
             .id(row.getString("blob_id"))
-            //.value(new JsonObject(row.getString("blob_value")))
-            .value(row.getJsonObject("blob_value"))
+            .value(jsonObject(row, "blob_value"))
             .build())
         .build();
+  }
+  @Override
+  public JsonObject jsonObject(Row row, String columnName) {
+    return new JsonObject(row.getString(columnName));
   }
 }

@@ -71,8 +71,6 @@ public class CommitFileBuilderImpl implements CommitFileBuilder {
     return ImmutableFileTuple.builder()
         .value("Select by id from COMMIT table")
         .command((root) -> {
-          
-          
           return root.getRepoTable(ctx).getCommits().getRows()
               .stream().filter(r -> r.getId().equals(id)).collect(Collectors.toList());
         })

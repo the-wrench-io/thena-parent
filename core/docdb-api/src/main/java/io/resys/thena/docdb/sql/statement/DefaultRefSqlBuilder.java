@@ -57,17 +57,6 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple getLockByName(String name) {
-    return ImmutableSqlTuple.builder()
-        .value(new SqlStatement()
-        .append("SELECT * FROM ").append(options.getRefs())
-        .append(" WHERE name = $1")
-        .append(" FETCH FIRST ROW ONLY FOR UPDATE")
-        .build())
-        .props(Tuple.of(name))
-        .build();
-  }
-  @Override
   public SqlTuple getByNameOrCommit(String refNameOrCommit) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()

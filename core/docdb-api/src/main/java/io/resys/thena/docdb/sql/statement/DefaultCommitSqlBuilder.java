@@ -80,11 +80,11 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
   @Override
   public SqlTuple getLock(String commitId, String headName) {
     List<Object> props = new ArrayList<>();
-    StringBuilder where = new StringBuilder().append(" refs.name = $1 ");
     props.add(headName);
-    
+
+    StringBuilder where = new StringBuilder();
     if(commitId != null) {
-      where.append(" AND commits.id = $2 ");
+      where.append(" WHERE commits.id = $2 ");
       props.add(commitId);
     }
     
@@ -102,14 +102,12 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
         .append("  commits.merge as merge,").ln()
         .append("  commits.parent as commit_parent,").ln()
         .append("  commits.id as commit_id").ln()
-        .append(" FROM ").append(options.getCommits()).append(" as commits").ln()
+        .append(" FROM (SELECT * FROM ").append(options.getRefs()).append(" WHERE name = $1 FOR UPDATE NOWAIT) as refs").ln()
+        .append("  JOIN ").append(options.getCommits()).append(" as commits ON(commits.id = refs.commit)").ln()
         .append("  JOIN ").append(options.getTrees()).append(" as trees ON(trees.id = commits.tree)").ln()
         .append("  JOIN ").append(options.getTreeItems()).append(" as treeValues ON(trees.id = treeValues.tree)").ln()
-        .append("  JOIN ").append(options.getRefs()).append(" as refs ON(refs.commit = commits.id)").ln()
         .append("  JOIN ").append(options.getBlobs()).append(" as blobs ON(blobs.id = treeValues.blob)").ln()
-        .append(" WHERE ").ln()
         .append(where.toString())
-        .append(" FOR UPDATE")
         .build())
         .props(Tuple.from(props))
         .build();

@@ -53,8 +53,8 @@ public class PgErrors implements ErrorHandler {
   public boolean isLocked(Throwable e) {
     if(e instanceof PgException) {
       PgException ogre = (PgException) e;
-      log.error("DB locked");
-      return "40P01".equals(ogre.getCode());
+      log.error(e.getMessage(), e);
+      return "55P03".equals(ogre.getCode());
     }
     return false;
   }

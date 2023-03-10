@@ -47,7 +47,7 @@ public class CommitActionsImpl implements CommitActions {
     return new CommitQuery() {
       private String repoId; 
       @Override
-      public CommitQuery head(String repoId) {
+      public CommitQuery repoName(String repoId) {
         this.repoId = repoId;
         return this;
       }

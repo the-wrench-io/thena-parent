@@ -29,6 +29,7 @@ import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.support.DataMapper;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Row;
 
 public interface SqlMapper extends DataMapper<Row>{
@@ -40,4 +41,5 @@ public interface SqlMapper extends DataMapper<Row>{
   Ref ref(Row row);
   Blob blob(Row row);
   BlobHistory blobHistory(Row row);
+  JsonObject jsonObject(Row row, String columnName);
 }

@@ -33,6 +33,7 @@ import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
+import io.resys.thena.docdb.api.models.Objects.CommitTree;
 import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
@@ -51,8 +52,6 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class DefaultFileMapper implements FileMapper {
-   
-  
   @Override
   public Repo repo(Row src) {
     RepoTableRow row = src.toType(RepoTableRow.class);
@@ -126,5 +125,10 @@ public class DefaultFileMapper implements FileMapper {
   @Override
   public BlobHistory blobHistory(Row row) {
     throw new IllegalArgumentException("Not required for filebase impl.");
+  }
+  @Override
+  public CommitTree commitTree(Row row) {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

@@ -37,7 +37,7 @@ public interface CommitActions {
   CommitQuery query();
   
   interface CommitQuery {
-    CommitQuery head(String repoId); // head GID to what to append
+    CommitQuery repoName(String repoId); // head GID to what to append
     Uni<List<Commit>> findAllCommits();
     Uni<List<Tree>> findAllCommitTrees();
   }

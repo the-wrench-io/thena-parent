@@ -38,7 +38,6 @@ import io.resys.thena.docdb.file.tables.Table.FilePool;
 import io.resys.thena.docdb.file.tables.TreeItemTable.TreeItemTableRow;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.BlobHistoryQuery;
-import io.resys.thena.docdb.spi.ErrorHandler;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
@@ -49,7 +48,6 @@ public class BlobHistoryFilePool implements BlobHistoryQuery {
   private final FilePool client;
   private final FileMapper mapper;
   private final FileBuilder builder;
-  private final ErrorHandler errorHandler;
   private final List<BlobCriteria> criteria = new ArrayList<>();
   private boolean latestOnly;
   private String name;

@@ -68,6 +68,6 @@ public class ClientQueryFilePool implements ClientQuery {
 
   @Override
   public BlobHistoryQuery blobHistory() {
-    return new BlobHistoryFilePool(wrapper.getClient(), mapper, builder, errorHandler);
+    return new BlobHistoryFilePool(wrapper.getClient(), mapper, builder);
   }
 }

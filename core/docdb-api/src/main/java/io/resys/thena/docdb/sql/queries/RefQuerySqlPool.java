@@ -1,7 +1,5 @@
 package io.resys.thena.docdb.sql.queries;
 
-import java.util.Optional;
-
 import io.resys.thena.docdb.api.LogConstants;
 
 /*-
@@ -25,11 +23,8 @@ import io.resys.thena.docdb.api.LogConstants;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.spi.ClientQuery.RefLock;
-import io.resys.thena.docdb.spi.ClientQuery.RefLockStatus;
 import io.resys.thena.docdb.spi.ClientQuery.RefQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
-import io.resys.thena.docdb.spi.ImmutableRefLock;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
@@ -130,45 +125,6 @@ public class RefQuerySqlPool implements RefQuery {
         }
         return null;
       })
-      .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
-  }
-  @Override
-  public Uni<RefLock> lockName(String name) {
-    RepoAssert.notEmpty(name, () -> "name must be defined!");
-    final var sql = sqlBuilder.refs().getLockByName(name);
-    
-    if(log.isDebugEnabled()) {
-      log.debug("Ref lockName query, with props: {} \r\n{}", 
-          sql.getProps().deepToString(),
-          sql.getValue());
-    }
-    return wrapper.getClient().preparedQuery(sql.getValue())
-      .mapping(row -> sqlMapper.ref(row))
-      .execute(sql.getProps())
-      .onItem()
-      .transform((RowSet<Ref> rowset) -> {
-        final var it = rowset.iterator();
-        if(it.hasNext()) {
-          return (RefLock) ImmutableRefLock.builder()
-              .ref(Optional.of(it.next()))
-              .status(RefLockStatus.LOCK_TAKEN)
-              .message(Optional.empty())
-              .build();
-        }
-        return (RefLock) ImmutableRefLock.builder()
-            .ref(Optional.empty())
-            .message(Optional.empty())
-            .status(RefLockStatus.NOT_FOUND)
-            .build();
-      })
-      /*
-      .onFailure(throwable -> errorHandler.isLocked(throwable)).recoverWithItem((error) -> (RefLock) 
-          ImmutableRefLock.builder()
-            .ref(Optional.empty())
-            .status(RefLockStatus.BLOCKED)
-            .message(Optional.ofNullable(error.getMessage()))
-            .build()
-      )*/
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by name: '" + name + "'!", e));
   }
 }

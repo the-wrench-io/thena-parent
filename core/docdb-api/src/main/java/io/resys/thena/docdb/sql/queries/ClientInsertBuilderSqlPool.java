@@ -37,7 +37,6 @@ import io.resys.thena.docdb.sql.SqlMapper;
 import io.resys.thena.docdb.sql.support.Execute;
 import io.resys.thena.docdb.sql.support.SqlClientWrapper;
 import io.smallrye.mutiny.Uni;
-import io.vertx.mutiny.sqlclient.SqlClient;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -279,12 +278,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
     final var commitsInsert = sqlBuilder.commits().insertOne(output.getCommit());
     
     RepoAssert.isTrue(this.wrapper.getTx().isPresent(), () -> "Transaction must be started!");
-    
-    
     final var tx = wrapper.getClient();    
-    
-    System.err.println("--------------------" + treeValueInsert.getProps().size());
-    
     
     if(blobsInsert.getProps().isEmpty()) {
       return Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
@@ -297,8 +291,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
     final var treeUni = Execute.apply(tx, treeInsert).onItem()
       .transform(row -> successOutput(output, "Tree saved, number of new entries: " + row.rowCount()))
       .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create tree \r\n" + output.getTree(), e));
-      
-    
+
     final Uni<Batch> treeValueUni;
     if(treeValueInsert.getProps().isEmpty()) {
       treeValueUni = Uni.createFrom().item(successOutput(output, "Tree Values saved, number of new entries: 0"));    
@@ -313,14 +306,28 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
         .transform(row -> successOutput(output, "Commit saved, number of new entries: " + row.rowCount()))
         .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create commit", e));
     
+    final var refExists = output.getRef().getCreated();
+    final var ref = output.getRef().getRef();
     
-    final var refUni = createOrUpdateRef(output, tx);
+    
+    final Uni<Batch> refUni;
+    if(refExists) {
+      refUni = Execute.apply(tx, sqlBuilder.refs().updateOne(output.getRef().getRef(), output.getCommit()))
+          .onItem().transform(row -> successOutput(output, "Existing ref: " + ref.getName() + ", updated with commit: " + ref.getCommit()))
+          .onFailure().recoverWithItem(e -> failOutput(output, "Failed to update ref", e));
+    } else {
+      refUni =Execute.apply(tx, sqlBuilder.refs().insertOne(output.getRef().getRef()))
+          .onItem().transform(row -> successOutput(output, "New ref created: " + ref.getName() + ": " + ref.getCommit()))
+          .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create ref", e));
+        
+    }
+
     
     return Uni.combine().all().unis(blobUni, treeUni, treeValueUni, commitUni, refUni).asTuple().onItem().transform(tuple -> {
       
       return output;
     });
-    /*
+    /* TODO::
     return start
     .chain(next -> {
       if(next.getStatus() == BatchStatus.OK) {
@@ -354,21 +361,6 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
       return Uni.createFrom().item(next);
     });
 */
-  }
-  
-  private Uni<Batch> createOrUpdateRef(Batch next, SqlClient tx) {
-    final var refExists = next.getRef().getCreated();
-    final var ref = next.getRef().getRef();
-    
-    if(refExists) {
-      return Execute.apply(tx, sqlBuilder.refs().updateOne(next.getRef().getRef(), next.getCommit()))
-          .onItem().transform(row -> successOutput(next, "Existing ref: " + ref.getName() + ", updated with commit: " + ref.getCommit()))
-          .onFailure().recoverWithItem(e -> failOutput(next, "Failed to update ref", e));
-    }
-
-    return Execute.apply(tx, sqlBuilder.refs().insertOne(next.getRef().getRef()))
-        .onItem().transform(row -> successOutput(next, "New ref created: " + ref.getName() + ": " + ref.getCommit()))
-        .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create ref", e));
   }
   
   private Batch successOutput(Batch current, String msg) {
