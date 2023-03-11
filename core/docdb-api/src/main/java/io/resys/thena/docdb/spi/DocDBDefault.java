@@ -28,10 +28,10 @@ import io.resys.thena.docdb.api.actions.ObjectsActions;
 import io.resys.thena.docdb.api.actions.RepoActions;
 import io.resys.thena.docdb.api.actions.TagActions;
 import io.resys.thena.docdb.spi.commits.CommitActionsImpl;
-import io.resys.thena.docdb.spi.diff.DiffActionsDefault;
+import io.resys.thena.docdb.spi.diff.DiffActionsImpl;
 import io.resys.thena.docdb.spi.history.HistoryActionsDefault;
 import io.resys.thena.docdb.spi.objects.ObjectsActionsDefault;
-import io.resys.thena.docdb.spi.repo.RepoActionsDefault;
+import io.resys.thena.docdb.spi.repo.RepoActionsImpl;
 import io.resys.thena.docdb.spi.tags.TagActionsDefault;
 
 public class DocDBDefault implements DocDB {
@@ -52,7 +52,7 @@ public class DocDBDefault implements DocDB {
   @Override
   public RepoActions repo() {
     if(repoActions == null) {
-      repoActions = new RepoActionsDefault(state); 
+      repoActions = new RepoActionsImpl(state); 
     }
     return repoActions;
   }
@@ -89,7 +89,7 @@ public class DocDBDefault implements DocDB {
   @Override
   public DiffActions diff() {
     if(diffActions == null) {
-      diffActions = new DiffActionsDefault(state, objects()); 
+      diffActions = new DiffActionsImpl(state, objects(), commit(), repo()); 
     }
     return diffActions;
   }

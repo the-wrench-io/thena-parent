@@ -33,12 +33,12 @@ import io.smallrye.mutiny.Uni;
 
 public interface DiffActions {
 
-  HeadDiffBuilder head();
+  DiffBuilder builder();
   
-  interface HeadDiffBuilder {
-    HeadDiffBuilder repo(String repoIdOrName);
-    HeadDiffBuilder left(String headOrCommitOrTag);
-    HeadDiffBuilder right(String headOrCommitOrTag);
+  interface DiffBuilder {
+    DiffBuilder repo(String repoIdOrName);
+    DiffBuilder left(String headOrCommitOrTag);
+    DiffBuilder right(String headOrCommitOrTag);
     Uni<DiffResult<Diff>> build();
   }
   

@@ -30,7 +30,7 @@ import java.util.Map;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.CommitActions.HeadCommitBuilder;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Objects.CommitLock;
@@ -48,7 +48,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class HeadCommitBuilderImpl implements HeadCommitBuilder {
+public class CommitBuilderImpl implements CommitBuilder {
 
   private final ClientState state;
   private final Map<String, JsonObject> appendBlobs = new HashMap<>();
@@ -63,13 +63,13 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
   private Boolean parentIsLatest = Boolean.FALSE;
 
   @Override
-  public HeadCommitBuilder id(String headGid) {
+  public CommitBuilder id(String headGid) {
     RepoAssert.isEmpty(headName, () -> "Can't defined id when head is defined!");
     this.headGid = headGid;
     return this;
   }
   @Override
-  public HeadCommitBuilder head(String repoId, String headName) {
+  public CommitBuilder head(String repoId, String headName) {
     RepoAssert.isEmpty(headGid, () -> "Can't defined head when id is defined!");
     RepoAssert.notEmpty(repoId, () -> "repoId can't be empty!");
     RepoAssert.notEmpty(headName, () -> "headName can't be empty!");
@@ -79,7 +79,7 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     return this;
   }
   @Override
-  public HeadCommitBuilder append(String name, JsonObject blob) {
+  public CommitBuilder append(String name, JsonObject blob) {
     RepoAssert.notNull(blob, () -> "blob can't be empty!");
     RepoAssert.notEmpty(name, () -> "name can't be empty!");
     RepoAssert.isTrue(!this.appendBlobs.containsKey(name), () -> "Blob with name: '" + name + "' is already defined!");
@@ -88,7 +88,7 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     return this;
   }
   @Override
-  public HeadCommitBuilder remove(String name) {
+  public CommitBuilder remove(String name) {
     RepoAssert.isTrue(!this.appendBlobs.containsKey(name), () -> "Blob with name: '" + name + "' can't be marked for removal because it's beed appended!");
     RepoAssert.isTrue(!this.deleteBlobs.contains(name), () -> "Blob with name: '" + name + "' is already marked for removal!");
     RepoAssert.notEmpty(name, () -> "name can't be empty!");
@@ -96,25 +96,25 @@ public class HeadCommitBuilderImpl implements HeadCommitBuilder {
     return this;
   }
   @Override
-  public HeadCommitBuilder author(String author) {
+  public CommitBuilder author(String author) {
     RepoAssert.notEmpty(author, () -> "author can't be empty!");
     this.author = author;
     return this;
   }
   @Override
-  public HeadCommitBuilder message(String message) {
+  public CommitBuilder message(String message) {
     RepoAssert.notEmpty(message, () -> "message can't be empty!");
     this.message = message;
     return this;
   }
   @Override
-  public HeadCommitBuilder parent(String parentCommit) {
+  public CommitBuilder parent(String parentCommit) {
     this.parentCommit = parentCommit;
     return this;
   }
 
   @Override
-  public HeadCommitBuilder parentIsLatest() {
+  public CommitBuilder parentIsLatest() {
     this.parentIsLatest = true;
     return this;
   }

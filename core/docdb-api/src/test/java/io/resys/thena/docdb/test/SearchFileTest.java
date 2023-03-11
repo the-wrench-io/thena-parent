@@ -44,7 +44,7 @@ public class SearchFileTest extends FileTestTemplate {
   public SearchFileTest() {
     super((client, repo) -> {
       
-      client.commit().head()
+      client.commit().builder()
           .head(repo.getName(), "main")
           .append("ID-1", new JsonObject(Map.of(
               "type", "person",
@@ -73,7 +73,7 @@ public class SearchFileTest extends FileTestTemplate {
   public void addSamVimesChanges(int changes, String id) {
     final var client = getClient();
     for(int index = 0; index < changes; index++) { 
-      client.commit().head()
+      client.commit().builder()
       .head(getRepo().getName(), "main")
       .append(id, JsonObject.of(
         "type", "person",
@@ -92,7 +92,7 @@ public class SearchFileTest extends FileTestTemplate {
   public void addCassandraChaseChanges(int changes, String id) {
     final var client = getClient();
     for(int index = 0; index < changes; index++) { 
-      client.commit().head()
+      client.commit().builder()
       .head(getRepo().getName(), "main")
       .append(id, JsonObject.of(
         "type", "person",

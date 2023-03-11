@@ -37,7 +37,7 @@ import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class RepoCreateBuilder implements RepoActions.CreateBuilder {
+public class RepoCreateBuilderImpl implements RepoActions.RepoCreateBuilder {
 
   private final ClientState state;
   private String name;

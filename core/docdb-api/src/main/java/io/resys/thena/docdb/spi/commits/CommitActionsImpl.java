@@ -38,8 +38,8 @@ public class CommitActionsImpl implements CommitActions {
 
   private final ClientState state;
   @Override
-  public HeadCommitBuilder head() {
-    return new HeadCommitBuilderImpl(state);
+  public CommitBuilder builder() {
+    return new CommitBuilderImpl(state);
   }
 
   @Override
@@ -78,5 +78,10 @@ public class CommitActionsImpl implements CommitActions {
             });
       }
     };
+  }
+
+  @Override
+  public CommitStateBuilder state() {
+    return new CommitStateBuilderImpl(state);
   }
 }

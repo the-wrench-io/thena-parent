@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.objects;
+package io.resys.thena.docdb.spi.commits;
 
 /*-
  * #%L
@@ -23,19 +23,20 @@ package io.resys.thena.docdb.spi.objects;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.resys.thena.docdb.api.actions.CommitActions.CommitObjects;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitStateBuilder;
 import io.resys.thena.docdb.api.actions.ImmutableCommitObjects;
-import io.resys.thena.docdb.api.actions.ImmutableObjectsResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.CommitObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.CommitStateBuilder;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.exceptions.RepoException;
+import io.resys.thena.docdb.api.models.ImmutableObjectsResult;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
+import io.resys.thena.docdb.spi.objects.ObjectsUtils;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
 import lombok.Data;
@@ -46,14 +47,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class CommitStateBuilderDefault implements CommitStateBuilder {
+public class CommitStateBuilderImpl implements CommitStateBuilder {
   private final ClientState state;
   private final List<BlobCriteria> blobCriteria = new ArrayList<>();
   private String repo;
   private String anyId; //refOrCommitOrTag
   private boolean blobs;
   
-  @Override public CommitStateBuilderDefault blobCriteria(List<BlobCriteria> blobCriteria) { this.blobCriteria.addAll(blobCriteria); return this; }
+  @Override public CommitStateBuilderImpl blobCriteria(List<BlobCriteria> blobCriteria) { this.blobCriteria.addAll(blobCriteria); return this; }
   @Override public CommitStateBuilder blobs() { this.blobs = true; return this; }
   
   @Override

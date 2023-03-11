@@ -46,7 +46,7 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ImmutableBatch;
 import io.resys.thena.docdb.spi.ImmutableBatchRef;
-import io.resys.thena.docdb.spi.commits.HeadCommitBuilderImpl.CommitBatchBuilder;
+import io.resys.thena.docdb.spi.commits.CommitBuilderImpl.CommitBatchBuilder;
 import io.resys.thena.docdb.spi.support.Sha2;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;

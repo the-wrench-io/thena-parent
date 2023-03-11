@@ -28,7 +28,7 @@ import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
-import io.resys.thena.docdb.api.actions.ObjectsActions.CommitObjects;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitObjects;
 import io.resys.thena.docdb.api.models.Diff;
 import io.resys.thena.docdb.api.models.Diff.Divergence;
 import io.resys.thena.docdb.api.models.Diff.DivergenceType;

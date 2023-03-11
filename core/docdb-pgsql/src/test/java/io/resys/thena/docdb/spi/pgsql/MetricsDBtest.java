@@ -85,7 +85,7 @@ public class MetricsDBtest extends PgDbTestTemplate {
   
   private void runInserts(RepoResult repo, int total) {
     
-    final var builder = getClient().commit().head().parentIsLatest()
+    final var builder = getClient().commit().builder().parentIsLatest()
       .head(repo.getRepo().getName(), "main")
       .author("same vimes")
       .message("Commiting!");

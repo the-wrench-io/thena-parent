@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.objects;
+package io.resys.thena.docdb.spi.repo;
 
 /*-
  * #%L
@@ -22,13 +22,13 @@ package io.resys.thena.docdb.spi.objects;
 
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.actions.ImmutableObjectsResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RepoStateBuilder;
+import io.resys.thena.docdb.api.actions.RepoActions.RepoStateBuilder;
 import io.resys.thena.docdb.api.exceptions.RepoException;
 import io.resys.thena.docdb.api.models.ImmutableObjects;
+import io.resys.thena.docdb.api.models.ImmutableObjectsResult;
 import io.resys.thena.docdb.api.models.Objects;
+import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
@@ -43,7 +43,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class RepoStateBuilderDefault implements RepoStateBuilder {
+public class RepoStateBuilderImpl implements RepoStateBuilder {
   private final ClientState state;
   private String repo; //repo name
 

@@ -28,7 +28,7 @@ public class ChangeActionsImpl implements ChangeActions {
     final var entity = map(command);
     final var json = JsonObject.mapFrom(entity);
     final var config = ctx.getConfig();
-    return config.getClient().commit().head()
+    return config.getClient().commit().builder()
       .head(config.getRepoName(), config.getHeadName())
       .message("Creating task")
       .parentIsLatest()
@@ -45,7 +45,7 @@ public class ChangeActionsImpl implements ChangeActions {
   @Override
   public Uni<List<Task>> create(List<CreateTask> commands) {
     final var config = ctx.getConfig();
-    final var client = config.getClient().commit().head();
+    final var client = config.getClient().commit().builder();
     final var entities = new ArrayList<Task>();
     for(final var command : commands) {
       final var entity = map(command);

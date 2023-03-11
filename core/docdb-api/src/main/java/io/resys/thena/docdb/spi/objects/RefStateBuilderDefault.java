@@ -24,14 +24,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.actions.ImmutableObjectsResult;
 import io.resys.thena.docdb.api.actions.ImmutableRefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
 import io.resys.thena.docdb.api.exceptions.RepoException;
+import io.resys.thena.docdb.api.models.ImmutableObjectsResult;
 import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientState;

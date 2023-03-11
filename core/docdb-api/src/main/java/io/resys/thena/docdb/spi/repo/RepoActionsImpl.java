@@ -26,16 +26,21 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class RepoActionsDefault implements RepoActions {
+public class RepoActionsImpl implements RepoActions {
   private final ClientState state;
 
   @Override
-  public QueryBuilder query() {
-    return new RepoQueryBuilder(state);
+  public RepoQueryBuilder query() {
+    return new RepoQueryBuilderImpl(state);
   }
 
   @Override
-  public CreateBuilder create() {
-    return new RepoCreateBuilder(state);
+  public RepoCreateBuilder create() {
+    return new RepoCreateBuilderImpl(state);
+  }
+
+  @Override
+  public RepoStateBuilder state() {
+    return new RepoStateBuilderImpl(state);
   }
 }

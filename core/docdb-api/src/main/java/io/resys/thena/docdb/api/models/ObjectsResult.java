@@ -1,10 +1,10 @@
-package io.resys.thena.docdb.spi.diff;
+package io.resys.thena.docdb.api.models;
 
 /*-
  * #%L
  * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,18 +20,22 @@ package io.resys.thena.docdb.spi.diff;
  * #L%
  */
 
-import io.resys.thena.docdb.api.actions.DiffActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.spi.ClientState;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
 
-@RequiredArgsConstructor
-public class DiffActionsDefault implements DiffActions {
-  private final ClientState state;
-  private final ObjectsActions objects;
+import javax.annotation.Nullable;
 
-  @Override
-  public HeadDiffBuilder head() {
-    return new HeadDiffBuilderDefault(state, objects);
-  }
+import org.immutables.value.Value;
+
+
+@Value.Immutable
+public interface ObjectsResult<T> {
+  @Nullable
+  Repo getRepo();    
+  @Nullable
+  T getObjects();
+  ObjectsStatus getStatus();
+  List<Message> getMessages();
+  
+  enum ObjectsStatus { OK, ERROR }
+
 }

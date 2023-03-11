@@ -21,20 +21,26 @@ package io.resys.thena.docdb.api.actions;
  */
 
 import java.util.List;
+import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Message;
+import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 
 public interface CommitActions {
-  HeadCommitBuilder head();
+  CommitBuilder builder();
   CommitQuery query();
+  CommitStateBuilder state();
   
   interface CommitQuery {
     CommitQuery repoName(String repoId); // head GID to what to append
@@ -42,16 +48,26 @@ public interface CommitActions {
     Uni<List<Tree>> findAllCommitTrees();
   }
   
-  interface HeadCommitBuilder {
-    HeadCommitBuilder id(String headGid); // head GID to what to append
-    HeadCommitBuilder parent(String parentCommit); // for validations
-    HeadCommitBuilder parentIsLatest();
-    HeadCommitBuilder head(String repoId, String headName); // head GID to what to append
-    HeadCommitBuilder append(String name, JsonObject blob);
-    HeadCommitBuilder remove(String name);
-    HeadCommitBuilder author(String author);
-    HeadCommitBuilder message(String message);
+  interface CommitBuilder {
+    CommitBuilder id(String headGid); // head GID to what to append
+    CommitBuilder parent(String parentCommit); // for validations
+    CommitBuilder parentIsLatest();
+    CommitBuilder head(String repoId, String headName); // head GID to what to append
+    CommitBuilder append(String name, JsonObject blob);
+    CommitBuilder remove(String name);
+    CommitBuilder author(String author);
+    CommitBuilder message(String message);
     Uni<CommitResult> build();
+  }
+  
+  // build REF world state, no blobs by default
+  interface CommitStateBuilder {
+    CommitStateBuilder repo(String repoName);
+    CommitStateBuilder anyId(String refOrCommitOrTag);
+    CommitStateBuilder blobs();
+    CommitStateBuilder blobs(boolean load);
+    CommitStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
+    Uni<ObjectsResult<CommitObjects>> build();
   }
   
   enum CommitStatus {
@@ -66,4 +82,13 @@ public interface CommitActions {
     CommitStatus getStatus();
     List<Message> getMessages();
   }
+  
+  @Value.Immutable
+  interface CommitObjects {
+    Repo getRepo();
+    Commit getCommit();
+    Tree getTree();
+    Map<String, Blob> getBlobs(); //only if loaded
+  }
+
 }

@@ -22,15 +22,17 @@ package io.resys.thena.docdb.spi.diff;
 
 import java.util.Arrays;
 
+import io.resys.thena.docdb.api.actions.CommitActions;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitObjects;
+import io.resys.thena.docdb.api.actions.DiffActions.DiffBuilder;
 import io.resys.thena.docdb.api.actions.DiffActions.DiffResult;
 import io.resys.thena.docdb.api.actions.DiffActions.DiffStatus;
-import io.resys.thena.docdb.api.actions.DiffActions.HeadDiffBuilder;
 import io.resys.thena.docdb.api.actions.ImmutableDiffResult;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions.CommitObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.ObjectsStatus;
+import io.resys.thena.docdb.api.actions.RepoActions;
 import io.resys.thena.docdb.api.models.Diff;
 import io.resys.thena.docdb.api.models.Objects;
+import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -40,9 +42,11 @@ import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class HeadDiffBuilderDefault implements HeadDiffBuilder {
+public class DiffBuilderImpl implements DiffBuilder {
   private final ClientState state;
   private final ObjectsActions objects;
+  private final CommitActions commits;
+  private final RepoActions repos;
   
   private String repo;  //RepoIdOrName;
   private String left;  //HeadOrCommitOrTag;
@@ -55,9 +59,9 @@ public class HeadDiffBuilderDefault implements HeadDiffBuilder {
     RepoAssert.notEmpty(right, () -> "right is not defined!");
     
     return Uni.combine().all().unis(
-        objects.repoState().repo(repo).build(),
-        objects.commitState().anyId(left).repo(repo).build(), 
-        objects.commitState().anyId(right).repo(repo).build())
+        repos.state().repo(repo).build(),
+        commits.state().anyId(left).repo(repo).build(), 
+        commits.state().anyId(right).repo(repo).build())
 
       .asTuple().onItem().transform(tuple -> {
         final var objects = tuple.getItem1();

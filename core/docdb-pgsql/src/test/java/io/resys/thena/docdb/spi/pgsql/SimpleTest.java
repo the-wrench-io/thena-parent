@@ -64,7 +64,7 @@ public class SimpleTest extends PgDbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().head()
+    CommitResult commit_0 = getClient().commit().builder()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", new JsonObject(Map.of(
           "type", "person",
@@ -81,7 +81,7 @@ public class SimpleTest extends PgDbTestTemplate {
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().head()
+    CommitResult commit_1 = getClient().commit().builder()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .remove("readme.md")
@@ -107,7 +107,7 @@ public class SimpleTest extends PgDbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().head()
+    CommitResult commit_0 = getClient().commit().builder()
       .head("project-x", "main")
       .append("readme.md", JsonObject.of("doc", "readme content"))
       .append("file1.json", JsonObject.of())
@@ -136,7 +136,7 @@ public class SimpleTest extends PgDbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().head()
+    CommitResult commit_0 = getClient().commit().builder()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("doc", "readme content"))
       .append("file1.json", JsonObject.of())
@@ -152,7 +152,7 @@ public class SimpleTest extends PgDbTestTemplate {
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().head()
+    CommitResult commit_1 = getClient().commit().builder()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .append("readme.md", JsonObject.of("doc", "readme content"))

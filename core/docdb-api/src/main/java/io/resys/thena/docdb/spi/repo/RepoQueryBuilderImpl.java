@@ -32,7 +32,7 @@ import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class RepoQueryBuilder implements RepoActions.QueryBuilder {
+public class RepoQueryBuilderImpl implements RepoActions.RepoQueryBuilder {
 
   private final ClientState state;
   private String id;

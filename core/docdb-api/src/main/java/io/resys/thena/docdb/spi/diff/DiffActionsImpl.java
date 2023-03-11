@@ -1,4 +1,6 @@
-package io.resys.thena.docdb.spi.objects;
+package io.resys.thena.docdb.spi.diff;
+
+import io.resys.thena.docdb.api.actions.CommitActions;
 
 /*-
  * #%L
@@ -20,21 +22,21 @@ package io.resys.thena.docdb.spi.objects;
  * #L%
  */
 
+import io.resys.thena.docdb.api.actions.DiffActions;
 import io.resys.thena.docdb.api.actions.ObjectsActions;
+import io.resys.thena.docdb.api.actions.RepoActions;
 import io.resys.thena.docdb.spi.ClientState;
 import lombok.RequiredArgsConstructor;
 
-
 @RequiredArgsConstructor
-public class ObjectsActionsDefault implements ObjectsActions {
+public class DiffActionsImpl implements DiffActions {
   private final ClientState state;
-
+  private final ObjectsActions objects;
+  private final CommitActions commits;
+  private final RepoActions repos;
+  
   @Override
-  public RefStateBuilder refState() {
-    return new RefStateBuilderDefault(state);
-  }
-  @Override
-  public BlobStateBuilder blobState() {
-    return new BlobStateBuilderDefault(state);
+  public DiffBuilder builder() {
+    return new DiffBuilderImpl(state, objects, commits, repos);
   }
 }
