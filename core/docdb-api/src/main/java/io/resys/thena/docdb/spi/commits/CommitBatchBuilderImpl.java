@@ -22,13 +22,9 @@ package io.resys.thena.docdb.spi.commits;
 
 import java.time.LocalDateTime;
 import java.util.Collection;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.stream.Collectors;
-
-import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
@@ -36,20 +32,13 @@ import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
-import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ImmutableBatch;
 import io.resys.thena.docdb.spi.ImmutableBatchRef;
-import io.resys.thena.docdb.spi.commits.CommitBuilderImpl.CommitBatchBuilder;
 import io.resys.thena.docdb.spi.support.Sha2;
 import io.vertx.core.json.JsonObject;
-import lombok.Builder;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Accessors;
@@ -65,42 +54,6 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
   private Map<String, JsonObject> toBeInserted;
   private Collection<String> toBeRemoved;
 
-  
-  @lombok.Data @lombok.Builder(toBuilder = true) @Accessors(fluent = false)
-  public static class CommitTreeState {
-    private final String gid;
-    private final Repo repo;
-    private final String refName;
-    @Builder.Default private final Optional<Ref> ref = Optional.empty();
-    @Builder.Default private final Optional<Tree> tree = Optional.empty();
-    @Builder.Default private final Optional<Commit> commit = Optional.empty();
-  }
-  
-  @lombok.Data @Accessors(fluent = false)
-  public static class CommitTreeMutator {
-    private final Map<String, Blob> nextBlobs = new LinkedHashMap<>();
-    private final Map<String, TreeValue> nextTree = new LinkedHashMap<>();
-    private final CommitLogger logger = new CommitLogger();
-    private boolean dataDeleted = false;
-    private boolean dataAdded = false; 
-  }
-  
-
-  @Value.Immutable
-  interface RedundentCommitTree {
-    boolean isEmpty();
-    Map<String, TreeValue> getTreeValues();
-    Map<String, Blob> getBlobs();
-    String getLog();
-  }
-  
-  @Value.Immutable
-  interface RedundentHashedBlob {
-    String getName();
-    String getHash();
-    JsonObject getBlob();
-  }
-  
   
   @Override
   public Batch build() {

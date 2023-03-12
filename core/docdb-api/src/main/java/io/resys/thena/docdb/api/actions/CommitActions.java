@@ -54,6 +54,7 @@ public interface CommitActions {
     CommitBuilder parentIsLatest();
     CommitBuilder head(String repoId, String headName); // head GID to what to append
     CommitBuilder append(String name, JsonObject blob);
+    CommitBuilder merge(String name, JsonObjectMerge blob);
     CommitBuilder remove(String name);
     CommitBuilder author(String author);
     CommitBuilder message(String message);
@@ -69,10 +70,13 @@ public interface CommitActions {
     CommitStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
     Uni<ObjectsResult<CommitObjects>> build();
   }
-  
-  enum CommitStatus {
-    OK, ERROR, CONFLICT
+
+  @FunctionalInterface
+  interface JsonObjectMerge {
+    JsonObject apply(JsonObject previousState);
   }
+  
+  enum CommitStatus { OK, ERROR, CONFLICT }
   
   @Value.Immutable
   interface CommitResult {

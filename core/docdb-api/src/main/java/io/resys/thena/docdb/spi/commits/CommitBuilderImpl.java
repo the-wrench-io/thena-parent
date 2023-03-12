@@ -23,7 +23,6 @@ import java.time.Duration;
  */
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,6 +30,7 @@ import java.util.Map;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
 import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Objects.CommitLock;
@@ -40,7 +40,7 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.ImmutableLockCriteria;
-import io.resys.thena.docdb.spi.commits.CommitBatchBuilderImpl.CommitTreeState;
+import io.resys.thena.docdb.spi.commits.CommitBatchBuilder.CommitTreeState;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -53,6 +53,7 @@ public class CommitBuilderImpl implements CommitBuilder {
 
   private final ClientState state;
   private final Map<String, JsonObject> appendBlobs = new HashMap<>();
+  private final Map<String, JsonObjectMerge> mergeBlobs = new HashMap<>();
   private final List<String> deleteBlobs = new ArrayList<>();
   
   private String headGid;
@@ -83,6 +84,7 @@ public class CommitBuilderImpl implements CommitBuilder {
   public CommitBuilder append(String name, JsonObject blob) {
     RepoAssert.notNull(blob, () -> "blob can't be empty!");
     RepoAssert.notEmpty(name, () -> "name can't be empty!");
+    RepoAssert.isTrue(!this.mergeBlobs.containsKey(name), () -> "Blob with name: '" + name + "'can't be added because it's already marked for merge!");
     RepoAssert.isTrue(!this.appendBlobs.containsKey(name), () -> "Blob with name: '" + name + "' is already defined!");
     RepoAssert.isTrue(!this.deleteBlobs.contains(name), () -> "Blob with name: '" + name + "' can't be appended because it's been marked for removal!");
     this.appendBlobs.put(name, blob);
@@ -90,10 +92,21 @@ public class CommitBuilderImpl implements CommitBuilder {
   }
   @Override
   public CommitBuilder remove(String name) {
+    RepoAssert.notEmpty(name, () -> "name can't be empty!");
+    RepoAssert.isTrue(!this.mergeBlobs.containsKey(name), () -> "Blob with name: '" + name + "'can't be merged because it's already marked for removal!");
     RepoAssert.isTrue(!this.appendBlobs.containsKey(name), () -> "Blob with name: '" + name + "' can't be marked for removal because it's beed appended!");
     RepoAssert.isTrue(!this.deleteBlobs.contains(name), () -> "Blob with name: '" + name + "' is already marked for removal!");
-    RepoAssert.notEmpty(name, () -> "name can't be empty!");
     this.deleteBlobs.add(name);
+    return this;
+  }
+  @Override
+  public CommitBuilder merge(String name, JsonObjectMerge blob) {
+    RepoAssert.notEmpty(name, () -> "name can't be empty!");
+    RepoAssert.notNull(blob, () -> "merge can't be null!");
+    RepoAssert.isTrue(!this.mergeBlobs.containsKey(name), () -> "Blob with name: '" + name + "' is already marked for merge!");
+    RepoAssert.isTrue(!this.appendBlobs.containsKey(name), () -> "Blob with name: '" + name + "' can't be marked for removal because it's beed appended!");
+    RepoAssert.isTrue(!this.deleteBlobs.contains(name), () -> "Blob with name: '" + name + "' is already marked for removal!");
+    this.mergeBlobs.put(name, blob);
     return this;
   }
   @Override
@@ -113,7 +126,6 @@ public class CommitBuilderImpl implements CommitBuilder {
     this.parentCommit = parentCommit;
     return this;
   }
-
   @Override
   public CommitBuilder parentIsLatest() {
     this.parentIsLatest = true;
@@ -255,13 +267,5 @@ public class CommitBuilderImpl implements CommitBuilder {
     }
     return CommitStatus.ERROR;
     
-  }
-  
-  interface CommitBatchBuilder {
-    CommitBatchBuilder commitAuthor(String commitAuthor);
-    CommitBatchBuilder commitMessage(String commitMessage);
-    CommitBatchBuilder toBeInserted(Map<String, JsonObject> toBeInserted);
-    CommitBatchBuilder toBeRemoved(Collection<String> toBeRemoved);
-    Batch build();
   }
 }
