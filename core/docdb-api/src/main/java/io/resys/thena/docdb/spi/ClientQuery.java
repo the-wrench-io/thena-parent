@@ -2,7 +2,6 @@ package io.resys.thena.docdb.spi;
 
 import java.util.List;
 
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /*-
@@ -62,32 +61,32 @@ public interface ClientQuery {
   }
   
   interface BlobQuery {
-    BlobQuery criteria(BlobCriteria ... criteria);
-    BlobQuery criteria(List<BlobCriteria> criteria);
-    
     Uni<Blob> getById(String blobId);
-    Uni<List<Blob>> findById(List<String> blobId);
     
     Multi<Blob> findAll();
-    Multi<Blob> findByTreeId(String treeId);
+    Multi<Blob> findAll(String treeId, List<String> blobNames, List<BlobCriteria> criteria);
+    Multi<Blob> findAll(String treeId, List<BlobCriteria> criteria);
   }
   interface CommitQuery {
     Uni<Commit> getById(String commitId);
-    Uni<CommitLock> getLock(@Nullable String commitId, @Nonnull String headName);
+    Uni<CommitLock> getLock(LockCriteria criteria);
     Multi<Commit> findAll();
   }
-  
-  
   interface TreeQuery {
     Uni<Tree> getById(String treeId);
     Multi<Tree> findAll();
-  }  
-  
+  }
   interface TagQuery {
     TagQuery name(String name);
     Uni<DeleteResult> delete();
     Uni<Tag> getFirst();
     Multi<Tag> find();
+  }
+  
+  @Value.Immutable
+  interface LockCriteria {
+    @Nullable String getCommitId(); 
+    String getHeadName();
   }
   
   @Value.Immutable

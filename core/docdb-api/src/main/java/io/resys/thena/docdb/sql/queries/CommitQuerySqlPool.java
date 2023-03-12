@@ -33,6 +33,7 @@ import io.resys.thena.docdb.api.models.Objects.CommitLock;
 import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
 import io.resys.thena.docdb.api.models.Objects.CommitTree;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
+import io.resys.thena.docdb.spi.ClientQuery.LockCriteria;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
@@ -90,8 +91,8 @@ public class CommitQuerySqlPool implements CommitQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT'!", e));
   }
   @Override
-  public Uni<CommitLock> getLock(String commit, String headName) {
-    final var sql = sqlBuilder.commits().getLock(commit, headName);
+  public Uni<CommitLock> getLock(LockCriteria crit) {
+    final var sql = sqlBuilder.commits().getLock(crit);
     if(log.isDebugEnabled()) {
       log.debug("Commit getLock query, with props: {} \r\n{}", 
           sql.getProps(),
@@ -138,6 +139,6 @@ public class CommitQuerySqlPool implements CommitQuery {
           final CommitLock lock = builder.build();
           return lock;
         })
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT' by 'id': '" + commit + "'!", e));
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT LOCK ON REF' by head/commit: '" + crit.getHeadName() + "/" + crit.getCommitId() + "'!", e));
   }
 }

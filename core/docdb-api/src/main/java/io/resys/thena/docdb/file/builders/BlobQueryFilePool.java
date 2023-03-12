@@ -21,11 +21,14 @@ package io.resys.thena.docdb.file.builders;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 
+import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
@@ -44,7 +47,6 @@ public class BlobQueryFilePool implements BlobQuery {
   private final FileMapper mapper;
   private final FileBuilder builder;
   private final ErrorHandler errorHandler;
-  private final List<BlobCriteria> blobCriteria = new ArrayList<>();
 
   @Override
   public Uni<Blob> getById(String blobId) {
@@ -64,25 +66,6 @@ public class BlobQueryFilePool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id': '" + blobId + "'!", e));
   }
   @Override
-  public Uni<List<Blob>> findById(List<String> blobId) {
-    final var sql = builder.blobs().findByIds(blobId);
-    return client.preparedQuery(sql)
-        .mapping(row -> mapper.blob(row))
-        .execute()
-        .onItem()
-        .transform((Collection<Blob> rowset) -> {
-          List<Blob> result = new ArrayList<Blob>();
-          for(final var item : rowset) {
-            if(isMatch(item, blobCriteria)) {
-              result.add(item);
-            }
-          }
-          return result;
-        })
-        .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id'-s: '" + String.join(",", blobId) + "'!", e));
-  }
-  @Override
   public Multi<Blob> findAll() {
     final var sql = builder.blobs().findAll();
     return client.preparedQuery(sql)
@@ -93,36 +76,51 @@ public class BlobQueryFilePool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
   }
   @Override
-  public Multi<Blob> findByTreeId(String treeId) {
-    final var sql = builder.blobs().findByTreeId(treeId);
-    return client.preparedQuery(sql)
-        .mapping(row -> mapper.blob(row))
-        .execute()
-        .onItem()
-        .transform((Collection<Blob> rowset) -> {
-          List<Blob> result = new ArrayList<Blob>();
-          for(final var item : rowset) {
-            if(isMatch(item, blobCriteria)) {
-              result.add(item);
+  public Multi<Blob> findAll(String treeId, List<String> blobNames, List<BlobCriteria> blobCriteria) {
+    final var blobSql = builder.blobs().findByTreeId(treeId);
+    final var treeSql = builder.trees().getById(treeId);
+    
+    return client.preparedQuery(treeSql) 
+    .mapping(row -> mapper.tree(row))
+    .execute()
+    .onItem()
+    .transform(rowset -> {
+      final var tree = rowset.iterator().next();
+      final var values = new HashMap<String, TreeValue>();
+      
+      for(final var item : tree.getValues().values()) {
+        if(blobNames.contains(item.getName())) {
+          values.put(item.getName(), item);
+        }
+      }
+      return ImmutableTree.builder()
+          .id(tree.getId())
+          .values(values)
+          .build();
+    }).onItem().transformToUni(tree -> {
+      
+      return client.preparedQuery(blobSql) 
+          .mapping(row -> mapper.blob(row))
+          .execute()
+          .onItem()
+          .transform((Collection<Blob> rowset) -> {
+            List<Blob> result = new ArrayList<Blob>();
+            for(final var item : rowset) {
+              if(isMatch(item, blobCriteria) && tree.getValues().containsKey(item.getId())) {
+                result.add(item);
+              }
             }
-          }
-          return result;
-        })
-        .onItem()
-        .transformToMulti((List<Blob> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
+            return result;
+          });
+    })
+    .onItem()
+    .transformToMulti((List<Blob> rowset) -> Multi.createFrom().iterable(rowset))
+    .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
   }
   @Override
-  public BlobQuery criteria(BlobCriteria... criteria) {
-    this.blobCriteria.addAll(Arrays.asList(criteria));
-    return this;
+  public Multi<Blob> findAll(String treeId, List<BlobCriteria> criteria) {
+    return findAll(treeId, Collections.emptyList(), criteria);
   }
-  @Override
-  public BlobQuery criteria(List<BlobCriteria> criteria) {
-    this.blobCriteria.addAll(criteria);
-    return this;
-  }
-  
   public static boolean isMatch(Blob item, List<BlobCriteria> blobCriteria) {
     var found = true;
     for(final var crit : blobCriteria) {

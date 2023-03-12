@@ -37,6 +37,7 @@ import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.spi.ClientQuery.LockCriteria;
 import io.vertx.mutiny.sqlclient.Tuple;
 
 public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
@@ -64,9 +65,10 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
     SqlTuple insertOne(Blob blob);
     SqlTupleList insertAll(Collection<Blob> blobs);
     
-    SqlTuple findByTree(String treeId, List<BlobCriteria> criteria);
-    SqlTuple findByIds(Collection<String> blobId, List<BlobCriteria> criteria);
     SqlTuple find(@Nullable String name, boolean latestOnly, List<BlobCriteria> criteria);
+    SqlTuple findByTree(String treeId, List<BlobCriteria> criteria);
+    SqlTuple findByTree(String treeId, List<String> blobNames, List<BlobCriteria> criteria);
+    SqlTuple findByIds(Collection<String> blobId);
     Sql findAll();
   }
   
@@ -98,7 +100,7 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
   
   interface CommitSqlBuilder {
     SqlTuple getById(String id);
-    SqlTuple getLock(String commitId, String headName);
+    SqlTuple getLock(LockCriteria crit);
     Sql findAll();
     SqlTuple insertOne(Commit commit);
   }

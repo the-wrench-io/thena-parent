@@ -1,6 +1,7 @@
 package io.resys.thena.docdb.file.builders;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -33,6 +34,7 @@ import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
+import io.resys.thena.docdb.spi.ClientQuery.LockCriteria;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -73,8 +75,9 @@ public class CommitQueryFilePool implements CommitQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'COMMIT'!", e));
   }
   @Override
-  public Uni<CommitLock> getLock(String commitId, String headName) {
-    
+  public Uni<CommitLock> getLock(LockCriteria crit) {
+    final var commitId = crit.getCommitId(); 
+    final var headName = crit.getHeadName();
     return new RefQueryFilePool(client, mapper, builder, errorHandler).nameOrCommit(headName).onItem().transformToUni(ref -> {
       if(ref == null) {
         return Uni.createFrom().item((CommitLock) ImmutableCommitLock.builder()
@@ -88,7 +91,7 @@ public class CommitQueryFilePool implements CommitQuery {
       
       return getById(ref.getCommit()).onItem().transformToUni(commit -> {
         final var treeUni = new TreeQueryFilePool(client, mapper, builder, errorHandler).getById(commit.getTree());
-        final var blobUni = new BlobQueryFilePool(client, mapper, builder, errorHandler).findByTreeId(commit.getTree()).collect().asList();        
+        final var blobUni = new BlobQueryFilePool(client, mapper, builder, errorHandler).findAll(commit.getTree(), Collections.emptyList()).collect().asList();        
         
         return Uni.combine().all().unis(treeUni, blobUni).asTuple().onItem().transform(tuple -> {
           return (CommitLock) ImmutableCommitLock.builder()

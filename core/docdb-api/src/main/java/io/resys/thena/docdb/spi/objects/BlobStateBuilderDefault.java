@@ -182,7 +182,7 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
 
   private static Uni<BlobAndTree> getBlob(String treeId, ClientRepoState ctx, List<BlobCriteria> blobCriteria, List<String> blobName) {
     if(!blobName.isEmpty()) {
-      return ctx.query().blobs().criteria(blobCriteria).findById(blobName)
+      return ctx.query().blobs().findAll(treeId, blobName, blobCriteria).collect().asList()
           .onItem().transform(blobs -> ImmutableBlobAndTree.builder().blob(blobs).treeId(treeId).build());
     }
     

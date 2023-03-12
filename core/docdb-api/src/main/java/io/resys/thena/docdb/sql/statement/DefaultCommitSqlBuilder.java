@@ -27,6 +27,7 @@ import java.util.List;
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.ClientQuery.LockCriteria;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.CommitSqlBuilder;
@@ -78,7 +79,9 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple getLock(String commitId, String headName) {
+  public SqlTuple getLock(LockCriteria crit) {
+    final var commitId = crit.getCommitId(); 
+    final var headName = crit.getHeadName();
     List<Object> props = new ArrayList<>();
     props.add(headName);
 

@@ -21,7 +21,6 @@ package io.resys.thena.docdb.sql.queries;
  */
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import io.resys.thena.docdb.api.LogConstants;
@@ -46,8 +45,6 @@ public class BlobQuerySqlPool implements BlobQuery {
   private final SqlMapper sqlMapper;
   private final SqlBuilder sqlBuilder;
   private final ErrorHandler errorHandler;
-  private final List<BlobCriteria> criteria = new ArrayList<>();
-
   
   @Override
   public Uni<Blob> getById(String blobId) {
@@ -73,11 +70,57 @@ public class BlobQuerySqlPool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id': '" + blobId + "'!", e));
   }
   @Override
-  public Uni<List<Blob>> findById(List<String> blobId) {
-    final var sql = sqlBuilder.blobs().findByIds(blobId, criteria);
+  public Multi<Blob> findAll() {
+    final var sql = sqlBuilder.blobs().findAll();
     if(log.isDebugEnabled()) {
-      log.debug("Blob: {} find all blobs byId query, with props: {} \r\n{}",
+      log.debug("Blob findAll query, with props: {} \r\n{}", 
+          "", 
+          sql.getValue());
+    }
+    return wrapper.getClient().preparedQuery(sql.getValue())
+        .mapping(row -> sqlMapper.blob(row))
+        .execute()
+        .onItem()
+        .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
+  }
+  @Override
+  public Multi<Blob> findAll(String treeId, List<BlobCriteria> criteria) {
+    final var sql = sqlBuilder.blobs().findByTree(treeId, criteria);
+    if(log.isDebugEnabled()) {
+      log.debug("Blob: {} findByTreeId query, with props: {} \r\n{}",
           BlobQuerySqlPool.class,
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
+    return wrapper.getClient().preparedQuery(sql.getValue())
+        .mapping(row -> sqlMapper.blob(row))
+        .execute(sql.getProps())
+        .onItem()
+        .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
+  }
+  @Override
+  public Multi<Blob> findAll(String treeId, List<String> blobNames, List<BlobCriteria> criteria) {
+    final var sql = sqlBuilder.blobs().findByTree(treeId, blobNames, criteria);
+    if(log.isDebugEnabled()) {
+      log.debug("Blob: {} findByTreeId query, with props: {} \r\n{}",
+          BlobQuerySqlPool.class,
+          sql.getProps().deepToString(), 
+          sql.getValue());
+    }
+    return wrapper.getClient().preparedQuery(sql.getValue())
+        .mapping(row -> sqlMapper.blob(row))
+        .execute(sql.getProps())
+        .onItem()
+        .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
+        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e)); 
+  }
+  
+  public Uni<List<Blob>> findById(List<String> blobId) {
+    final var sql = sqlBuilder.blobs().findByIds(blobId);
+    if(log.isDebugEnabled()) {
+      log.debug("Blob findById query, with props: {} \r\n{}", 
           sql.getProps().deepToString(), 
           sql.getValue());
     }
@@ -94,46 +137,5 @@ public class BlobQuerySqlPool implements BlobQuery {
         })
         .onFailure(e -> errorHandler.notFound(e)).recoverWithNull()
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by 'id'-s: '" + String.join(",", blobId) + "'!", e));
-  }
-  @Override
-  public Multi<Blob> findAll() {
-    final var sql = sqlBuilder.blobs().findAll();
-    if(log.isDebugEnabled()) {
-      log.debug("Blob findAll query, with props: {} \r\n{}", 
-          "", 
-          sql.getValue());
-    }
-    return wrapper.getClient().preparedQuery(sql.getValue())
-        .mapping(row -> sqlMapper.blob(row))
-        .execute()
-        .onItem()
-        .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
-  }
-  @Override
-  public Multi<Blob> findByTreeId(String treeId) {
-    final var sql = sqlBuilder.blobs().findByTree(treeId, criteria);
-    if(log.isDebugEnabled()) {
-      log.debug("Blob: {} findByTreeId query, with props: {} \r\n{}",
-          BlobQuerySqlPool.class,
-          sql.getProps().deepToString(), 
-          sql.getValue());
-    }
-    return wrapper.getClient().preparedQuery(sql.getValue())
-        .mapping(row -> sqlMapper.blob(row))
-        .execute(sql.getProps())
-        .onItem()
-        .transformToMulti((RowSet<Blob> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
-  }
-  @Override
-  public BlobQuery criteria(BlobCriteria... criteria) {
-    this.criteria.addAll(Arrays.asList(criteria));
-    return this;
-  }
-  @Override
-  public BlobQuery criteria(List<BlobCriteria> criteria) {
-    this.criteria.addAll(criteria);
-    return this;
   }
 }

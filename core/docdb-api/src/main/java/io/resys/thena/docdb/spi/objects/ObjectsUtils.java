@@ -69,7 +69,7 @@ public class ObjectsUtils {
   
 
   public static Uni<Map<String, Blob>> getBlobs(Tree tree, List<BlobCriteria> blobCriteria, ClientRepoState ctx) {
-    return ctx.query().blobs().criteria(blobCriteria).findByTreeId(tree.getId()).collect().asList().onItem()
+    return ctx.query().blobs().findAll(tree.getId(), blobCriteria).collect().asList().onItem()
         .transform(blobs -> blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)));
   }
 }

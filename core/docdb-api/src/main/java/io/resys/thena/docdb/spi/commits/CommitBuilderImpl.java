@@ -28,9 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Objects.CommitLock;
@@ -39,6 +39,7 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
+import io.resys.thena.docdb.spi.ImmutableLockCriteria;
 import io.resys.thena.docdb.spi.commits.CommitBatchBuilderImpl.CommitTreeState;
 import io.resys.thena.docdb.spi.support.Identifiers;
 import io.resys.thena.docdb.spi.support.RepoAssert;
@@ -132,29 +133,27 @@ public class CommitBuilderImpl implements CommitBuilder {
     RepoAssert.notEmpty(repoId, () -> "Can't resolve repoId!");
     RepoAssert.notEmpty(headName, () -> "Can't resolve headName!");
 
-    final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
-    return this.state.withTransaction(repoId, headName, tx -> {
-      
-      return tx.query().commits().getLock(parentCommit, headName)
-        .onItem().transformToUni(lock -> {
+    final var gid = Identifiers.toRepoHeadGid(repoId, headName);
+    final var crit = ImmutableLockCriteria.builder().headName(headName).commitId(parentCommit).build();
+    return this.state.withTransaction(repoId, headName, tx -> tx.query().commits().getLock(crit)
+      .onItem().transformToUni(lock -> {
 
-          final var validation = validateRepo(lock, parentCommit);
-          if(validation != null) {
-            return Uni.createFrom().item(validation);
-          }
-          
-          final var batch = doInLock(lock, tx);
-          return tx.insert().batch(batch)
-              .onItem().transform(rsp -> ImmutableCommitResult.builder()
-                .gid(gid)
-                .commit(rsp.getCommit())
-                .addMessages(rsp.getLog())
-                .addAllMessages(rsp.getMessages())
-                .status(visitStatus(rsp.getStatus()))
-                .build());
-        });
-    
-    })
+        final var validation = validateRepo(lock, parentCommit);
+        if(validation != null) {
+          return Uni.createFrom().item(validation);
+        }
+        
+        final var batch = doInLock(lock, tx);
+        return tx.insert().batch(batch)
+            .onItem().transform(rsp -> ImmutableCommitResult.builder()
+              .gid(gid)
+              .commit(rsp.getCommit())
+              .addMessages(rsp.getLog())
+              .addAllMessages(rsp.getMessages())
+              .status(visitStatus(rsp.getStatus()))
+              .build());
+      })
+    )
     .onFailure(err -> state.getErrorHandler().isLocked(err)).retry().withBackOff(Duration.ofMillis(100)).atMost(10);
    /*
     .onFailure(err -> state.getErrorHandler().isLocked(err)).invoke(error -> {

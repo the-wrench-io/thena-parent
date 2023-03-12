@@ -66,39 +66,25 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple findByIds(Collection<String> blobId, List<BlobCriteria> criteria) {
-    final var conditions = createWhereCriteria(criteria);
-    final var tuple = new ArrayList<>(conditions.getProps());
+  public SqlTuple findByIds(Collection<String> blobId) {
+    StringBuilder params = new StringBuilder();
+    List<String> tuple = new ArrayList<>();
     
-    final var ides = new StringBuilder();
-    int index = conditions.getProps().size() + 1;
+    int index = 1;
     for(final var id : blobId) {
-      if(ides.length() > 0) {
-        ides.append(" OR ");
+      if(params.length() == 0) {
+        params.append(" WHERE ");
+      } else {
+        params.append(" OR ");
       }
-      ides.append(" id = $").append(index++);
+      params.append(" id = $").append(index++);
       tuple.add(id);
-    }
-    if(!ides.isEmpty()) {
-      ides.insert(0, "(").append(")");
-    }
-    
-    final var where = new StringBuilder(conditions.getValue());
-    if(!ides.isEmpty()) {
-      if(!where.isEmpty()) {
-        where.append(" AND ");
-      }
-      where.append(ides.toString());
-    }
-    
-    if(!where.isEmpty()) {
-      where.insert(0, " WHERE ");
     }
     
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
-        .append("SELECT blob.* FROM ").append(options.getBlobs()).append(" as blob ").ln()
-        .append(where.toString())
+        .append("SELECT * FROM ").append(options.getBlobs())
+        .append(params.toString())
         .build())
         .props(Tuple.from(tuple))
         .build();
@@ -120,6 +106,36 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .append(conditions.getValue().isEmpty() ? "  " : "  AND ")
         .append("item.tree = $").append(String.valueOf(treeIdPos)).ln()
         .append(" ")
+        .build())
+        .props(Tuple.from(props))
+        .build();
+  }
+  @Override
+  public SqlTuple findByTree(String treeId, List<String> blobNames, List<BlobCriteria> criteria) {
+    final var conditions = createWhereCriteria(criteria);
+    final var props = new LinkedList<>(conditions.getProps());
+    final var treeIdPos = props.size() + 1;
+    props.add(treeId);
+    
+    final var nameCriteria = new StringBuilder();
+    var nameIndex = treeIdPos;
+    for(final var name : blobNames) {
+      final var pos = ++nameIndex;
+      nameCriteria.append(" AND item.name = $").append(pos);
+      props.add(name);
+    }
+
+    return ImmutableSqlTuple.builder()
+        .value(new SqlStatement()
+        .append("SELECT blobs.* ").ln()
+        .append("  FROM ").append(options.getBlobs()).append(" AS blobs ").ln()
+        .append("  LEFT JOIN ").append(options.getTreeItems()).append(" AS item ").ln()
+        .append("  ON blobs.id = item.blob").ln()
+        .append("  WHERE ").append(conditions.getValue())
+        .append(conditions.getValue().isEmpty() ? "  " : "  AND ")
+        .append("item.tree = $").append(String.valueOf(treeIdPos))
+        .append(nameCriteria.toString())
+        .ln()
         .build())
         .props(Tuple.from(props))
         .build();

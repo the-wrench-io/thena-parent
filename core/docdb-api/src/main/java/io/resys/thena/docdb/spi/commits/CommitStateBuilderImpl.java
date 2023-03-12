@@ -122,7 +122,7 @@ public class CommitStateBuilderImpl implements CommitStateBuilder {
   }
   
   private static Uni<ImmutableCommitObjects.Builder> getBlobs(Tree tree, ClientRepoState ctx, List<BlobCriteria> blobCriteria) {
-    return ctx.query().blobs().criteria(blobCriteria).findByTreeId(tree.getId())
+    return ctx.query().blobs().findAll(tree.getId(), blobCriteria)
         .collect().asList().onItem()
         .transform(blobs -> {
           final var objects = ImmutableCommitObjects.builder();
