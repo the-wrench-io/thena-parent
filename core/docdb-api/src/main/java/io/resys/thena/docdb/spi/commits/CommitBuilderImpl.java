@@ -134,7 +134,7 @@ public class CommitBuilderImpl implements CommitBuilder {
   public Uni<CommitResult> build() {
     RepoAssert.notEmpty(author, () -> "author can't be empty!");
     RepoAssert.notEmpty(message, () -> "message can't be empty!");
-    RepoAssert.isTrue(!appendBlobs.isEmpty() || !deleteBlobs.isEmpty(), () -> "Nothing to commit, no content!");
+    RepoAssert.isTrue(!appendBlobs.isEmpty() || !deleteBlobs.isEmpty() || !mergeBlobs.isEmpty(), () -> "Nothing to commit, no content!");
     
     if(this.headGid != null) {
       final var id = Identifiers.fromRepoHeadGid(this.headGid);
@@ -144,6 +144,8 @@ public class CommitBuilderImpl implements CommitBuilder {
     RepoAssert.notEmpty(repoId, () -> "Can't resolve repoId!");
     RepoAssert.notEmpty(headName, () -> "Can't resolve headName!");
 
+    // final var totalOperation = appendBlobs.size() + deleteBlobs.size() + mergeBlobs.size();
+    
     final var crit = ImmutableLockCriteria.builder().headName(headName).commitId(parentCommit).treeValueIds(mergeBlobs.keySet()).build();
     return this.state.withTransaction(repoId, headName, tx -> tx.query().commits().getLock(crit)
       .onItem().transformToUni(lock -> {
@@ -155,7 +157,10 @@ public class CommitBuilderImpl implements CommitBuilder {
 
       })
     )
-    .onFailure(err -> state.getErrorHandler().isLocked(err)).retry().withBackOff(Duration.ofMillis(100)).atMost(10);
+    .onFailure(err -> state.getErrorHandler().isLocked(err)).retry()
+      .withJitter(0.2) // every retry increase time by x 2 
+      .withBackOff(Duration.ofMillis(200))
+      .atMost(30);
    /*
     .onFailure(err -> state.getErrorHandler().isLocked(err)).invoke(error -> {
       error.printStackTrace();
@@ -171,7 +176,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     if(lock.getStatus() == CommitLockStatus.NOT_FOUND) {
       // nothing to add
     } else {
-      init.commit(lock.getCommit()).tree(lock.getTree());
+      init.commit(lock.getCommit()).tree(lock.getTree()).blobs(lock.getBlobs());
     }
     
     
@@ -181,6 +186,7 @@ public class CommitBuilderImpl implements CommitBuilder {
         .commitMessage(message)
         .toBeInserted(appendBlobs)
         .toBeRemoved(deleteBlobs)
+        .toBeMerged(mergeBlobs)
         .build();
     
     return tx.insert().batch(batch)
@@ -195,6 +201,24 @@ public class CommitBuilderImpl implements CommitBuilder {
 
   private CommitResult validateRepo(CommitLock state, String commitParent) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);
+    
+    // cant merge on first commit
+    if(state.getCommit().isEmpty() && !mergeBlobs.isEmpty()) {
+      return (CommitResult) ImmutableCommitResult.builder()
+          .gid(gid)
+          .addMessages(ImmutableMessage.builder()
+              .text(new StringBuilder()
+                  .append("Commit to: '").append(gid).append("'")
+                  .append(" is rejected.")
+                  .append(" Your trying to merge objects to non existent head!")
+                  .toString())
+              .build())
+          .status(CommitStatus.ERROR)
+          .build();
+      
+    }
+    
+    
     // Unknown parent
     if(state.getCommit().isEmpty() && commitParent != null) {
       return (CommitResult) ImmutableCommitResult.builder()

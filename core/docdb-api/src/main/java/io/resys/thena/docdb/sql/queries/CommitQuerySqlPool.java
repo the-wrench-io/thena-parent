@@ -95,7 +95,8 @@ public class CommitQuerySqlPool implements CommitQuery {
   public Uni<CommitLock> getLock(LockCriteria crit) {
     final var sql = sqlBuilder.commits().getLock(crit);
     if(log.isDebugEnabled()) {
-      log.debug("Commit getLock query, with props: {} \r\n{}", 
+      log.debug("Commit: {} getLock query, with props: {} \r\n{}",
+          CommitQuerySqlPool.class,
           sql.getProps(),
           sql.getValue());
     }

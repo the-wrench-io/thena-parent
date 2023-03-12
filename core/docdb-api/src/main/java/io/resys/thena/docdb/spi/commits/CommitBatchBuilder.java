@@ -21,12 +21,14 @@ package io.resys.thena.docdb.spi.commits;
  */
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
 import org.immutables.value.Value;
 
+import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.Ref;
@@ -41,6 +43,7 @@ import lombok.experimental.Accessors;
 public interface CommitBatchBuilder {
   CommitBatchBuilder commitAuthor(String commitAuthor);
   CommitBatchBuilder commitMessage(String commitMessage);
+  CommitBatchBuilder toBeMerged(Map<String, JsonObjectMerge> toBeMerged);
   CommitBatchBuilder toBeInserted(Map<String, JsonObject> toBeInserted);
   CommitBatchBuilder toBeRemoved(Collection<String> toBeRemoved);
   Batch build();
@@ -53,6 +56,7 @@ public interface CommitBatchBuilder {
     private final String gid;
     private final Repo repo;
     private final String refName;
+    @Builder.Default private final Map<String, Blob> blobs = Collections.emptyMap();
     @Builder.Default private final Optional<Ref> ref = Optional.empty();
     @Builder.Default private final Optional<Tree> tree = Optional.empty();
     @Builder.Default private final Optional<Commit> commit = Optional.empty();

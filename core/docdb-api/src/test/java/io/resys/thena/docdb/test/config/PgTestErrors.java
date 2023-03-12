@@ -60,7 +60,7 @@ public class PgTestErrors implements ErrorHandler {
     if(e instanceof PgException) {
       PgException ogre = (PgException) e;
       
-      return "40P01".equals(ogre.getCode());
+      return "55P03".equals(ogre.getCode());
     }
     return false;
   }

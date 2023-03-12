@@ -118,8 +118,8 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
 
     final var props = new ArrayList<Object>();
     props.add(headName);
-    props.add(crit.getTreeValueIds().toArray());
-    final var where = new StringBuilder("treeValues.name IN = $2");
+    props.add(crit.getTreeValueIds().toArray(new String[]{}));
+    final var where = new StringBuilder("treeValues.name = ANY($2)");
     
     if(commitId != null) {
       where.append(" AND commits.id = $3");

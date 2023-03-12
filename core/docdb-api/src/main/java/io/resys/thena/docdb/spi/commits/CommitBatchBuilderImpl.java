@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
 import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
@@ -37,6 +38,7 @@ import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ImmutableBatch;
 import io.resys.thena.docdb.spi.ImmutableBatchRef;
+import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.spi.support.Sha2;
 import io.vertx.core.json.JsonObject;
 import lombok.Data;
@@ -52,6 +54,7 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
   private String commitAuthor;
   private String commitMessage;
   private Map<String, JsonObject> toBeInserted;
+  private Map<String, JsonObjectMerge> toBeMerged;
   private Collection<String> toBeRemoved;
 
   
@@ -59,7 +62,7 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
   public Batch build() {
     final var mutator = new CommitTreeMutator();
     visitTree(commitTree, mutator);
-    visitAppend(toBeInserted, mutator);
+    visitAppend(toBeInserted, toBeMerged, mutator, commitTree);
     visitRemove(toBeRemoved, mutator);
     
     
@@ -109,13 +112,24 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
     return isEmpty ? BatchStatus.EMPTY : BatchStatus.OK;
   }
   
-  private static void visitAppend(Map<String, JsonObject> newBlobs, CommitTreeMutator mutator) {
+  private static void visitAppend(
+      Map<String, JsonObject> newBlobs,
+      Map<String, JsonObjectMerge> mergeBlobs,
+      CommitTreeMutator mutator,
+      CommitTreeState commitTree) {
+    
     final var logger = mutator.getLogger();
     final var nextTree = mutator.getNextTree();
     final var nextBlobs = mutator.getNextBlobs();
     final List<RedundentHashedBlob> hashed = newBlobs.entrySet().stream()
       .map(CommitBatchBuilderImpl::visitAppendEntry)
       .collect(Collectors.toList());
+    
+    
+    mergeBlobs.entrySet().stream()
+      .map(entry -> CommitBatchBuilderImpl.visitMergeEntry(entry, commitTree))
+      .forEach(hashed::add);
+    
     
     for(RedundentHashedBlob entry : hashed) {
       logger
@@ -177,6 +191,17 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
       .name(entry.getKey())
       .build();
   }
-  
+  private static RedundentHashedBlob visitMergeEntry(Map.Entry<String, JsonObjectMerge> entry, CommitTreeState commitTree) {
+    final var treeValue = commitTree.getTree().get().getValues().get(entry.getKey());
+    final var previous = commitTree.getBlobs().get(treeValue.getBlob());
+    RepoAssert.notNull(previous, () -> "Can't merge object with id: '" + entry.getKey() + "' because it's not found!");
+    
+    final var next = entry.getValue().apply(previous.getValue());
+    return ImmutableRedundentHashedBlob.builder()
+      .hash(Sha2.blobId(next))
+      .blob(next)
+      .name(entry.getKey())
+      .build();
+  }  
 
 }
