@@ -316,51 +316,37 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
           .onItem().transform(row -> successOutput(output, "Existing ref: " + ref.getName() + ", updated with commit: " + ref.getCommit()))
           .onFailure().recoverWithItem(e -> failOutput(output, "Failed to update ref", e));
     } else {
-      refUni =Execute.apply(tx, sqlBuilder.refs().insertOne(output.getRef().getRef()))
+      refUni = Execute.apply(tx, sqlBuilder.refs().insertOne(output.getRef().getRef()))
           .onItem().transform(row -> successOutput(output, "New ref created: " + ref.getName() + ": " + ref.getCommit()))
           .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create ref", e));
         
     }
 
     
-    return Uni.combine().all().unis(blobUni, treeUni, treeValueUni, commitUni, refUni).asTuple().onItem().transform(tuple -> {
-      
-      return output;
-    });
-    /* TODO::
-    return start
-    .chain(next -> {
-      if(next.getStatus() == BatchStatus.OK) {
-        return Execute.apply(tx, treeInsert).onItem()
-            .transform(row -> successOutput(next, "Tree saved, number of new entries: " + row.rowCount()))
-            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree \r\n" + output.getTree(), e));
+    return Uni.combine().all().unis(blobUni, treeUni, treeValueUni, commitUni, refUni).asTuple()
+        .onItem().transform(tuple -> merge(output, 
+            tuple.getItem1(), 
+            tuple.getItem2(), 
+            tuple.getItem3(), 
+            tuple.getItem4(), 
+            tuple.getItem5()
+        ));
+  }
+
+  
+  private Batch merge(Batch start, Batch ... current) {
+    final var builder = ImmutableBatch.builder().from(start);
+    final var log = new StringBuilder(start.getLog().getText());
+    var status = start.getStatus();
+    for(Batch value : current) {
+      if(status != BatchStatus.ERROR) {
+        status = value.getStatus();
       }
-      return Uni.createFrom().item(next);
-    }).chain(next -> {
-      if(next.getStatus() == BatchStatus.OK) {
-        if(treeValueInsert.getProps().isEmpty()) {
-          return Uni.createFrom().item(successOutput(next, "Tree Values saved, number of new entries: 0"));    
-        }
-        
-        return Execute.apply(tx, treeValueInsert).onItem()
-            .transform(row -> successOutput(next, "Tree Values saved, number of new entries: " + row.rowCount()))
-            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create tree values", e));
-      }
-      return Uni.createFrom().item(next);
-    }).chain(next -> {
-      if(next.getStatus() == BatchStatus.OK) {
-        return Execute.apply(tx, commitsInsert).onItem()
-            .transform(row -> successOutput(next, "Commit saved, number of new entries: " + row.rowCount()))
-            .onFailure().recoverWithItem(e -> failOutput(next, "Failed to create commit", e));
-      }
-      return Uni.createFrom().item(next);
-    }).chain(next -> {
-      if(next.getStatus() == BatchStatus.OK) {
-        return createOrUpdateRef(next, tx); 
-      }
-      return Uni.createFrom().item(next);
-    });
-*/
+      log.append("\r\n\r\n").append(value.getLog());
+      builder.addAllMessages(value.getMessages());
+    }
+    
+    return builder.status(status).build();
   }
   
   private Batch successOutput(Batch current, String msg) {
