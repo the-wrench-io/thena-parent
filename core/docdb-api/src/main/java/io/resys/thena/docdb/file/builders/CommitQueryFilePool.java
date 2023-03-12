@@ -76,7 +76,7 @@ public class CommitQueryFilePool implements CommitQuery {
   }
   @Override
   public Uni<CommitLock> getLock(LockCriteria crit) {
-    final var commitId = crit.getCommitId(); 
+    // final var commitId = crit.getCommitId(); 
     final var headName = crit.getHeadName();
     return new RefQueryFilePool(client, mapper, builder, errorHandler).nameOrCommit(headName).onItem().transformToUni(ref -> {
       if(ref == null) {
