@@ -35,7 +35,6 @@ import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Objects.CommitLock;
 import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
-import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
@@ -145,25 +144,15 @@ public class CommitBuilderImpl implements CommitBuilder {
     RepoAssert.notEmpty(repoId, () -> "Can't resolve repoId!");
     RepoAssert.notEmpty(headName, () -> "Can't resolve headName!");
 
-    final var gid = Identifiers.toRepoHeadGid(repoId, headName);
-    final var crit = ImmutableLockCriteria.builder().headName(headName).commitId(parentCommit).build();
+    final var crit = ImmutableLockCriteria.builder().headName(headName).commitId(parentCommit).treeValueIds(mergeBlobs.keySet()).build();
     return this.state.withTransaction(repoId, headName, tx -> tx.query().commits().getLock(crit)
       .onItem().transformToUni(lock -> {
-
         final var validation = validateRepo(lock, parentCommit);
         if(validation != null) {
           return Uni.createFrom().item(validation);
         }
-        
-        final var batch = doInLock(lock, tx);
-        return tx.insert().batch(batch)
-            .onItem().transform(rsp -> ImmutableCommitResult.builder()
-              .gid(gid)
-              .commit(rsp.getCommit())
-              .addMessages(rsp.getLog())
-              .addAllMessages(rsp.getMessages())
-              .status(visitStatus(rsp.getStatus()))
-              .build());
+        return doInLock(lock, tx);
+
       })
     )
     .onFailure(err -> state.getErrorHandler().isLocked(err)).retry().withBackOff(Duration.ofMillis(100)).atMost(10);
@@ -175,30 +164,33 @@ public class CommitBuilderImpl implements CommitBuilder {
     
   }
   
-  private Batch doInLock(CommitLock lock, ClientRepoState tx) {
+  private Uni<CommitResult> doInLock(CommitLock lock, ClientRepoState tx) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
-    final CommitTreeState init;
+    final var init = CommitTreeState.builder().ref(lock.getRef()).refName(headName).gid(gid).repo(tx.getRepo());
+    
     if(lock.getStatus() == CommitLockStatus.NOT_FOUND) {
-      // first commit
-      init = CommitTreeState.builder().ref(lock.getRef()).refName(headName).gid(gid).repo(tx.getRepo()).build();
+      // nothing to add
     } else {
-      init = CommitTreeState.builder()
-        .ref(lock.getRef())
-        .refName(headName)
-        .gid(gid)
-        .repo(tx.getRepo())
-        .commit(lock.getCommit())
-        .tree(lock.getTree())
-        .build();
+      init.commit(lock.getCommit()).tree(lock.getTree());
     }
     
-    return new CommitBatchBuilderImpl(init)
+    
+    final var batch = new CommitBatchBuilderImpl(init.build())
         .commitParent(parentCommit)
         .commitAuthor(author)
         .commitMessage(message)
         .toBeInserted(appendBlobs)
         .toBeRemoved(deleteBlobs)
         .build();
+    
+    return tx.insert().batch(batch)
+        .onItem().transform(rsp -> ImmutableCommitResult.builder()
+          .gid(gid)
+          .commit(rsp.getCommit())
+          .addMessages(rsp.getLog())
+          .addAllMessages(rsp.getMessages())
+          .status(visitStatus(rsp.getStatus()))
+          .build());
   }
 
   private CommitResult validateRepo(CommitLock state, String commitParent) {

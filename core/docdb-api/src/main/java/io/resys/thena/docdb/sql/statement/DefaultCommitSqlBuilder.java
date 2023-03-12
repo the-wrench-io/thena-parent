@@ -82,12 +82,47 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
   public SqlTuple getLock(LockCriteria crit) {
     final var commitId = crit.getCommitId(); 
     final var headName = crit.getHeadName();
-    List<Object> props = new ArrayList<>();
-    props.add(headName);
 
-    StringBuilder where = new StringBuilder();
+    if(crit.getTreeValueIds().isEmpty()) {
+
+      final var where = new StringBuilder();
+      final List<Object> props = new ArrayList<>();
+      
+      props.add(headName);
+      if(commitId != null) {
+        where.append(" WHERE commits.id = $2 ");
+        props.add(commitId);
+      }
+      return ImmutableSqlTuple.builder()
+          .value(new SqlStatement()
+          .append("SELECT ")
+          .append("  refs.name as ref_name,").ln()
+          .append("  commits.author as author,").ln()
+          .append("  commits.datetime as datetime,").ln()
+          .append("  commits.message as message,").ln()
+          .append("  commits.merge as merge,").ln()
+          .append("  commits.parent as commit_parent,").ln()
+          .append("  commits.id as commit_id,").ln()
+          .append("  commits.tree as tree_id,").ln()
+          .append("  treeValues.name as blob_name,").ln()
+          .append("  treeValues.blob as blob_id").ln()
+          .append(" FROM (SELECT * FROM ").append(options.getRefs()).append(" WHERE name = $1 FOR UPDATE NOWAIT) as refs").ln()
+          .append("  JOIN ").append(options.getCommits()).append(" as commits ON(commits.id = refs.commit)").ln()
+          .append("  JOIN ").append(options.getTreeItems()).append(" as treeValues ON(treeValues.tree = commits.tree)").ln()
+          .append(where.toString())
+          .build())
+          .props(Tuple.from(props))
+          .build();  
+    }
+    
+
+    final var props = new ArrayList<Object>();
+    props.add(headName);
+    props.add(crit.getTreeValueIds().toArray());
+    final var where = new StringBuilder("treeValues.name IN = $2");
+    
     if(commitId != null) {
-      where.append(" WHERE commits.id = $2 ");
+      where.append(" AND commits.id = $3");
       props.add(commitId);
     }
     
@@ -107,10 +142,9 @@ public class DefaultCommitSqlBuilder implements CommitSqlBuilder {
         .append("  commits.id as commit_id").ln()
         .append(" FROM (SELECT * FROM ").append(options.getRefs()).append(" WHERE name = $1 FOR UPDATE NOWAIT) as refs").ln()
         .append("  JOIN ").append(options.getCommits()).append(" as commits ON(commits.id = refs.commit)").ln()
-        .append("  JOIN ").append(options.getTrees()).append(" as trees ON(trees.id = commits.tree)").ln()
-        .append("  JOIN ").append(options.getTreeItems()).append(" as treeValues ON(trees.id = treeValues.tree)").ln()
+        .append("  JOIN ").append(options.getTreeItems()).append(" as treeValues ON(treeValues.tree = commits.tree)").ln()
         .append("  JOIN ").append(options.getBlobs()).append(" as blobs ON(blobs.id = treeValues.blob)").ln()
-        .append(where.toString())
+        .append(" WHERE ").append(where.toString())
         .build())
         .props(Tuple.from(props))
         .build();

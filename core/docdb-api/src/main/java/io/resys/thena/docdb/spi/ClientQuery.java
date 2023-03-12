@@ -87,6 +87,7 @@ public interface ClientQuery {
   interface LockCriteria {
     @Nullable String getCommitId(); 
     String getHeadName();
+    List<String> getTreeValueIds();
   }
   
   @Value.Immutable

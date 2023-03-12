@@ -29,6 +29,7 @@ import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.vertx.mutiny.sqlclient.Row;
 
 public interface DataMapper<T> {
   Repo repo(T row);
@@ -38,6 +39,7 @@ public interface DataMapper<T> {
   Tag tag(T row);
   Ref ref(T row);
   Blob blob(T row);
-  CommitTree commitTree(T row);
   BlobHistory blobHistory(T row);
+  CommitTree commitTree(T row);
+  CommitTree commitTreeWithBlobs(Row row);
 }

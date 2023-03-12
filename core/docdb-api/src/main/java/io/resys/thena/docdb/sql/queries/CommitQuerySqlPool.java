@@ -1,6 +1,7 @@
 package io.resys.thena.docdb.sql.queries;
 
 import java.util.Optional;
+import java.util.function.Function;
 
 import io.resys.thena.docdb.api.LogConstants;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
@@ -98,8 +99,15 @@ public class CommitQuerySqlPool implements CommitQuery {
           sql.getProps(),
           sql.getValue());
     }
+    final Function<io.vertx.mutiny.sqlclient.Row, CommitTree> mapper;
+    if(crit.getTreeValueIds().isEmpty()) {
+      mapper = (row) -> sqlMapper.commitTree(row);
+    } else {
+      mapper = (row) -> sqlMapper.commitTreeWithBlobs(row);
+    }
+    
     return wrapper.getClient().preparedQuery(sql.getValue())
-        .mapping(row -> sqlMapper.commitTree(row))
+        .mapping(mapper)
         .execute(sql.getProps())
         .onItem()
         .transform((RowSet<CommitTree> rowset) -> {
@@ -127,9 +135,10 @@ public class CommitQuerySqlPool implements CommitQuery {
                   .tree(commitTree.getTreeId())
                   .build());
             }
-            
             tree.putValues(commitTree.getTreeValue().getName(), commitTree.getTreeValue());
-            builder.putBlobs(commitTree.getBlob().getId(), commitTree.getBlob());
+            if(commitTree.getBlob().isPresent()) {
+              builder.putBlobs(commitTree.getBlob().get().getId(), commitTree.getBlob().get());
+            }
           }
           if(tree != null) {
             builder.status(CommitLockStatus.LOCK_TAKEN).tree(tree.build());

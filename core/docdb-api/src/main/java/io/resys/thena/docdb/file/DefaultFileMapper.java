@@ -123,12 +123,15 @@ public class DefaultFileMapper implements FileMapper {
         .build();
   }
   @Override
-  public BlobHistory blobHistory(Row row) {
+  public CommitTree commitTreeWithBlobs(io.vertx.mutiny.sqlclient.Row row) {
     throw new IllegalArgumentException("Not required for filebase impl.");
   }
   @Override
   public CommitTree commitTree(Row row) {
-    // TODO Auto-generated method stub
-    return null;
+    throw new IllegalArgumentException("Not required for filebase impl.");
+  }
+  @Override
+  public BlobHistory blobHistory(Row row) {
+    throw new IllegalArgumentException("Not required for filebase impl.");
   }
 }

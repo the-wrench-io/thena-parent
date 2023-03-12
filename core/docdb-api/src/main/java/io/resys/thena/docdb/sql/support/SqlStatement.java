@@ -28,6 +28,12 @@ public class SqlStatement {
     result.append(value);
     return this;
   }
+  public SqlStatement append(boolean appendIf, String value) {
+    if(appendIf) {
+      result.append(value);
+    }
+    return this;
+  }
   public SqlStatement ln() {
     result.append("\n");
     return this;

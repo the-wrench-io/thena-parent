@@ -104,10 +104,11 @@ public interface Objects {
     @Nullable String getCommitMerge();
     
     String getRefName();
-    
     String getTreeId();
     TreeValue getTreeValue();
-    Blob getBlob();
+    
+    // Only if loaded
+    Optional<Blob> getBlob();
   }
   
   @Value.Immutable  

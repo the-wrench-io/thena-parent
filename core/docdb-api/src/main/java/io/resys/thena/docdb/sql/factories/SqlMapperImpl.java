@@ -122,26 +122,38 @@ public class SqlMapperImpl implements SqlMapper {
   }
   @Override
   public CommitTree commitTree(Row row) {
-    return ImmutableCommitTree.builder()
-        .treeId(row.getString("tree_id"))
-        .treeValue(ImmutableTreeValue.builder()
-            .blob(row.getString("blob_id"))
-            .name(row.getString("blob_name"))
-            .build())
-        .commitId(row.getString("commit_id"))
-        .commitParent(row.getString("commit_parent"))
-
-        .commitAuthor(row.getString("author"))
-        .commitDateTime(LocalDateTime.parse(row.getString("datetime")))
-        .commitMessage(row.getString("message"))
-        .commitMerge(row.getString("merge"))
-        .refName(row.getString("ref_name"))
+    return commitTreeInternal(row)
+        .blob(Optional.empty())
+        .build();
+  }
+  @Override
+  public CommitTree commitTreeWithBlobs(Row row) {
+    return commitTreeInternal(row)
         .blob(ImmutableBlob.builder()
             .id(row.getString("blob_id"))
             .value(jsonObject(row, "blob_value"))
             .build())
         .build();
   }
+  
+  
+  public ImmutableCommitTree.Builder commitTreeInternal(Row row) {
+    return ImmutableCommitTree.builder()
+        .treeId(row.getString("tree_id"))
+        .commitId(row.getString("commit_id"))
+        .commitParent(row.getString("commit_parent"))
+        .commitAuthor(row.getString("author"))
+        .commitDateTime(LocalDateTime.parse(row.getString("datetime")))
+        .commitMessage(row.getString("message"))
+        .commitMerge(row.getString("merge"))
+        .refName(row.getString("ref_name"))
+        .treeValue(ImmutableTreeValue.builder()
+            .blob(row.getString("blob_id"))
+            .name(row.getString("blob_name"))
+            .build());
+  }
+  
+  
   @Override
   public JsonObject jsonObject(Row row, String columnName) {
     return new JsonObject(row.getString(columnName));
