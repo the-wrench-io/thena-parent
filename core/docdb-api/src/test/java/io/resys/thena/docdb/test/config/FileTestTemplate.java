@@ -119,8 +119,7 @@ public class FileTestTemplate {
   }
   
   public DocDB getClient(Repo repo) {
-    final var ctx = ClientCollections.defaults(db).toRepo(repo);
-    
+    // final var ctx = ClientCollections.defaults(db).toRepo(repo);
     return client;
   }
   
