@@ -25,12 +25,7 @@
       </dependency>
       <dependency>
         <groupId>io.resys.hdes</groupId>
-        <artifactId>thena-tasks-api</artifactId>
-        <version>${project.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>io.resys.hdes</groupId>
-        <artifactId>thena-tasks-spi</artifactId>
+        <artifactId>thena-tasks-client</artifactId>
         <version>${project.version}</version>
       </dependency>
     </dependencies>

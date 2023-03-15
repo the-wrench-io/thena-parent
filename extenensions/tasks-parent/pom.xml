@@ -12,7 +12,7 @@
   <packaging>pom</packaging>
 
   <modules>
-    <module>tasks-api</module>
+    <module>tasks-client</module>
     <module>tasks-ui</module>
   </modules>
 
