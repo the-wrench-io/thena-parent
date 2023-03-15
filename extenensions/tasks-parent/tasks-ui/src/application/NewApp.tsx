@@ -6,7 +6,7 @@ import { SnackbarProvider } from 'notistack';
 import { useSnackbar } from 'notistack';
 import Burger, { siteTheme } from '@the-wrench-io/react-burger';
 
-import DeClient from '@declient';
+import TaskClient from '@taskclient';
 import AppCore from '../core';
 
 import Connection from './Connection';
@@ -28,31 +28,31 @@ const getUrl = () => {
     const url = window._env_.url;
     return url.endsWith("/") ? url.substring(0, url.length - 1) : url;
   }
-  return "http://localhost:8081/q/tasks/rest/api/";
+  return "http://localhost:8080/q/tasks/api/";
 }
 
-const store: DeClient.Store = new DeClient.DefaultStore({
+const store: TaskClient.Store = new TaskClient.DefaultStore({
   url: getUrl(),
   csrf: window._env_?.csrf,
   oidc: window._env_?.oidc,
   status: window._env_?.status,
 });
-const backend = new DeClient.ServiceImpl(store);
+const backend = new TaskClient.ServiceImpl(store);
 
-const Apps: React.FC<{services: DeClient.HeadState}> = ({services}) => {
+const Apps: React.FC<{services: TaskClient.HeadState}> = ({services}) => {
   // eslint-disable-next-line 
-  const serviceComposer: Burger.App<DeClient.ComposerContextType> = React.useMemo(() => ({
+  const serviceComposer: Burger.App<TaskClient.ComposerContextType> = React.useMemo(() => ({
     id: "service-composer",
-    components: { primary: () => <></>, secondary: () => <></>, toolbar: () => <></> },
+    components: { primary: AppCore.Main, secondary: AppCore.Secondary, toolbar: AppCore.Toolbar },
     state: [
-      (children: React.ReactNode, restorePoint?: Burger.AppState<DeClient.ComposerContextType>) => (<>{children}</>),
+      (children: React.ReactNode, restorePoint?: Burger.AppState<TaskClient.ComposerContextType>) => (<>{children}</>),
       () => ({})
     ]
   }), [AppCore]);
 
-  return (<DeClient.Provider service={backend} head={services}>
+  return (<TaskClient.Provider service={backend} head={services}>
     <Burger.Provider children={[serviceComposer]} secondary="toolbar.assets" drawerOpen />
-  </DeClient.Provider>)
+  </TaskClient.Provider>)
 }
 
 const LoadApps = React.lazy(async () => {

@@ -45,7 +45,9 @@ public class ExMessageFormatter {
   }
   
   private void visitTarget() {
-    result.append("  - entity id: ").append("'" + target.getString("id") + "'").append(System.lineSeparator());
+    if(target != null) {
+      result.append("  - entity id: ").append("'" + target.getString("id") + "'").append(System.lineSeparator());
+    }
   }
   
   private void visitMessage(DocumentExceptionMsg m) {

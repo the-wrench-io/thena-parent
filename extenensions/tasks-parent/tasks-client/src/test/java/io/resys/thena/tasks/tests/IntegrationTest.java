@@ -57,7 +57,7 @@ public class IntegrationTest extends TaskTestCase {
         .userId("user-1")
         .build()).await().atMost(atMost);
     
-    final var allActive = client.query().active().findAll().await().atMost(atMost);
+    final var allActive = client.query().active().findAll().collect().asList().await().atMost(atMost);
     Assertions.assertEquals(1, allActive.size());
     
     final var created = JsonObject.mapFrom(allActive.get(0))

@@ -23,7 +23,7 @@
     "jsx": "react-jsx",
     "baseUrl": "src",
     "paths": {
-      "@declient": [ "declient/index.ts" ],
+      "@taskclient": [ "taskclient/index.ts" ],
       "@styles": [ "styles/index.ts" ]
     }
   },

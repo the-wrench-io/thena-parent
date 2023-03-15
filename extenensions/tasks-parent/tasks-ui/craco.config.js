@@ -2,7 +2,7 @@ const path = require('path');
 module.exports = {
   webpack: {
     alias: {
-      '@declient': path.resolve(__dirname, 'src/declient/index.ts'),
+      '@taskclient': path.resolve(__dirname, 'src/taskclient/index.ts'),
       '@styles': path.resolve(__dirname, 'src/styles/index.ts'),
       
     },

@@ -2,6 +2,9 @@ import { Client, Store, HeadState, CreateBuilder, TaskId, Task } from './client-
 import { } from './client-store';
 
 
+type BackendInit = { created: boolean } | null
+
+
 export class ServiceImpl implements Client {
   private _store: Store;
 
@@ -12,16 +15,19 @@ export class ServiceImpl implements Client {
   get config() {
     return this._store.config;
   }
-  head(): Promise<HeadState> {
-    return this._store.fetch<HeadState>("head", {
-      notFound: () => ({
-        name: "", contentType: "BACKEND_NOT_FOUND", projects: [], tasks: []
-      })
-    })
-      .catch((_error) => {
-        const noConnection: HeadState = { name: "", contentType: "NO_CONNECTION", projects: [], tasks: [] };
-        return noConnection;
-      });
+  async head(): Promise<HeadState> {
+    try {
+      const init = await this._store.fetch<BackendInit>("init", { notFound: () => null });    
+      if(init === null) {
+        return { name: "", contentType: "BACKEND_NOT_FOUND" };
+      }
+      
+      return { name: "", contentType: "OK" };
+    } catch(error) {
+      console.error(error);
+      return { name: "", contentType: "NO_CONNECTION" };
+    }
+    
   }
   create(): CreateBuilder {
     const head = () => this._store.fetch<HeadState>("head", { method: "POST", body: JSON.stringify({}) });

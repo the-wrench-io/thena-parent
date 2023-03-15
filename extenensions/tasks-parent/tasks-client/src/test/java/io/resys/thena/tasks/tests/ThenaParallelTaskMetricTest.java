@@ -100,7 +100,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
 
   private void runSelect(TasksClient client) {
     final var start = System.currentTimeMillis();
-    final var blobs = client.query().active().findAll().await().atMost(Duration.ofMinutes(1));
+    final var blobs = client.query().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
     
     log.debug("total time for selecting: {} entries is: {} millis", blobs.size(), end-start);
@@ -140,7 +140,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     .onItem().transformToUni(e -> {
       final var insertEnd = System.currentTimeMillis();
       final var start = System.currentTimeMillis();
-      return client.query().active().findAll().onItem().transform(blobs -> {
+      return client.query().active().findAll().collect().asList().onItem().transform(blobs -> {
         // log select time
         final var end = System.currentTimeMillis();
         log.debug("total time for inserting: {} entries is: {} millis", blobs.size(), insertEnd-insertStart);

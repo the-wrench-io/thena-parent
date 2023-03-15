@@ -21,6 +21,7 @@ package io.resys.thena.tasks.client.spi.query;
  */
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -37,6 +38,7 @@ import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.resys.thena.tasks.client.spi.store.ImmutableDocumentExceptionMsg;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
@@ -51,20 +53,9 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
     return null;
   }
   
-  @Override
-  public Uni<List<Task>> findByRoles(List<String> roles) {
-    // TODO Auto-generated method stub
-    return null;
-  }
   
   @Override
-  public Uni<List<Task>> findByAssignee(List<String> roles) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-  
-  @Override
-  public Uni<List<Task>> findAll() {
+  public Multi<Task> findAll() {
     final var config = ctx.getConfig();
     final var query = config.getClient()
         .objects().refState()
@@ -77,7 +68,7 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
             .build()))
         .build();
     
-    return query.onItem().transform(this::map);
+    return query.onItem().transform(this::map).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
   }
 
 
@@ -91,7 +82,12 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
           .build()); 
     }
     
-    final var tree = state.getObjects().getTree();
+    final var objects = state.getObjects();
+    if(objects == null) {
+      return Collections.emptyList();
+    }
+    
+    final var tree = objects.getTree();
     return tree.getValues().values().stream().map(treeValue -> map(state, treeValue)).collect(Collectors.toList());
   }
   
@@ -99,5 +95,19 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
     final var blobId = treeValue.getBlob();
     final var blob = state.getObjects().getBlobs().get(blobId);
     return blob.getValue().mapTo(ImmutableTask.class);
+  }
+
+
+  @Override
+  public Multi<Task> findByRoles(List<String> roles) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
+  @Override
+  public Multi<Task> findByAssignee(List<String> roles) {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

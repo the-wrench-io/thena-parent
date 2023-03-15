@@ -1,12 +1,18 @@
+import {
+  StyledCards,
+  StyledCardsProps,
+  StyledCardItemProps
+} from './StyledCards';
+
 
 declare namespace Styles {
-  export type { };
+  export type { StyledCardsProps, StyledCardItemProps };
 
 }
 
 
 namespace Styles {
-//  export const Cards = StyledCards;
+  export const Cards = StyledCards;
 
 }
 

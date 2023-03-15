@@ -1,9 +1,19 @@
 quarkus:
 
   log:
-    level: DEBUG
+    level: INFO
     category: 
       io.resys:
         level: DEBUG
 
-      
+
+tasks:
+  db:
+    pg: 
+      repositoryName: "tasks-repo"
+      pgPort: 5432 
+      pgHost: "localhost"
+      pgDb: "digiexpress"
+      pgUser: "digiexpress"
+      pgPass: "example"
+      pgPoolSize: 5

@@ -7,8 +7,7 @@ export type DocumentId = string;
 
 export type Document = 
  { kind: 'HEAD', id: string, delegate: Client.HeadState } | 
- { kind: 'TASK', id: string, delegate: Client.Task } |
- { kind: 'PROJ', id: string, delegate: Client.Project };
+ { kind: 'TASK', id: string, delegate: Client.Task };
 
 export type DocumentUpdate = {};
 

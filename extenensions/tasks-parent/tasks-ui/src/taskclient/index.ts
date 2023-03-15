@@ -4,10 +4,10 @@ import { DefaultStore as DefaultStoreAs } from './client-store';
 import { TablePagination, TablePagination as TablePaginationAs } from './table-pagination';
 
 import {
-  ClientEntity, Project,
+  ClientEntity,
   HeadState,
   ClientError, CreateBuilder, Client, StoreConfig, Store,
-  TaskId, ProjectId, Task, ClientEntityType, ProgramMessage
+  TaskId, Task, ClientEntityType, ProgramMessage
 } from './client-types';
 
 import {
@@ -26,17 +26,19 @@ import {
 
 import ErrorView from './Components/ErrorView';
 import { ClientContextType, ComposerContextType } from './Components/Context';
+import { TaskDescriptorsImpl as TaskDescriptorsImplAs, TaskDescriptor, TaskDescriptors } from './task-descriptor-types';
+
 import * as Context from './Components/Context';
 import * as Hooks from './hooks';
 
 
-declare namespace DeClient {
+declare namespace TaskClient {
   export type { TablePagination };
   export type { ClientContextType, ComposerContextType };
   export type {
-    ClientEntity, Project, TaskId, Task, HeadState,
+    ClientEntity, TaskId, Task, HeadState,
     ClientError, CreateBuilder, Client, StoreConfig, Store,
-    ProjectId, ClientEntityType,
+    ClientEntityType,
     ProgramMessage
   }
 
@@ -51,10 +53,15 @@ declare namespace DeClient {
     ServiceErrorProps,
     StoreError
   }
+  
+  export type {
+    TaskDescriptor, TaskDescriptors
+  }
 }
 
 
-namespace DeClient {
+namespace TaskClient {
+  export const TaskDescriptorsImpl = TaskDescriptorsImplAs;
   export const TablePaginationImpl = TablePaginationAs;
   export const ServiceImpl = ServiceImplAs;
   export const DefaultStore = DefaultStoreAs;
@@ -69,4 +76,4 @@ namespace DeClient {
   export const useNav = Hooks.useNav;
 }
 
-export default DeClient;
+export default TaskClient;

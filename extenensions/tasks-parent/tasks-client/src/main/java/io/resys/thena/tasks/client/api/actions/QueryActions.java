@@ -23,6 +23,7 @@ package io.resys.thena.tasks.client.api.actions;
 import java.util.List;
 
 import io.resys.thena.tasks.client.api.model.Task;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 public interface QueryActions {
@@ -30,9 +31,9 @@ public interface QueryActions {
   
   
   interface ActiveTaskQuery {
-    Uni<List<Task>> findAll();
-    Uni<List<Task>> findByRoles(List<String> roles);
-    Uni<List<Task>> findByAssignee(List<String> roles);
+    Multi<Task> findAll();
+    Multi<Task> findByRoles(List<String> roles);
+    Multi<Task> findByAssignee(List<String> roles);
     Uni<Task> get(String id);
   }
 }

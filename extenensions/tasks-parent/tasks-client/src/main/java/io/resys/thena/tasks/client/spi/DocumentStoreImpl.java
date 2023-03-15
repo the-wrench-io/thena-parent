@@ -24,9 +24,6 @@ package io.resys.thena.tasks.client.spi;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.guava.GuavaModule;
-import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.resys.thena.docdb.api.DocDB;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
@@ -143,18 +140,6 @@ public class DocumentStoreImpl implements DocumentStore {
       return this.authorProvider == null ? ()-> "not-configured" : this.authorProvider;
     } 
     
-    private ObjectMapper getObjectMapper() {
-      if(this.objectMapper == null) {
-        return this.objectMapper;
-      }
-      
-      final ObjectMapper objectMapper = new ObjectMapper();
-      objectMapper.registerModule(new GuavaModule());
-      objectMapper.registerModule(new JavaTimeModule());
-      objectMapper.registerModule(new Jdk8Module());
-      return objectMapper;
-    }
-    
     public DocumentStoreImpl build() {
       RepoAssert.notNull(repoName, () -> "repoName must be defined!");
     
@@ -205,7 +190,6 @@ public class DocumentStoreImpl implements DocumentStore {
         thena = DocDBFactoryPgSql.create().client(pgPool).db(repoName).errorHandler(new PgErrors()).build();
       }
       
-      final ObjectMapper objectMapper = getObjectMapper();
       final DocumentConfig config = ImmutableDocumentConfig.builder()
           .client(thena).repoName(repoName).headName(headName)
           .gid(getGidProvider())

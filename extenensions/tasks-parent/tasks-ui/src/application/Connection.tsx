@@ -1,19 +1,19 @@
 import React from 'react';
-import DeClient from '@declient';
+import TaskClient from '@taskclient';
 
 function sleep(ms: number) {
     return new Promise( resolve => setTimeout(resolve, ms) );
 }
 
-const LoadingFC: React.FC<{client: DeClient.Client}> = ({client}) => {
+const LoadingFC: React.FC<{client: TaskClient.Client}> = ({client}) => {
   return <>...Loading: {client.config.url}</>
 }
 
-const DownFC: React.FC<{client: DeClient.Client}> = ({client}) => {
+const DownFC: React.FC<{client: TaskClient.Client}> = ({client}) => {
   return <>...Backend is not responding: {client.config.url}</>
 }
 
-const MisconfiguredFC: React.FC<{client: DeClient.Client}> = ({client}) => {
+const MisconfiguredFC: React.FC<{client: TaskClient.Client}> = ({client}) => {
   return <>...Backend is found but getting 404: {client.config.url}</>
 }
 

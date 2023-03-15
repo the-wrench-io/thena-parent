@@ -1,10 +1,12 @@
 import { DocumentId, Document, DocumentUpdate, Session, PageUpdate, TabBody, TabEntity } from './composer-types';
-import { HeadState } from './client-types';
+import { HeadState, Task } from './client-types';
 
 class SiteCache {
   private _site: HeadState;
-  constructor(site: HeadState) {
+  private _tasks: Task[];
+  constructor(site: HeadState, tasks: Task[]) {
     this._site = site;
+    this._tasks = tasks;
   }
 
   getEntity(entityId: DocumentId): Document {
@@ -20,15 +22,8 @@ class SiteCache {
       entity = this._site.releases[entityId];
     }
     */
-    let delegate = this._site.projects.find(p => p.id === entityId)
-    if (delegate != null) {
-      return {
-        id: entityId,
-        delegate,
-        kind: 'PROJ'
-      };
-    }
-    delegate = this._site.tasks.find(p => p.id === entityId)
+    
+    let delegate = this._tasks.find(p => p.id === entityId)
     if (delegate != null) {
       return {
         id: entityId,
@@ -49,15 +44,18 @@ class SessionData implements Session {
   private _head: HeadState;
   private _pages: Record<DocumentId, PageUpdate>;
   private _cache: SiteCache;
+  private _tasks: Task[];
 
   constructor(props: {
     head?: HeadState;
     pages?: Record<DocumentId, PageUpdate>;
     cache?: SiteCache;
+    tasks: Task[];
   }) {
-    this._head = props.head ? props.head : { name: "", contentType: "OK", projects: [], tasks: [] };
+    this._head = props.head ? props.head : { name: "", contentType: "OK"};
     this._pages = props.pages ? props.pages : {};
-    this._cache = props.cache ? props.cache : new SiteCache(this._head);
+    this._cache = props.cache ? props.cache : new SiteCache(this._head, props.tasks);
+    this._tasks = props.tasks;
   }
   get head() {
     return this._head;
@@ -73,7 +71,7 @@ class SessionData implements Session {
       console.error("Head not defined error", head);
       return this;
     }
-    return new SessionData({ head, pages: this._pages });
+    return new SessionData({ head, pages: this._pages, tasks: this._tasks });
   }
   withoutPages(pageIds: DocumentId[]): SessionData {
     const pages: Record<DocumentId, PageUpdate> = {};
@@ -83,7 +81,7 @@ class SessionData implements Session {
       }
       pages[page.origin.id] = page;
     }
-    return new SessionData({ head: this._head, pages, cache: this._cache });
+    return new SessionData({ head: this._head, pages, cache: this._cache, tasks: this._tasks });
   }
   withPage(page: DocumentId): SessionData {
     if (this._pages[page]) {
@@ -98,7 +96,7 @@ class SessionData implements Session {
     }
 
     pages[page] = new ImmutablePageUpdate({ origin, saved: true, value: [] });
-    return new SessionData({ head: this._head, pages, cache: this._cache });
+    return new SessionData({ head: this._head, pages, cache: this._cache, tasks: this._tasks });
   }
   withPageValue(page: DocumentId, value: DocumentUpdate[]): SessionData {
     const session = this.withPage(page);
@@ -107,7 +105,7 @@ class SessionData implements Session {
     const pages = Object.assign({}, session.pages);
     pages[page] = pageUpdate.withValue(value);
 
-    return new SessionData({ head: session.head, pages, cache: this._cache });
+    return new SessionData({ head: session.head, pages, cache: this._cache, tasks: this._tasks });
   }
 }
 
@@ -160,5 +158,5 @@ class ImmutableTabData implements TabBody {
 
 
 
-const initSession = new SessionData({});
+const initSession = new SessionData({ tasks: []});
 export { SessionData, ImmutableTabData, initSession };
