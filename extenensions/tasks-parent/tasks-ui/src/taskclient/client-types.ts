@@ -15,8 +15,8 @@ export interface ClientEntity<T extends string> {
 }
 export interface Task extends ClientEntity<TaskId> {
   id: TaskId;
-  status: Status;
-  priority: Priority;
+  status: TaskStatus;
+  priority: TaskPriority;
   dueDate: string;
   roles: string[];
   owners: string[];
@@ -31,8 +31,8 @@ export interface TaskComment {
   
 }
 
-export type Status = 'CREATED' | 'IN_PROGRESS' |'COMPLETED' | 'REJECTED';
-export type Priority = 'LOW' | 'MEDIUM' | 'HIGH';
+export type TaskStatus = 'CREATED' | 'IN_PROGRESS' |'COMPLETED' | 'REJECTED';
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
 
 export interface HeadState {
   name: string,

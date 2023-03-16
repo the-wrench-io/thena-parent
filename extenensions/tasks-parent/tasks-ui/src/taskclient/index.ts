@@ -7,7 +7,7 @@ import {
   ClientEntity,
   HeadState,
   ClientError, CreateBuilder, Client, StoreConfig, Store,
-  TaskId, Task, ClientEntityType, ProgramMessage
+  TaskId, Task, TaskPriority, TaskStatus, ClientEntityType, ProgramMessage
 } from './client-types';
 
 import {
@@ -36,7 +36,7 @@ declare namespace TaskClient {
   export type { TablePagination };
   export type { ClientContextType, ComposerContextType };
   export type {
-    ClientEntity, TaskId, Task, HeadState,
+    ClientEntity, TaskId, Task, TaskPriority, TaskStatus, HeadState,
     ClientError, CreateBuilder, Client, StoreConfig, Store,
     ClientEntityType,
     ProgramMessage

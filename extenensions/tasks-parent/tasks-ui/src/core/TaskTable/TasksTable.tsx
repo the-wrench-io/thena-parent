@@ -3,11 +3,10 @@ import React from 'react';
 
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
+
 import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TablePagination from '@mui/material/TablePagination';
-import EmptyTableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 
 
@@ -15,13 +14,14 @@ import client from '@taskclient';
 
 import { Provider } from './table-ctx';
 import TableHeader from './TasksTableHeader';
-import TableRow from './TasksTableRow';
+import {DescriptorTableRow, EmptyTableRow } from './TasksTableRow';
 
 
 
 const DescriptorTable: React.FC<{ def: client.Task[] }> = ({ def }) => {
+  const [assocs, setAssocs] = React.useState(new client.TaskDescriptorsImpl(def, undefined))
   const [content, setContent] = React.useState(new client.TablePaginationImpl<client.TaskDescriptor>({ 
-    src: new client.TaskDescriptorsImpl(def, undefined).findAll(),
+    src: assocs.findAll(),
     orderBy: 'created',
     sorted: false }));
 
@@ -31,8 +31,8 @@ const DescriptorTable: React.FC<{ def: client.Task[] }> = ({ def }) => {
         <Table size='small'>
           <TableHead><TableHeader content={content} setContent={setContent} /></TableHead>
           <TableBody>
-            {content.entries.map((row) => (<TableRow key={row.id} row={row} assocs={assocs} def={def} />))}
-            {content.emptyRows > 0 ? <EmptyTableRow style={{ height: (28 + 1) * content.emptyRows }}><TableCell colSpan={6} /></EmptyTableRow> : null}
+            {content.entries.map((row) => (<DescriptorTableRow key={row.id} row={row} assocs={assocs} />))}
+            <EmptyTableRow content={content} />
           </TableBody>
         </Table>
       </TableContainer>
