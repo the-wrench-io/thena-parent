@@ -10,28 +10,27 @@ import { TasksTableCell } from './TasksTableCell';
 interface CellProps {
   row: client.TaskDescriptor,
   assocs: client.TaskDescriptors
-  width: string,
 }
-const Desc: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/Desc"} width={width} name={row.description} />);
+const Desc: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Desc"} name={row.description} />);
 }
-const DueDate: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/DueDate"} width={width} name={row.dueDate + ""} />);
+const DueDate: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/DueDate"} name={row.dueDate + ""} />);
 }
-const Status: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/Status"} width={width} name={row.status} />);
+const Status: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Status"} name={row.status} />);
 }
-const Roles: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/Roles"} width={width} name={row.roles.join(", ")} />);
+const Roles: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Roles"} name={row.roles.join(", ")} />);
 }
-const Owners: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/Owners"} width={width} name={row.owners.join(", ")} />);
+const Owners: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Owners"} name={row.owners.join(", ")} />);
 }
-const Priority: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/Priority"} width={width} name={row.priority} />);
+const Priority: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Priority"} name={row.priority} />);
 }
-const Subject: React.FC<CellProps> = ({ row, width }) => {
-  return (<TasksTableCell id={row.id + "/Subject"} width={width} name={row.subject} />);
+const Subject: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Subject"} name={row.subject} />);
 }
 
 export type { CellProps }

@@ -27,7 +27,6 @@ export class ServiceImpl implements Client {
       console.error(error);
       return { name: "", contentType: "NO_CONNECTION" };
     }
-    
   }
   create(): CreateBuilder {
     const head = () => this._store.fetch<HeadState>("head", { method: "POST", body: JSON.stringify({}) });
@@ -36,5 +35,8 @@ export class ServiceImpl implements Client {
   }
   task(id: TaskId): Promise<Task> {
     return this._store.fetch<Task>(`tasks/${id}`);
+  }
+  active(): Promise<Task[]> {
+    return this._store.fetch<Task[]>(`active/tasks`);
   }
 }

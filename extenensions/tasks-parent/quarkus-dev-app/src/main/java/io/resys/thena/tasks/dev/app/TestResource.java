@@ -74,8 +74,13 @@ public class TestResource {
     }
     
     return client.repo().createIfNot()
-        .onItem().transformToUni(created -> client.changes().create(bulk)
-            .onItem().transform(tasks -> HeadState.builder().created(created).build()));
+        .onItem().transformToUni(created -> {
+          if(!created) {
+            return client.changes().create(bulk)
+                .onItem().transform(tasks -> HeadState.builder().created(created).build());
+          }
+          return Uni.createFrom().item(HeadState.builder().created(created).build());
+        });
   }
   
   @GET

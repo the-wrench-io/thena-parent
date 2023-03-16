@@ -49,10 +49,11 @@ function stableSort<T>(init: readonly T[], comparator: (a: T, b: T) => number) {
 
 class TablePagination<T> {
   private _page: number = 0;
-  private _rowsPerPage: number = 15;
+  private _rowsPerPage: number = 5;
   private _order: Order = 'asc';
   private _orderBy: keyof T;
   private _entries: T[];
+  private _src: T[];
   private _emptyRows: number;
 
   constructor(init: {
@@ -72,14 +73,21 @@ class TablePagination<T> {
     if (init.order !== undefined) {
       this._order = init.order;
     }
+    this._src = init.src;
     this._orderBy = init.orderBy;
     
-    const comparator: (a: T, b: T) => number = getComparator<T>(this._order, this._orderBy);
-    this._entries = init.sorted ? init.src : stableSort<T>(init.src, comparator)
-      .slice(
-        this._page * this._rowsPerPage,
-        this._page * this._rowsPerPage + this._rowsPerPage);
-    this._emptyRows = this._page > 0 ? Math.max(0, (1 + this._page) * this._rowsPerPage - init.src.length) : 0;
+    const start = this._page * this._rowsPerPage;
+    const end = this._page * this._rowsPerPage + this._rowsPerPage;
+    
+    if(init.sorted) {
+      const comparator: (a: T, b: T) => number = getComparator<T>(this._order, this._orderBy);
+      const entries = stableSort<T>(init.src, comparator);
+      this._src = entries;
+      this._entries = entries.slice(start, end);      
+    } else {
+      this._entries = init.src.slice(start, end);
+    }
+    this._emptyRows = this._rowsPerPage - this._entries.length;
   }
 
   withOrderBy(orderBy: keyof T) {
@@ -87,8 +95,8 @@ class TablePagination<T> {
     const order = isAsc ? 'desc' : 'asc';
 
     return new TablePagination({
-      sorted: false,
-      src: this._entries,
+      sorted: true,
+      src: this._src,
       order, orderBy,
       rowsPerPage: this._rowsPerPage,
       page: this._page
@@ -97,8 +105,8 @@ class TablePagination<T> {
   withPage(page: number) {
     return new TablePagination({
       page,
-      sorted: true,
-      src: this._entries,
+      sorted: false,
+      src: this._src,
       order: this._order,
       orderBy: this._orderBy,
       rowsPerPage: this._rowsPerPage
@@ -106,14 +114,24 @@ class TablePagination<T> {
   }
   withRowsPerPage(rowsPerPage: number) {
     return new TablePagination({
-      sorted: true,
-      src: this._entries,
+      sorted: false,
+      src: this._src,
       order: this._order,
       orderBy: this._orderBy,
       rowsPerPage, page: 0
     });
   }
-  get rowsPerPageOptions() {return [15, 40, 80, 120] }
+  withSrc(src: T[]) {
+    return new TablePagination({
+      src,
+      page: this._page,
+      sorted: true,
+      order: this._order,
+      orderBy: this._orderBy,
+      rowsPerPage: this._rowsPerPage
+    });
+  }
+  get rowsPerPageOptions() {return [5, 15, 40, 80, 120] }
   get entries() { return this._entries }
   get page() { return this._page }
   get rowsPerPage() { return this._rowsPerPage }

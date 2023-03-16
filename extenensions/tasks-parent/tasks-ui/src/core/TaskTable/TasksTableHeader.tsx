@@ -1,5 +1,5 @@
 import React from 'react';
-import Box from '@mui/material/Box';
+import {Box, Button} from '@mui/material';
 import TableCell from '@mui/material/TableCell';
 import TableRow from '@mui/material/TableRow';
 import TableSortLabel from '@mui/material/TableSortLabel';
@@ -15,19 +15,21 @@ interface HeadCell {
 }
 
 const headCells: readonly HeadCell[] = [
-  { id: 'subject' },
   { id: 'priority' },
   { id: 'status' },
   { id: 'owners' },
-  { id: 'dueDate' },
   { id: 'roles' },
+  { id: 'dueDate' },
+  { id: 'subject' },
 ];
 
 
-const DescriptorTableHeader: React.FC<{
+
+const SortableHeader: React.FC<{
+  id: keyof client.TaskDescriptor,
   content: client.TablePagination<client.TaskDescriptor>,
   setContent: React.Dispatch<React.SetStateAction<client.TablePagination<client.TaskDescriptor>>>
-}> = ({ content, setContent }) => {
+}> = ({ id, content, setContent }) => {
 
   const { order, orderBy } = content;
 
@@ -35,23 +37,34 @@ const DescriptorTableHeader: React.FC<{
     (_event: React.MouseEvent<unknown>) => setContent(prev => prev.withOrderBy(property))
 
   return (
-    <TableRow sx={{ backgroundColor: 'table.dark'}}>
-      {headCells.map((headCell) => (
-        <TableCell key={headCell.id} align='left' padding='normal' sortDirection={orderBy === headCell.id ? order : false}>
-          <TableSortLabel active={orderBy === headCell.id} direction={orderBy === headCell.id ? order : 'asc'} onClick={createSortHandler(headCell.id)}>
-            
-            <FormattedMessage id={`tasktable.header.${headCell.id}`} />
-            {orderBy === headCell.id ? (<Box component="span" sx={visuallyHidden}>{order === 'desc' ? 'sorted descending' : 'sorted ascending'}</Box>) : null}
-          </TableSortLabel>
-        </TableCell>
-      ))}
+    <TableCell key={id} align='left' padding='none' sortDirection={orderBy === id ? order : false}>
 
-      <TableCell align='left' padding='normal'>
-        <FormattedMessage id='tasktable.header.description' />
+      <TableSortLabel active={orderBy === id} direction={orderBy === id ? order : 'asc'} onClick={createSortHandler(id)}>
+        <FormattedMessage id={`tasktable.header.${id}`} />
+        {orderBy === id ? (<Box component="span" sx={visuallyHidden}>{order === 'desc' ? 'sorted descending' : 'sorted ascending'}</Box>) : null}
+      </TableSortLabel>
+    </TableCell>
+  );
+}
+
+
+const DescriptorTableHeader: React.FC<{
+  content: client.TablePagination<client.TaskDescriptor>,
+  setContent: React.Dispatch<React.SetStateAction<client.TablePagination<client.TaskDescriptor>>>
+}> = ({ content, setContent }) => {
+
+
+  return (
+    <TableRow>
+      <TableCell align='left' padding='none'>
+        <Button variant="contained" sx={{borderRadius: '8px 8px 0px 0px', boxShadow: "unset"}}>Contained</Button>
       </TableCell>
+    
+      {headCells.map((headCell) => (<SortableHeader id={headCell.id} content={content} setContent={setContent} />))}
     </TableRow>
   );
 }
+//border-top-right-radius
 export default DescriptorTableHeader;
 
 

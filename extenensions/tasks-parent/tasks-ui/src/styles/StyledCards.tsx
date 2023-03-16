@@ -5,8 +5,6 @@ import { FormattedMessage } from 'react-intl';
 import Burger from '@the-wrench-io/react-burger';
 
 
-
-
 interface StyledCardItemProps {
   id: string;
   title: string;
@@ -71,15 +69,15 @@ const StyledCardItem: React.FC<StyledCardItemProps> = (props) => {
 const StyledCards: React.FC<StyledCardsProps> = ({ title, desc, items }) => {
 
   return (
-    <>
-      <Typography variant="h3" fontWeight="bold" sx={{ p: 1, m: 1 }}>
+    <Box>
+      <Typography variant="h3" fontWeight="bold" sx={{ p: 2 }}>
         <FormattedMessage id={title} />
         <Typography variant="body2" sx={{ pt: 1 }}><FormattedMessage id={desc} /></Typography>
       </Typography>
       <Box sx={{ margin: 1, display: 'flex', flexWrap: 'wrap', justifyContent: 'center' }}>
         {items.map((card) => (<StyledCardItem key={card.id as string} {...card} />))}
       </Box>
-    </>
+    </Box>
   );
 }
 

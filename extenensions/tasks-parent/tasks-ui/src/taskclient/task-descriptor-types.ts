@@ -69,6 +69,9 @@ class TaskDescriptorsImpl implements TaskDescriptors {
   findAll() {
     return Object.values(this._defs);
   }
+  withValues(values: Task[]) {
+    return new TaskDescriptorsImpl(values, undefined);
+  }
 }
 
 

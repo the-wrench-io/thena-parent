@@ -28,6 +28,12 @@ const en = {
   'explorer.title': 'Digiexpress task managment',
   'explorer.tasks': "View and search tasks",
   
+  'tasktable.header.subject': 'Subject',
+  'tasktable.header.priority': 'Priority',
+  'tasktable.header.status': 'Status',
+  'tasktable.header.owners': 'Owners',
+  'tasktable.header.roles': 'Roles',
+  'tasktable.header.dueDate': 'Due Date',
   
 };
 

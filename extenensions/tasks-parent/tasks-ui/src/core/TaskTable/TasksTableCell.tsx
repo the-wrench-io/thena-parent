@@ -26,7 +26,7 @@ const Info: React.FC<{ id: string, content: React.ReactNode }> = ({ id, content 
 }
 
 
-const TasksTableCell: React.FC<{ id: string, name?: string, tag?: string, width: string, info?: React.ReactNode }> = ({ id, name, tag, width, info }) => {
+const TasksTableCell: React.FC<{ id: string, name?: string, tag?: string, info?: React.ReactNode }> = ({ id, name, tag, info }) => {
   const { setState } = useTable();
   const handleClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
     setState(prev => prev.withPopperOpen(id, !prev.popperOpen, event.currentTarget))
@@ -41,7 +41,7 @@ const TasksTableCell: React.FC<{ id: string, name?: string, tag?: string, width:
     {tag && <Box sx={{ mr: 0, minWidth: '50px', alignSelf: "center" }}>
       <Chip label={tag} color="primary" variant="outlined" size="small" onClick={handleClick}/>
     </Box>}
-    <Box alignSelf="center"><Typography noWrap={true} fontSize="13px" fontWeight="400" width={width}>{name}</Typography></Box>
+    <Box alignSelf="center"><Typography noWrap={true} fontSize="13px" fontWeight="400">{name}</Typography></Box>
   </Box>);
 }
 export { TasksTableCell };

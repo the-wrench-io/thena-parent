@@ -55,6 +55,7 @@ export interface Client {
   config: StoreConfig;
   create(): CreateBuilder;
   head(): Promise<HeadState>
+  active(): Promise<Task[]>
   task(id: TaskId): Promise<Task>
 }
 export interface StoreConfig {
