@@ -28,7 +28,12 @@ import io.smallrye.mutiny.Uni;
 
 public interface QueryActions {
   ActiveTaskQuery active();
+  DeleteTaskQuery delete();
   
+  
+  interface DeleteTaskQuery {
+    Multi<Task> deleteAll();
+  }
   
   interface ActiveTaskQuery {
     Multi<Task> findAll();

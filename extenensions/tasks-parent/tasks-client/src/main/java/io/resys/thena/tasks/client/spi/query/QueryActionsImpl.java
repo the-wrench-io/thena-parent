@@ -33,4 +33,9 @@ public class QueryActionsImpl implements QueryActions {
   public ActiveTaskQuery active() {
     return new ActiveTaskQueryImpl(ctx);
   }
+
+  @Override
+  public DeleteTaskQuery delete() {
+    return new DeleteTaskQueryImpl(ctx);
+  }
 }

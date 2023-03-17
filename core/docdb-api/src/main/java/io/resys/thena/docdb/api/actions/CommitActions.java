@@ -56,6 +56,7 @@ public interface CommitActions {
     CommitBuilder append(String name, JsonObject blob);
     CommitBuilder merge(String name, JsonObjectMerge blob);
     CommitBuilder remove(String name);
+    CommitBuilder remove(List<String> name);
     CommitBuilder author(String author);
     CommitBuilder message(String message);
     Uni<CommitResult> build();

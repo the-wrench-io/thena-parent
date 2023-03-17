@@ -105,7 +105,7 @@ public interface Objects {
     
     String getRefName();
     String getTreeId();
-    TreeValue getTreeValue();
+    Optional<TreeValue> getTreeValue();
     
     // Only if loaded
     Optional<Blob> getBlob();

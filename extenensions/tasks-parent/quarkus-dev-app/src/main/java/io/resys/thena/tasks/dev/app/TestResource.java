@@ -26,13 +26,13 @@ import java.util.ArrayList;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.resys.thena.tasks.client.api.TasksClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
-import io.resys.thena.tasks.client.api.model.Task.Priority;
 import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -53,34 +53,62 @@ public class TestResource {
   public static class HeadState {
     private Boolean created;
   }
-  
+
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("init")
-  public Uni<HeadState> init() {
+  @Path("demo/populate/{totalTasks}")
+  public Uni<HeadState> populate(@PathParam("totalTasks") String totalTasks) {
+    final int count = totalTasks == null ? 50 : Integer.parseInt(totalTasks);
+
+    
+    final var provider =  new RandomDataProvider();
     final var bulk = new ArrayList<CreateTask>();
     final var targetDate = LocalDateTime.now();
     
-    for(int index = 0; index < 50; index++) {
+    for(int index = 0; index < count; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(targetDate)
-      .subject("very important subject no: " + index)
-      .description("first task ever no: "  + index)
-      .priority(Priority.LOW)
-      .addRoles("admin-users", "view-only-users")
-      .userId("user-1")
+      .subject(provider.getSubject())
+      .description(provider.getDescription())
+      .priority(provider.getPriority())
+      .roles(provider.getRoles())
+      .owners(provider.getOwners())
+      .userId("demo-gen-1")
       .build();
       bulk.add(newTask);
     }
     
     return client.repo().createIfNot()
         .onItem().transformToUni(created -> {
-          if(!created) {
+          if(created) {
             return client.changes().create(bulk)
                 .onItem().transform(tasks -> HeadState.builder().created(created).build());
           }
           return Uni.createFrom().item(HeadState.builder().created(created).build());
         });
+  }
+  
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("demo/clear")
+  public Uni<HeadState> clear() {
+    return client.repo().createIfNot()
+        .onItem().transformToUni(created -> {
+          if(created) {
+            return client.query().delete().deleteAll().collect().asList()
+                .onItem().transform(tasks -> HeadState.builder().created(created).build());
+          }
+          return Uni.createFrom().item(HeadState.builder().created(created).build());
+        });
+  }
+  
+  
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("init")
+  public Uni<HeadState> init() {
+    return client.repo().createIfNot()
+        .onItem().transform(created -> HeadState.builder().created(created).build());
   }
   
   @GET

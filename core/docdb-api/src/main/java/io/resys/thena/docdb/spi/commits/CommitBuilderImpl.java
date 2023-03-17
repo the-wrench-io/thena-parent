@@ -99,6 +99,11 @@ public class CommitBuilderImpl implements CommitBuilder {
     return this;
   }
   @Override
+  public CommitBuilder remove(List<String> names) {
+    names.forEach(this::remove);
+    return this;
+  }
+  @Override
   public CommitBuilder merge(String name, JsonObjectMerge blob) {
     RepoAssert.notEmpty(name, () -> "name can't be empty!");
     RepoAssert.notNull(blob, () -> "merge can't be null!");

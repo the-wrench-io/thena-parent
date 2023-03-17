@@ -138,6 +138,8 @@ public class SqlMapperImpl implements SqlMapper {
   
   
   public ImmutableCommitTree.Builder commitTreeInternal(Row row) {
+    final var blob = row.getString("blob_id");
+    final var blobName = row.getString("blob_name");
     return ImmutableCommitTree.builder()
         .treeId(row.getString("tree_id"))
         .commitId(row.getString("commit_id"))
@@ -147,10 +149,10 @@ public class SqlMapperImpl implements SqlMapper {
         .commitMessage(row.getString("message"))
         .commitMerge(row.getString("merge"))
         .refName(row.getString("ref_name"))
-        .treeValue(ImmutableTreeValue.builder()
-            .blob(row.getString("blob_id"))
-            .name(row.getString("blob_name"))
-            .build());
+        .treeValue(blob == null ? Optional.empty() : Optional.of(ImmutableTreeValue.builder()
+            .blob(blob)
+            .name(blobName)
+            .build()));
   }
   
   

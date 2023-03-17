@@ -97,7 +97,7 @@ public class CommitQuerySqlPool implements CommitQuery {
     if(log.isDebugEnabled()) {
       log.debug("Commit: {} getLock query, with props: {} \r\n{}",
           CommitQuerySqlPool.class,
-          sql.getProps(),
+          sql.getProps().deepToString(),
           sql.getValue());
     }
     final Function<io.vertx.mutiny.sqlclient.Row, CommitTree> mapper;
@@ -136,7 +136,9 @@ public class CommitQuerySqlPool implements CommitQuery {
                   .tree(commitTree.getTreeId())
                   .build());
             }
-            tree.putValues(commitTree.getTreeValue().getName(), commitTree.getTreeValue());
+            if(commitTree.getTreeValue().isPresent()) {
+              tree.putValues(commitTree.getTreeValue().get().getName(), commitTree.getTreeValue().get());  
+            }
             if(commitTree.getBlob().isPresent()) {
               builder.putBlobs(commitTree.getBlob().get().getId(), commitTree.getBlob().get());
             }

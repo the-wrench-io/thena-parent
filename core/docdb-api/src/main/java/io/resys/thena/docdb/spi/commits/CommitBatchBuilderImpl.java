@@ -93,6 +93,7 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
         .ref(ImmutableBatchRef.builder().ref(ref).created(this.commitTree.getRef().isPresent()).build())
         .repo(commitTree.getRepo())
         .status(visitEmpty(mutator))
+        .deleted(toBeRemoved.size())
         .tree(tree)
         .blobs(blobs)
         .commit(commit)

@@ -280,13 +280,18 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
     RepoAssert.isTrue(this.wrapper.getTx().isPresent(), () -> "Transaction must be started!");
     final var tx = wrapper.getClient();    
     
-    if(blobsInsert.getProps().isEmpty()) {
-      return Uni.createFrom().item(successOutput(output, "No new blobs provided, nothing to save"));
+    if(blobsInsert.getProps().isEmpty() && output.getDeleted() == 0) {
+      return Uni.createFrom().item(successOutput(output, "No new blobs provided or tree values to delete, nothing to save"));
     } 
     
-    final var blobUni = Execute.apply(tx, blobsInsert).onItem()
-      .transform(row -> successOutput(output, "Blobs saved, number of new entries: " + row.rowCount()))
-      .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create blobs", e));
+    final Uni<Batch> blobUni;
+    if(blobsInsert.getProps().isEmpty()) {
+      blobUni = Uni.createFrom().item(successOutput(output, "Skipping blobs because nothing provided"));
+    } else {
+      blobUni = Execute.apply(tx, blobsInsert).onItem()
+        .transform(row -> successOutput(output, "Blobs saved, number of new entries: " + row.rowCount()))
+        .onFailure().recoverWithItem(e -> failOutput(output, "Failed to create blobs", e));
+    }
     
     final var treeUni = Execute.apply(tx, treeInsert).onItem()
       .transform(row -> successOutput(output, "Tree saved, number of new entries: " + row.rowCount()))

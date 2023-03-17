@@ -54,6 +54,7 @@ public interface ClientInsertBuilder {
     BatchRef getRef();
     Commit getCommit();
     Tree getTree();
+    Integer getDeleted();
     Collection<Blob> getBlobs();
     List<Message> getMessages();
   }
