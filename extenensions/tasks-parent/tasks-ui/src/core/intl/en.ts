@@ -27,14 +27,18 @@ const en = {
 
   'explorer.title': 'Digiexpress task managment',
   'explorer.tasks': "View and search tasks",
-  
+
   'tasktable.header.subject': 'Subject',
   'tasktable.header.priority': 'Priority',
   'tasktable.header.status': 'Status',
   'tasktable.header.owners': 'Owners',
   'tasktable.header.roles': 'Roles',
   'tasktable.header.dueDate': 'Due Date',
-  
+
+  'tasktable.header.spotlight.status.REJECTED': 'Rejected',
+  'tasktable.header.spotlight.status.IN_PROGRESS': 'In progress',
+  'tasktable.header.spotlight.status.COMPLETED': 'Completed',
+  'tasktable.header.spotlight.status.CREATED': 'Created'
 };
 
 export default en;

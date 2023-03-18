@@ -1,11 +1,9 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
-import { FormattedMessage } from 'react-intl';
+import { Box } from '@mui/material';
 
-import Burger from '@the-wrench-io/react-burger';
-import Styles from '@styles';
 import client from '@taskclient';
 import TasksTable from '../TaskTable';
+import Tools from '../Tools';
 
 
 const Tasks: React.FC<{}> = () => {
@@ -19,11 +17,15 @@ const Tasks: React.FC<{}> = () => {
 
   }, [content, setContent]);
 
-  return (<>
-    <Box sx={{p: 4}}>
-      <TasksTable def={content ? content : []} />
-    </Box>
-  </>);
+  return (<Tools>
+    <>
+      <TasksTable def={content} spotLight={{ type: 'status', status: 'CREATED' }} />
+      <Box sx={{ p: 2 }} />
+      <TasksTable def={content} spotLight={{ type: 'status', status: 'IN_PROGRESS' }} />
+      <Box sx={{ p: 2 }} />
+      <TasksTable def={content} spotLight={{ type: 'status', status: 'COMPLETED' }} />
+    </>
+  </Tools>);
 }
 
 export { Tasks };

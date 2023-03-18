@@ -133,6 +133,7 @@ class TablePagination<T> {
   }
   get rowsPerPageOptions() {return [5, 15, 40, 80, 120] }
   get entries() { return this._entries }
+  get src() { return this._src }
   get page() { return this._page }
   get rowsPerPage() { return this._rowsPerPage }
   get order() { return this._order }

@@ -5,12 +5,21 @@ import { useIntl } from 'react-intl';
 import client from '@taskclient';
 
 import { useTable } from './table-ctx';
+import { SpotLight, SpotLightProgress } from './table-types';
 import { TasksTableCell } from './TasksTableCell';
 
 interface CellProps {
   row: client.TaskDescriptor,
-  assocs: client.TaskDescriptors
+  assocs: client.TaskDescriptors,
 }
+
+const Roles: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Roles"} name={row.roles.join(", ")} />);
+}
+const Owners: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Owners"} name={row.owners.join(", ")} />);
+}
+
 const Desc: React.FC<CellProps> = ({ row }) => {
   return (<TasksTableCell id={row.id + "/Desc"} name={row.description} />);
 }
@@ -19,12 +28,6 @@ const DueDate: React.FC<CellProps> = ({ row }) => {
 }
 const Status: React.FC<CellProps> = ({ row }) => {
   return (<TasksTableCell id={row.id + "/Status"} name={row.status} />);
-}
-const Roles: React.FC<CellProps> = ({ row }) => {
-  return (<TasksTableCell id={row.id + "/Roles"} name={row.roles.join(", ")} />);
-}
-const Owners: React.FC<CellProps> = ({ row }) => {
-  return (<TasksTableCell id={row.id + "/Owners"} name={row.owners.join(", ")} />);
 }
 const Priority: React.FC<CellProps> = ({ row }) => {
   return (<TasksTableCell id={row.id + "/Priority"} name={row.priority} />);
