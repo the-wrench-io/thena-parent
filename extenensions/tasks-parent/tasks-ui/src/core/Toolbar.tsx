@@ -87,8 +87,8 @@ const Toolbar: React.FC<{}> = () => {
     } else if (newValue === 'toolbar.activities') {
       tabs.actions.handleTabAdd({ id: 'activities', label: "Activities" });
 
-    } else if (newValue === 'toolbar.assets') {
-      secondary.actions.handleSecondary("toolbar.assets")
+    } else if (newValue === 'toolbar.tasks') {
+      secondary.actions.handleSecondary("toolbar.tasks")
 
     } else if (newValue === 'toolbar.search') {
       secondary.actions.handleSecondary("toolbar.search")

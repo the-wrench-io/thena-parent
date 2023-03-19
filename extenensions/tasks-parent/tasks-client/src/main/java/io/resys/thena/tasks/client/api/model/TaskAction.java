@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.resys.thena.tasks.client.api.model.Task.Priority;
+import io.resys.thena.tasks.client.api.model.Task.Status;
 import io.resys.thena.tasks.client.api.model.Task.TaskComment;
 import io.resys.thena.tasks.client.api.model.Task.TaskExtension;
 
@@ -48,6 +49,7 @@ public interface TaskAction extends Serializable {
     List<String> getRoles();
     List<String> getOwners();
     
+    @Nullable Status getStatus();
     @Nullable LocalDate getDueDate();
     String getSubject();
     String getDescription();

@@ -1,14 +1,10 @@
 import React from 'react';
-import { Box, Button, TableHead, TablePagination } from '@mui/material';
-import TableCell from '@mui/material/TableCell';
-import TableRow from '@mui/material/TableRow';
-import TableSortLabel from '@mui/material/TableSortLabel';
+import { Box, Button, TableHead, TableCell, TableRow, TableSortLabel } from '@mui/material';
 
 import { visuallyHidden } from '@mui/utils';
 import { FormattedMessage } from 'react-intl';
 
 import client from '@taskclient';
-import { SpotLight, SpotLightColors } from './table-types';
 
 interface HeadCell {
   id: keyof client.TaskDescriptor;
@@ -47,7 +43,7 @@ const SortableHeader: React.FC<{
   );
 }
 
-const StyledSpotLight: React.FC<{ value: SpotLight | undefined }> = ({ value }) => {
+const StyledSpotLight: React.FC<{ value: client.Group }> = ({ value }) => {
 
   const sx = { borderRadius: '8px 8px 0px 0px', boxShadow: "unset" };
   if (!value) {
@@ -55,9 +51,19 @@ const StyledSpotLight: React.FC<{ value: SpotLight | undefined }> = ({ value }) 
   }
 
   if (value.type === 'status') {
-    const backgroundColor = SpotLightColors.status[value.status];
+    const backgroundColor = value.color;
     return (<Button variant="contained" sx={{ ...sx, backgroundColor }}>
-      <FormattedMessage id={`tasktable.header.spotlight.status.${value.status}`} />
+      <FormattedMessage id={`tasktable.header.spotlight.status.${value.id}`} />
+    </Button>);
+  } else if (value.type === 'priority') {
+    const backgroundColor = value.color;
+    return (<Button variant="contained" sx={{ ...sx, backgroundColor }}>
+      <FormattedMessage id={`tasktable.header.spotlight.priority.${value.id}`} />
+    </Button>);
+  } else if (value.type === 'owners' || value.type === 'roles') {
+    const backgroundColor = value.color;
+    return (<Button variant="contained" sx={{ ...sx, backgroundColor }}>
+      {value.id}
     </Button>);
   }
   return (<Button color="primary" variant="contained" sx={sx}>Contained</Button>);
@@ -66,16 +72,16 @@ const StyledSpotLight: React.FC<{ value: SpotLight | undefined }> = ({ value }) 
 const DescriptorTableHeader: React.FC<{
   content: client.TablePagination<client.TaskDescriptor>,
   setContent: React.Dispatch<React.SetStateAction<client.TablePagination<client.TaskDescriptor>>>,
-  spotLight: SpotLight | undefined
-}> = ({ content, setContent, spotLight }) => {
+  def: client.Group
+}> = ({ content, setContent, def }) => {
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell align='left' padding='none' width="300px">
-          <StyledSpotLight value={spotLight} />
+        <TableCell align='left' padding='none'>
+          <StyledSpotLight value={def} />
         </TableCell>
-        {headCells.map((headCell) => (<SortableHeader id={headCell.id} content={content} setContent={setContent} />))}
+        {headCells.map((headCell) => (<SortableHeader key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
       </TableRow>
     </TableHead>
   );

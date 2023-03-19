@@ -81,7 +81,7 @@ const Apps: React.FC<{ services: TaskClient.HeadState }> = ({ services }) => {
   }), [AppCore]);
 
   return (<TaskClient.Provider service={backend} head={services}>
-    <Burger.Provider children={[serviceComposer]} secondary="toolbar.assets" drawerOpen />
+    <Burger.Provider children={[serviceComposer]} secondary="toolbar.tasks" drawerOpen />
   </TaskClient.Provider>)
 }
 

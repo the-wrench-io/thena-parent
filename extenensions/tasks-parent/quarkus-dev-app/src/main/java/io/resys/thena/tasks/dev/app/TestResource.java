@@ -73,6 +73,7 @@ public class TestResource {
       .priority(provider.getPriority())
       .roles(provider.getRoles())
       .owners(provider.getOwners())
+      .status(provider.getStatus())
       .userId("demo-gen-1")
       .build();
       bulk.add(newTask);

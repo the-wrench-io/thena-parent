@@ -55,7 +55,7 @@ export interface Client {
   config: StoreConfig;
   create(): CreateBuilder;
   head(): Promise<HeadState>
-  active(): Promise<Task[]>
+  active(): Promise<TaskPagination>
   task(id: TaskId): Promise<Task>
 }
 export interface StoreConfig {
@@ -67,5 +67,11 @@ export interface StoreConfig {
 export interface Store {
   config: StoreConfig;
   fetch<T>(path: string, init?: RequestInit & { notFound?: () => T }): Promise<T>;
+}
+
+export interface TaskPagination {
+  page: number; //starts from 1
+  total: { pages: number, records: number };
+  records: Task[];
 }
 

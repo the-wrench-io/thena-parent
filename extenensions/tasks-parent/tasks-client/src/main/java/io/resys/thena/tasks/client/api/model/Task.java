@@ -47,6 +47,7 @@ public interface Task extends Document {
   String getSubject();
   String getDescription();
   Priority getPriority();
+  Status getStatus();
   
   List<String> getLabels();
   List<TaskExtension> getExtensions();

@@ -2,9 +2,10 @@ import React from 'react';
 import Burger from '@the-wrench-io/react-burger';
 import { ImmutableTabData } from './session';
 import { Tab, TabEntity, TabBody, Document } from './composer-types';
-import { ComposerContext, ComposerContextType, ClientContextType, ClientContext } from './Components/Context';
+import { ComposerContext, ComposerContextType, ClientContextType, ClientContext } from './client-ctx';
 import ArticleTabIndicator from './Components/ArticleTabIndicator';
-
+import { TasksContext } from './tasks-ctx';
+import { TasksContextType } from './tasks-ctx-types';
 
 const isDocumentSaved = (entity: Document, ide: ComposerContextType): boolean => {
   const unsaved = Object.values(ide.session.pages).filter(p => !p.saved).filter(p => p.origin.id === entity.id);
@@ -45,8 +46,12 @@ const findTabInLayout = (article: Document, layout: Burger.TabsContextType): Tab
   return undefined;
 }
 
+export const useTasks = () => {
+  const result: TasksContextType = React.useContext(TasksContext);
+  return result;
+}
 
-export const useService = () => {
+export const useBackend = () => {
   const result: ClientContextType = React.useContext(ClientContext);
   return result;
 }

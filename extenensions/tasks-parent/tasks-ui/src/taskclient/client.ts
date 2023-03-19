@@ -1,4 +1,4 @@
-import { Client, Store, HeadState, CreateBuilder, TaskId, Task } from './client-types';
+import { Client, Store, HeadState, CreateBuilder, TaskId, Task, TaskPagination } from './client-types';
 import { } from './client-store';
 
 
@@ -36,7 +36,13 @@ export class ServiceImpl implements Client {
   task(id: TaskId): Promise<Task> {
     return this._store.fetch<Task>(`tasks/${id}`);
   }
-  active(): Promise<Task[]> {
-    return this._store.fetch<Task[]>(`active/tasks`);
+  async active(): Promise<TaskPagination> {
+    const tasks = await this._store.fetch<Task[]>(`active/tasks`);
+    
+    return {
+      page: 1,
+      total: { pages: 1, records: tasks.length },
+      records: tasks
+    }
   }
 }

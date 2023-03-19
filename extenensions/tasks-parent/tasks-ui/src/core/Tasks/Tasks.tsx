@@ -7,24 +7,15 @@ import Tools from '../Tools';
 
 
 const Tasks: React.FC<{}> = () => {
-  const backend = client.useService();
-  const [content, setContent] = React.useState<client.Task[]>();
+  const tasks = client.useTasks();
 
-  React.useEffect(() => {
-    if (content == null) {
-      backend.active().then(setContent)
-    }
 
-  }, [content, setContent]);
-
-  return (<Tools>
-    <>
-      <TasksTable def={content} spotLight={{ type: 'status', status: 'CREATED' }} />
-      <Box sx={{ p: 2 }} />
-      <TasksTable def={content} spotLight={{ type: 'status', status: 'IN_PROGRESS' }} />
-      <Box sx={{ p: 2 }} />
-      <TasksTable def={content} spotLight={{ type: 'status', status: 'COMPLETED' }} />
-    </>
+  return (<Tools><>
+    {tasks.state.groups.map((group, index) => (<React.Fragment key={group.id}>
+      {index > 0 ? <Box sx={{ p: 2 }} /> : null}
+      <TasksTable def={group} />
+    </React.Fragment>))}
+  </>
   </Tools>);
 }
 

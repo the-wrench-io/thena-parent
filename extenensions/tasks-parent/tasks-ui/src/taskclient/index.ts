@@ -25,10 +25,16 @@ import {
 
 
 import ErrorView from './Components/ErrorView';
-import { ClientContextType, ComposerContextType } from './Components/Context';
-import { TaskDescriptorsImpl as TaskDescriptorsImplAs, TaskDescriptor, TaskDescriptors } from './task-descriptor-types';
+import { ClientContextType, ComposerContextType } from './client-ctx';
+import ProviderImpl from './Provider';
 
-import * as Context from './Components/Context';
+import { 
+  TaskDescriptor, TasksContextType, TasksState, TasksMutatorBuilder,
+  PalleteType, FilterBy, Group, GroupBy, RoleUnassigned, OwnerUnassigned,
+  TasksStatePallette
+} from './tasks-ctx-types';
+
+
 import * as Hooks from './hooks';
 
 
@@ -53,22 +59,24 @@ declare namespace TaskClient {
     ServiceErrorProps,
     StoreError
   }
-  
+
   export type {
-    TaskDescriptor, TaskDescriptors
+    TaskDescriptor, TasksContextType, TasksState, TasksMutatorBuilder,
+    PalleteType, FilterBy, Group, GroupBy, RoleUnassigned, OwnerUnassigned,
+    TasksStatePallette
   }
 }
 
 
 namespace TaskClient {
-  export const TaskDescriptorsImpl = TaskDescriptorsImplAs;
   export const TablePaginationImpl = TablePaginationAs;
   export const ServiceImpl = ServiceImplAs;
   export const DefaultStore = DefaultStoreAs;
   export const StoreErrorImpl = StoreErrorImplAs;
   export const Error = ErrorView;
-  export const Provider = Context.Provider;
-  export const useService = Hooks.useService;
+  export const Provider = ProviderImpl;
+  export const useBackend = Hooks.useBackend;
+  export const useTasks = Hooks.useTasks;
   export const useSite = Hooks.useSite;
   export const useUnsaved = Hooks.useUnsaved;
   export const useComposer = Hooks.useComposer;

@@ -1,10 +1,10 @@
 import React from 'react';
-import { TableCell, TableRow, TableCellProps, styled, SxProps, TableBody } from '@mui/material';
+import { TableCell, TableRow, TableCellProps, styled, SxProps, TableBody, Box } from '@mui/material';
 
 import client from '@taskclient';
 
 import * as Cells from './TasksTableCells';
-import { SpotLight, SpotLightColors, SpotLightProgress } from './table-types';
+import { SpotLightProgress } from './table-types';
 
 const lineHeight = 28;
 
@@ -44,38 +44,38 @@ const Cell = styled(TableCell)<TableCellProps>(({ theme }) => ({
   paddingBottom: theme.spacing(0),
 }));
 
-function getStatus(value: SpotLight | undefined): SxProps | undefined {
-  if (!value) {
+function getStatus(def: client.Group): SxProps | undefined {
+  if (!def.color) {
     return undefined;
   }
-  if (value.type === 'status') {
-    const backgroundColor = SpotLightColors.status[value.status];
+  if (def.type === 'status') {
+    const backgroundColor = def.color;
+    return { backgroundColor, borderWidth: 0, color: 'primary.contrastText' }
+  }
+  return undefined;
+}
+
+function getPriority(def: client.Group): SxProps | undefined {
+  if (!def.color) {
+    return undefined;
+  }
+  if (def.type === 'priority') {
+    const backgroundColor = def.color;
     return { backgroundColor }
   }
   return undefined;
 }
 
-function getPriority(value: SpotLight | undefined): SxProps | undefined {
-  if (!value) {
-    return undefined;
-  }
-  if (value.type === 'priority') {
-    const backgroundColor = SpotLightColors.priority[value.priority];
-    return { backgroundColor }
-  }
-  return undefined;
-}
-
-function getRoles(value: SpotLight | undefined): SxProps | undefined {
-  if (!value) {
+function getRoles(def: client.Group): SxProps | undefined {
+  if (!def.color) {
     return undefined;
   }
 
   return undefined;
 }
 
-function getOwners(value: SpotLight | undefined): SxProps | undefined {
-  if (!value) {
+function getOwners(def: client.Group): SxProps | undefined {
+  if (!def.color) {
     return undefined;
   }
   return undefined;
@@ -85,25 +85,24 @@ function getOwners(value: SpotLight | undefined): SxProps | undefined {
 const DescriptorTableRow: React.FC<{
   rowId: number,
   row: client.TaskDescriptor,
-  assocs: client.TaskDescriptors,
-  spotLight: SpotLight | undefined
-}> = ({ rowId, row, assocs, spotLight }) => {
+  def: client.Group
+}> = ({ row, def }) => {
 
   return (<TableRow hover tabIndex={-1} key={row.id}>
-    <Cell><Cells.Subject row={row} assocs={assocs} /></Cell>
-    <Cell sx={getPriority(spotLight)}><Cells.Priority row={row} assocs={assocs} /></Cell>
-    <Cell sx={getStatus(spotLight)}><Cells.Status row={row} assocs={assocs} /></Cell>
-    <Cell sx={getOwners(spotLight)}><Cells.Owners row={row} assocs={assocs} /></Cell>
-    <Cell sx={getRoles(spotLight)}><Cells.Roles row={row} assocs={assocs} /></Cell>
-    <Cell><Cells.DueDate row={row} assocs={assocs} /></Cell>
+    <Cell width="300px"><Cells.Subject maxWidth="300px" row={row} def={def}/></Cell>
+    <Cell width="150px" sx={getPriority(def)}><Cells.Priority row={row} def={def}/></Cell>
+    <Cell width="200px" sx={getStatus(def)}><Cells.Status row={row} def={def}/></Cell>
+    <Cell width="150px" sx={getOwners(def)}><Cells.Owners row={row} def={def}/></Cell>
+    <Cell sx={getRoles(def)}><Cells.Roles row={row} def={def}/></Cell>
+    <Cell><Cells.DueDate row={row} def={def}/></Cell>
   </TableRow>);
 }
 
 const EmptyTableRow: React.FC<{
   content: client.TablePagination<client.TaskDescriptor>,
-  spotLight: SpotLight | undefined,
+  def: client.Group,
   loading: boolean
-}> = ({ content, spotLight, loading }) => {
+}> = ({ content, def, loading }) => {
   if (content.emptyRows === 0) {
     return null;
   }
@@ -112,7 +111,7 @@ const EmptyTableRow: React.FC<{
   for (let index = 0; index < content.emptyRows; index++) {
     rows.push(<TableRow key={index}>
       <Cell>&nbsp;</Cell>
-      <Cell colSpan={5}>{loading ? <SpotLightProgress value={spotLight} /> : null}</Cell>
+      <Cell colSpan={5}>{loading ? <SpotLightProgress def={def} /> : null}</Cell>
     </TableRow>)
   }
   return (<>{rows}</>);
@@ -120,14 +119,13 @@ const EmptyTableRow: React.FC<{
 
 const Rows: React.FC<{
   content: client.TablePagination<client.TaskDescriptor>,
-  assocs: client.TaskDescriptors,
-  spotLight: SpotLight | undefined,
+  def: client.Group,
   loading: boolean
-}> = ({ content, spotLight, loading, assocs }) => {
+}> = ({ content, def, loading }) => {
   return (
     <StyledTableBody>
-      {content.entries.map((row, rowId) => (<DescriptorTableRow key={row.id} rowId={rowId} row={row} assocs={assocs} spotLight={spotLight} />))}
-      <EmptyTableRow content={content} spotLight={spotLight} loading={loading} />
+      {content.entries.map((row, rowId) => (<DescriptorTableRow key={row.id} rowId={rowId} row={row} def={def} />))}
+      <EmptyTableRow content={content} def={def} loading={loading} />
     </StyledTableBody>)
 }
 

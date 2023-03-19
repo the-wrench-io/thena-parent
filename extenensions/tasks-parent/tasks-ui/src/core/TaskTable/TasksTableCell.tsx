@@ -1,5 +1,5 @@
 import React from 'react';
-import { Chip, Box, Typography, Dialog, DialogContent  } from '@mui/material';
+import { Chip, Box, Typography, Dialog, DialogContent } from '@mui/material';
 import { useTable } from './table-ctx';
 
 
@@ -17,7 +17,7 @@ const StyledPopper: React.FC<{ id: string, content: React.ReactNode }> = ({ id, 
   }
 
   return (<Dialog open={open} onClose={handleClose} maxWidth="md">
-    <DialogContent sx={{padding: 'unset'}}>{content}</DialogContent>
+    <DialogContent sx={{ padding: 'unset' }}>{content}</DialogContent>
   </Dialog>);
 }
 
@@ -26,22 +26,24 @@ const Info: React.FC<{ id: string, content: React.ReactNode }> = ({ id, content 
 }
 
 
-const TasksTableCell: React.FC<{ id: string, name?: string, tag?: string, info?: React.ReactNode }> = ({ id, name, tag, info }) => {
+const TasksTableCell: React.FC<{ id: string, name?: React.ReactNode, tag?: string, info?: React.ReactNode, maxWidth?: string }> = ({ id, name, tag, info, maxWidth }) => {
   const { setState } = useTable();
   const handleClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
     setState(prev => prev.withPopperOpen(id, !prev.popperOpen, event.currentTarget))
   }, [setState, id]);
-  
+
   if (!name) {
-    return <>-</>
+    return <>-</> 
   }
 
   return (<Box display='flex'>
-    <Info id={id} content={info}/>
+    <Info id={id} content={info} />
     {tag && <Box sx={{ mr: 0, minWidth: '50px', alignSelf: "center" }}>
-      <Chip label={tag} color="primary" variant="outlined" size="small" onClick={handleClick}/>
+      <Chip label={tag} color="primary" variant="outlined" size="small" onClick={handleClick} />
     </Box>}
-    <Box alignSelf="center"><Typography noWrap={true} fontSize="13px" fontWeight="400">{name}</Typography></Box>
+    {typeof name === 'string' ? <Box alignSelf="center" textOverflow="ellipsis" maxWidth={maxWidth}>
+      <Typography noWrap={true} fontSize="13px" fontWeight="400">{name}</Typography>
+    </Box> : name}
   </Box>);
 }
 export { TasksTableCell };

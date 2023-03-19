@@ -11253,6 +11253,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-resize-detector@npm:^8.0.4":
+  version: 8.0.4
+  resolution: "react-resize-detector@npm:8.0.4"
+  dependencies:
+    lodash: ^4.17.21
+  peerDependencies:
+    react: ^16.0.0 || ^17.0.0 || ^18.0.0
+    react-dom: ^16.0.0 || ^17.0.0 || ^18.0.0
+  checksum: f53a99cc5413844a6fc2a713b0b1094d23947897c14ab64481938632f4e77fadded52d91a6619055abf6240c7cacd6cc7dd492ea866639b302f81df680709d45
+  languageName: node
+  linkType: hard
+
 "react-scripts@npm:5.0.0":
   version: 5.0.0
   resolution: "react-scripts@npm:5.0.0"
@@ -12657,6 +12669,7 @@ __metadata:
     react: ^18.2.0
     react-dom: ^18.2.0
     react-intl: ^5.17.2
+    react-resize-detector: ^8.0.4
     react-scripts: 5.0.0
     react-swipeable-views: ^0.14.0
     resize-observer-polyfill: ^1.5.1

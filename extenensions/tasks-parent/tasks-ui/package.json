@@ -19,6 +19,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-intl": "^5.17.2",
+    "react-resize-detector": "^8.0.4",
     "react-swipeable-views": "^0.14.0",
     "resize-observer-polyfill": "^1.5.1",
     "types": "^0.1.1"
