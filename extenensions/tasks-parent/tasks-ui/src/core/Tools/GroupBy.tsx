@@ -25,9 +25,6 @@ export default function DenseMenu() {
   const handleClose = () => {
     setAnchorEl(null);
   };
-
-  console.log(ctx.state)
-
   return (<>
     <Button variant="outlined" color="secondary" sx={{ ml: 2 }} onClick={handleClick}>
       <GroupWorkIcon />

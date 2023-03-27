@@ -7,6 +7,7 @@ const en = {
   'buttons.edit': "Edit",
   'buttons.view': "View",
   'buttons.download': "Download",
+  '_nobody_': 'Unassigned',
 
 
 
@@ -38,7 +39,13 @@ const en = {
   'tasktable.header.spotlight.status.REJECTED': 'Rejected',
   'tasktable.header.spotlight.status.IN_PROGRESS': 'In progress',
   'tasktable.header.spotlight.status.COMPLETED': 'Completed',
-  'tasktable.header.spotlight.status.CREATED': 'Created'
+  'tasktable.header.spotlight.status.CREATED': 'Created',
+
+  'tasktable.header.spotlight.priority.MEDIUM': 'Medium',
+  'tasktable.header.spotlight.priority.LOW': 'Low',
+  'tasktable.header.spotlight.priority.HIGH': 'High',
+  
+  'tasktable.header.spotlight.no_group': 'All tasks',
 };
 
 export default en;

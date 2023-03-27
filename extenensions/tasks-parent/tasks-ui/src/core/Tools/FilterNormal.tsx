@@ -10,8 +10,8 @@ import FilterAltIcon from '@mui/icons-material/FilterAlt';
 import client from '@taskclient';
 
 
-const statustypes: client.TaskStatus[] = [ 'CREATED', 'IN_PROGRESS', 'COMPLETED', 'REJECTED' ];
-const prioritytypes: client.TaskPriority[] = [ 'HIGH', 'MEDIUM', 'LOW'];
+const statustypes: client.TaskStatus[] = ['CREATED', 'IN_PROGRESS', 'COMPLETED', 'REJECTED'];
+const prioritytypes: client.TaskPriority[] = ['HIGH', 'MEDIUM', 'LOW'];
 
 
 
@@ -33,12 +33,7 @@ export default function DenseMenu() {
     <Button variant="outlined" color="secondary" sx={{ ml: 2 }} onClick={handleClick}>
       <FilterAltIcon />
     </Button>
-
-
-    <Menu
-      sx={{ width: 320 }}
-      id="demo-positioned-menu"
-      aria-labelledby="demo-positioned-button"
+    <Menu sx={{ width: 320 }}
       anchorEl={anchorEl}
       open={open}
       onClose={handleClose}
@@ -60,13 +55,17 @@ export default function DenseMenu() {
           const selected = found ? found.type === 'FilterByStatus' && found.status.includes(type) : false
 
           if (selected) {
-            return <MenuItem key={type}><ListItemIcon><Check /></ListItemIcon>{type}</MenuItem>
+            return (<MenuItem key={type} onClick={() => {
+              handleClose();
+              ctx.setState(prev => prev.withFilterByStatus([type]));
+            }}><ListItemIcon><Check /></ListItemIcon>{type}</MenuItem>);
           }
           return <MenuItem key={type} onClick={() => {
             handleClose();
             ctx.setState(prev => prev.withFilterByStatus([type]));
-
-          }}><ListItemText inset>{type}</ListItemText></MenuItem>;
+          }}>
+            <ListItemText inset>{type}</ListItemText>
+          </MenuItem>;
         })}
 
 
@@ -80,12 +79,14 @@ export default function DenseMenu() {
           const selected = found ? found.type === 'FilterByPriority' && found.priority.includes(type) : false
 
           if (selected) {
-            return <MenuItem key={type}><ListItemIcon><Check /></ListItemIcon>{type}</MenuItem>
+            return <MenuItem key={type} onClick={() => {
+              handleClose();
+              ctx.setState(prev => prev.withFilterByPriority([type]));
+            }}><ListItemIcon><Check /></ListItemIcon>{type}</MenuItem>
           }
           return <MenuItem key={type} onClick={() => {
             handleClose();
             ctx.setState(prev => prev.withFilterByPriority([type]));
-
           }}><ListItemText inset>{type}</ListItemText></MenuItem>;
         })}
       </MenuList>

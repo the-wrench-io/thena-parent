@@ -7,8 +7,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Check from '@mui/icons-material/Check';
 import GroupsIcon from '@mui/icons-material/Groups';
+import client from '@taskclient';
+
 
 export default function DenseMenu() {
+  const ctx = client.useTasks();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -25,10 +29,7 @@ export default function DenseMenu() {
     </Button>
 
 
-    <Menu
-      sx={{ width: 320 }}
-      id="demo-positioned-menu"
-      aria-labelledby="demo-positioned-button"
+    <Menu sx={{ width: 320 }}
       anchorEl={anchorEl}
       open={open}
       onClose={handleClose}
@@ -43,38 +44,25 @@ export default function DenseMenu() {
     >
       <MenuList dense>
         <MenuItem>
-          <ListItemText><b>Filter by status</b></ListItemText>
+          <ListItemText><b>Filter by roles</b></ListItemText>
         </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Single</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>1.15</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Double</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon><Check /></ListItemIcon>Custom: 1.2
-        </MenuItem>
+        {Object.keys(ctx.state.pallette.roles).map(type => {
+          const found = ctx.state.filterBy.find(filter => filter.type === 'FilterByRoles');
+          const selected = found ? found.type === 'FilterByRoles' && found.roles.includes(type) : false
 
-        <Divider />
-
-        <MenuItem>
-          <ListItemText><b>Filter by priority</b></ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Single</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>1.15</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Double</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon><Check /></ListItemIcon>Custom: 1.2
-        </MenuItem>
+          if (selected) {
+            return (<MenuItem key={type} onClick={() => {
+              handleClose();
+              ctx.setState(prev => prev.withFilterByRoles([type]));
+            }}><ListItemIcon><Check /></ListItemIcon>{type}</MenuItem>);
+          }
+          return <MenuItem key={type} onClick={() => {
+            handleClose();
+            ctx.setState(prev => prev.withFilterByRoles([type]));
+          }}>
+            <ListItemText inset>{type}</ListItemText>
+          </MenuItem>;
+        })}
 
       </MenuList>
     </Menu>

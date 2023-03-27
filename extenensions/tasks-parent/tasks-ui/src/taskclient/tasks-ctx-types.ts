@@ -74,6 +74,7 @@ export interface TasksStatePallette {
 
 export interface TasksMutatorBuilder extends TasksState {
   withTasks(tasks: Task[]): TasksMutatorBuilder;
+  withSearchString(searchString: string): TasksMutatorBuilder;
   withGroupBy(groupBy: GroupBy): TasksMutatorBuilder;
   withFilterByStatus(status: TaskStatus[]): TasksMutatorBuilder;
   withFilterByPriority(priority: TaskPriority[]): TasksMutatorBuilder;

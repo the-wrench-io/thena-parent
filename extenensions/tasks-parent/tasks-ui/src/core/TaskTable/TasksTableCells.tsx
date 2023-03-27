@@ -66,11 +66,13 @@ const DueDate: React.FC<CellProps> = ({ row }) => {
 }
 const Status: React.FC<CellProps> = ({ row }) => {
   const intl = useIntl();
-  const value = intl.formatMessage({ id: `tasktable.header.spotlight.status.${row.status}` });
+  const value = intl.formatMessage({ id: `tasktable.header.spotlight.status.${row.status}` }).toUpperCase();
   return (<TasksTableCell id={row.id + "/Status"} name={value} />);
 }
 const Priority: React.FC<CellProps> = ({ row }) => {
-  return (<TasksTableCell id={row.id + "/Priority"} name={row.priority} />);
+  const intl = useIntl();
+  const value = intl.formatMessage({ id: `tasktable.header.spotlight.priority.${row.priority}` }).toUpperCase();
+  return (<TasksTableCell id={row.id + "/Priority"} name={value} />);
 }
 const Subject: React.FC<CellProps> = ({ row, maxWidth }) => {
   return (<TasksTableCell id={row.id + "/Subject"} name={row.subject} maxWidth={maxWidth}/>);

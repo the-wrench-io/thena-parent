@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, TableHead, TableCell, TableRow, TableSortLabel } from '@mui/material';
 
 import { visuallyHidden } from '@mui/utils';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, useIntl } from 'react-intl';
 
 import client from '@taskclient';
 
@@ -44,7 +44,7 @@ const SortableHeader: React.FC<{
 }
 
 const StyledSpotLight: React.FC<{ value: client.Group }> = ({ value }) => {
-
+  const intl = useIntl();
   const sx = { borderRadius: '8px 8px 0px 0px', boxShadow: "unset" };
   if (!value) {
     return (<Button color="primary" variant="contained" sx={sx}>Contained</Button>);
@@ -63,10 +63,12 @@ const StyledSpotLight: React.FC<{ value: client.Group }> = ({ value }) => {
   } else if (value.type === 'owners' || value.type === 'roles') {
     const backgroundColor = value.color;
     return (<Button variant="contained" sx={{ ...sx, backgroundColor }}>
-      {value.id}
+      {value.id === client._nobody_ ? intl.formatMessage({ id: value.id }) : value.id}
     </Button>);
   }
-  return (<Button color="primary" variant="contained" sx={sx}>Contained</Button>);
+  return (<Button color="primary" variant="contained" sx={sx}>
+    <FormattedMessage id={`tasktable.header.spotlight.no_group`} />
+  </Button>);
 }
 
 const DescriptorTableHeader: React.FC<{

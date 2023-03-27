@@ -1,17 +1,18 @@
 import * as React from 'react';
-import { Paper, Button, Menu, BadgeProps, Badge, styled } from '@mui/material';
-import Divider from '@mui/material/Divider';
+import { Button, Menu } from '@mui/material';
 import MenuList from '@mui/material/MenuList';
 import MenuItem from '@mui/material/MenuItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Check from '@mui/icons-material/Check';
-import FilterAltIcon from '@mui/icons-material/FilterAlt';
-
 import PersonIcon from '@mui/icons-material/Person';
+
+import client from '@taskclient';
 
 
 export default function DenseMenu() {
+  const ctx = client.useTasks();
+
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -28,10 +29,7 @@ export default function DenseMenu() {
     </Button>
 
 
-    <Menu
-      sx={{ width: 320 }}
-      id="demo-positioned-menu"
-      aria-labelledby="demo-positioned-button"
+    <Menu sx={{ width: 320 }}
       anchorEl={anchorEl}
       open={open}
       onClose={handleClose}
@@ -46,20 +44,26 @@ export default function DenseMenu() {
     >
       <MenuList dense>
         <MenuItem>
-          <ListItemText><b>Filter by Owners</b></ListItemText>
+          <ListItemText><b>Filter by owners</b></ListItemText>
         </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Single</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>1.15</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemText inset>Double</ListItemText>
-        </MenuItem>
-        <MenuItem>
-          <ListItemIcon><Check /></ListItemIcon>Custom: 1.2
-        </MenuItem>
+        {Object.keys(ctx.state.pallette.owners).map(type => {
+          const found = ctx.state.filterBy.find(filter => filter.type === 'FilterByOwners');
+          const selected = found ? found.type === 'FilterByOwners' && found.owners.includes(type) : false
+
+          if (selected) {
+            return (<MenuItem key={type} onClick={() => {
+              handleClose();
+              ctx.setState(prev => prev.withFilterByOwner([type]));
+            }}><ListItemIcon><Check /></ListItemIcon>{type}</MenuItem>);
+          }
+          return <MenuItem key={type} onClick={() => {
+            handleClose();
+            ctx.setState(prev => prev.withFilterByOwner([type]));
+          }}>
+            <ListItemText inset>{type}</ListItemText>
+          </MenuItem>;
+        })}
+
       </MenuList>
     </Menu>
   </>

@@ -9,6 +9,7 @@ import FilterNormal from './FilterNormal';
 import FilterOwners from './FilterOwners';
 import FilterRoles from './FilterRoles';
 import GroupBy from './GroupBy';
+import client from '@taskclient';
 
 
 
@@ -46,15 +47,16 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 const Tools: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const ctx = client.useTasks();
 
   return (<>
     <Sticky>
 
       <Search>
-        <SearchIconWrapper>
-          <SearchIcon />
-        </SearchIconWrapper>
-        <StyledInputBase placeholder="Search…" />
+        <SearchIconWrapper><SearchIcon /></SearchIconWrapper>
+        <StyledInputBase placeholder="Search…" onChange={({target}) => {
+          ctx.setState(prev => prev.withSearchString(target.value))
+        }}/>
       </Search>
       
       <GroupBy />

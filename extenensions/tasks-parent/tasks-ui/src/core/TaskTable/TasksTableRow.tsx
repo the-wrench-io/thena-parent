@@ -61,7 +61,7 @@ function getPriority(def: client.Group): SxProps | undefined {
   }
   if (def.type === 'priority') {
     const backgroundColor = def.color;
-    return { backgroundColor }
+    return { backgroundColor, borderWidth: 0, color: 'primary.contrastText' }
   }
   return undefined;
 }

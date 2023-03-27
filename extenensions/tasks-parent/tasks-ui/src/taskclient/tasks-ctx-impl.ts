@@ -1,7 +1,8 @@
 import { Task, TaskPriority, TaskStatus } from './client-types';
 import {
   PalleteType, TasksState, TasksMutatorBuilder, TaskDescriptor, FilterBy, Group, GroupBy,
-  RoleUnassigned, OwnerUnassigned, TasksStatePallette
+  RoleUnassigned, OwnerUnassigned, TasksStatePallette,
+  FilterByOwners, FilterByPriority, FilterByRoles, FilterByStatus
 } from './tasks-ctx-types';
 
 
@@ -115,18 +116,35 @@ class TasksStateBuilder implements TasksMutatorBuilder {
     withColors(roles).forEach(e => pallette.roles[e.value] = e.color);
     withColors(owners).forEach(e => pallette.owners[e.value] = e.color);
 
-    return new TasksStateBuilder({ ...this.clone(), 
+    return new TasksStateBuilder({
+      ...this.clone(),
       groupBy: this._groupBy,
-      roles, owners, 
-      pallette, 
-      tasks, 
-      filtered, 
-      groups: grouping.build() });
+      roles, owners,
+      pallette,
+      tasks,
+      filtered,
+      groups: grouping.build()
+    });
+  }
+  withSearchString(searchString: string): TasksMutatorBuilder {
+    const cleaned = searchString.toLowerCase();
+    const grouping = new GroupVisitor({ groupBy: this._groupBy, roles: this._roles, owners: this._owners });
+    const filtered: TaskDescriptor[] = [];
+    for (const value of this._tasks) {
+      if (!applyDescFilters(value, this._filterBy)) {
+        continue;
+      }
+      if(!applySearchString(value, cleaned)) {
+        continue;
+      }
+      filtered.push(value);
+      grouping.visit(value);
+    }
+    return new TasksStateBuilder({ ...this.clone(), filterBy: this._filterBy, filtered, groups: grouping.build(), searchString: cleaned });
   }
   withGroupBy(groupBy: GroupBy): TasksStateBuilder {
     const grouping = new GroupVisitor({ groupBy, roles: this._roles, owners: this._owners });
     this._filtered.forEach(value => grouping.visit(value))
-    
     return new TasksStateBuilder({ ...this.clone(), groupBy, groups: grouping.build() });
   }
   withFilterByStatus(status: TaskStatus[]): TasksStateBuilder {
@@ -141,7 +159,9 @@ class TasksStateBuilder implements TasksMutatorBuilder {
   withFilterByRoles(roles: string[]): TasksStateBuilder {
     return this.withFilterBy({ type: 'FilterByRoles', roles, disabled: false });
   }
-
+  withoutFilters(): TasksStateBuilder {
+    return this.withFilterBy(undefined);
+  }
   clone(): ExtendedInit {
     const init = this;
     return {
@@ -158,7 +178,7 @@ class TasksStateBuilder implements TasksMutatorBuilder {
   }
 
 
-  private withFilterBy(input: FilterBy): TasksStateBuilder {
+  private withFilterBy(input: FilterBy | undefined): TasksStateBuilder {
     const filterBy = this.createFilters(input);
     const grouping = new GroupVisitor({ groupBy: this._groupBy, roles: this._roles, owners: this._owners });
     const filtered: TaskDescriptor[] = [];
@@ -172,7 +192,11 @@ class TasksStateBuilder implements TasksMutatorBuilder {
     return new TasksStateBuilder({ ...this.clone(), filterBy, filtered, groups: grouping.build() });
   }
 
-  private createFilters(input: FilterBy): FilterBy[] {
+  private createFilters(input: FilterBy | undefined): FilterBy[] {
+    if (!input) {
+      return [];
+    }
+
     let filter = this._filterBy.find(v => v.type === input.type);
     // not created
     if (!filter) {
@@ -182,15 +206,82 @@ class TasksStateBuilder implements TasksMutatorBuilder {
     const result: FilterBy[] = [];
     for (const v of this._filterBy) {
       if (v.type === input.type) {
-        result.push(input);
+        const merged = this.mergeFilters(v, input);
+        if(merged) {
+          result.push(merged);          
+        }
       } else {
         result.push(v);
       }
     }
     return result;
   }
+
+  private mergeFilters(previous: FilterBy, next: FilterBy): FilterBy | undefined {
+    switch (previous.type) {
+      case 'FilterByOwners': {
+        const a = previous as FilterByOwners;
+        const b = next as FilterByOwners;
+        const merged: FilterByOwners = {
+          disabled: b.disabled,
+          type: 'FilterByOwners',
+          owners: filterItems(a.owners, b.owners),
+        };
+        return merged.owners.length === 0 ? undefined : merged;
+      }
+      case 'FilterByRoles': {
+        const a = previous as FilterByRoles;
+        const b = next as FilterByRoles;
+        const merged: FilterByRoles = {
+          disabled: b.disabled,
+          type: 'FilterByRoles',
+          roles: filterItems(a.roles, b.roles),
+        };
+        return merged.roles.length === 0 ? undefined : merged;
+      }
+      case 'FilterByPriority': {
+        const a = previous as FilterByPriority;
+        const b = next as FilterByPriority;
+        const merged: FilterByPriority = {
+          disabled: b.disabled,
+          type: 'FilterByPriority',
+          priority: filterItems(a.priority, b.priority),
+        };
+        return merged.priority.length === 0 ? undefined : merged;
+      }
+      case 'FilterByStatus': {
+        const a = previous as FilterByStatus;
+        const b = next as FilterByStatus;
+        const merged: FilterByStatus = {
+          disabled: b.disabled,
+          type: 'FilterByStatus',
+          status: filterItems(a.status, b.status),
+        };
+        return merged.status.length === 0 ? undefined : merged;
+      }
+    }
+  }
 }
 
+function filterItems<T>(previous: T[], next: T[]) {
+  const result: T[] = [];
+  for (const item of previous) {
+    if (next.includes(item)) {
+      continue;
+    } else {
+      result.push(item);
+    }
+  }
+
+  for (const item of next) {
+    if (previous.includes(item)) {
+      continue;
+    } else {
+      result.push(item);
+    }
+  }
+  return result;
+}
 
 class GroupVisitor {
   private _groupBy: GroupBy;
@@ -202,9 +293,10 @@ class GroupVisitor {
   }) {
     this._groupBy = init.groupBy;
     this._groups = {};
-    console.log("INIT", init);
-    
-    if (init.groupBy === 'owners') {
+
+    if (init.groupBy === 'none') {
+      this._groups[init.groupBy] = { records: [], color: '', id: init.groupBy, type: init.groupBy }
+    } else if (init.groupBy === 'owners') {
       withColors(init.owners).forEach(o => this._groups[o.value] = { records: [], color: o.color, id: o.value, type: init.groupBy })
     } else if (init.groupBy === 'roles') {
       withColors(init.roles).forEach(o => this._groups[o.value] = { records: [], color: o.color, id: o.value, type: init.groupBy })
@@ -222,7 +314,9 @@ class GroupVisitor {
   }
 
   public visit(task: TaskDescriptor) {
-    if (this._groupBy === 'owners') {
+    if (this._groupBy === 'none') {
+      this._groups[this._groupBy].records.push(task);
+    } else if (this._groupBy === 'owners') {
       if (task.owners.length) {
         task.owners.forEach(o => this._groups[o].records.push(task));
       } else {
@@ -279,6 +373,11 @@ function applyDescFilters(desc: TaskDescriptor, filters: FilterBy[]): boolean {
   return true;
 }
 
+function applySearchString(desc: TaskDescriptor, searchString: string): boolean {
+  const description: boolean = desc.description?.toLowerCase().indexOf(searchString) > -1;
+  return desc.subject.toLowerCase().indexOf(searchString) > -1 || description;
+}
+
 function applyDescFilter(desc: TaskDescriptor, filter: FilterBy): boolean {
   switch (filter.type) {
     case 'FilterByOwners': {
@@ -331,5 +430,5 @@ function withColors<T>(input: T[]): { color: string, value: T }[] {
 }
 
 
-export { TaskDescriptorImpl, TasksStateBuilder, Pallette };
+export { TaskDescriptorImpl, TasksStateBuilder, Pallette, _nobody_ };
 export type { };
