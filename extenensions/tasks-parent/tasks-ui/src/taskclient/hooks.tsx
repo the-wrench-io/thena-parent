@@ -6,6 +6,9 @@ import { ComposerContext, ComposerContextType, ClientContextType, ClientContext 
 import ArticleTabIndicator from './Components/ArticleTabIndicator';
 import { TasksContext } from './tasks-ctx';
 import { TasksContextType } from './tasks-ctx-types';
+import { OrgContext } from './org-ctx';
+import { OrgContextType } from './org-ctx-types';
+
 
 const isDocumentSaved = (entity: Document, ide: ComposerContextType): boolean => {
   const unsaved = Object.values(ide.session.pages).filter(p => !p.saved).filter(p => p.origin.id === entity.id);
@@ -50,7 +53,10 @@ export const useTasks = () => {
   const result: TasksContextType = React.useContext(TasksContext);
   return result;
 }
-
+export const useOrg = () => {
+  const result: OrgContextType = React.useContext(OrgContext);
+  return result;
+}
 export const useBackend = () => {
   const result: ClientContextType = React.useContext(ClientContext);
   return result;

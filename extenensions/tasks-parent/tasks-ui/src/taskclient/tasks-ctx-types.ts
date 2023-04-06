@@ -1,4 +1,4 @@
-import { Task, TaskPriority, TaskStatus } from './client-types';
+import { Task, TaskPriority, TaskStatus, TaskExtension } from './client-types';
 
 export interface TaskDescriptor {
   entry: Task;
@@ -11,7 +11,9 @@ export interface TaskDescriptor {
   owners: string[];
   labels: string[];
   subject: string;
+  dialobId: string;
   description: string;
+  uploads: TaskExtension[]
 }
 
 export interface PalleteType {
@@ -25,6 +27,10 @@ export interface PalleteType {
     'IN_PROGRESS': string,
     'COMPLETED': string,
     'CREATED': string,
+  },
+  mywork: {
+    review: string,
+    upload: string
   },
   colors: { red: string, green: string, yellow: string, blue: string, violet: string }
 }
@@ -58,6 +64,7 @@ export interface Group {
 
 export interface TasksState {
   tasks: TaskDescriptor[];
+  tasksByOwner: Record<string, TaskDescriptor[]>;
   groupBy: GroupBy;
   groups: Group[];
   filterBy: FilterBy[];

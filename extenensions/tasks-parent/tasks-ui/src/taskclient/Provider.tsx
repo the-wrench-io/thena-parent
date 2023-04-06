@@ -6,6 +6,7 @@ import { Client, HeadState } from './client-types';
 import { ClientContext, ComposerContext } from './client-ctx';
 import RequireProject from './Components/RequireProject';
 import { TasksProvider } from './tasks-ctx';
+import { OrgProvider } from './org-ctx';
 
 const Provider: React.FC<{ children: React.ReactNode, service: Client, head?: HeadState }> = ({ children, service, head }) => {
   const [session, dispatch] = React.useState<SessionData>(initSession);
@@ -33,8 +34,10 @@ const Provider: React.FC<{ children: React.ReactNode, service: Client, head?: He
     <ClientContext.Provider value={service}>
       <ComposerContext.Provider value={contextValue}>
         <TasksProvider backend={service}>
-          {session.head.contentType === 'NOT_CREATED' ? <RequireProject /> : undefined}
-          {children}
+          <OrgProvider backend={service}>
+            {session.head.contentType === 'NOT_CREATED' ? <RequireProject /> : undefined}
+            {children}
+          </OrgProvider>
         </TasksProvider>
       </ComposerContext.Provider>
     </ClientContext.Provider>);

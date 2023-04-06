@@ -1,11 +1,12 @@
 import React from 'react';
 import { Chip, Box, Typography, Dialog, DialogContent } from '@mui/material';
-import { useTable } from './table-ctx';
+import client from '@taskclient';
+
 
 
 
 const StyledPopper: React.FC<{ id: string, content: React.ReactNode }> = ({ id, content }) => {
-  const { state, setState } = useTable();
+  const { state, setState } = client.useTable();
   const { popperOpen, popperId } = state;
   const open = popperOpen && popperId === id;
   const handleClose = React.useCallback((_event: React.MouseEvent<HTMLButtonElement>) => {
@@ -27,7 +28,7 @@ const Info: React.FC<{ id: string, content: React.ReactNode }> = ({ id, content 
 
 
 const TasksTableCell: React.FC<{ id: string, name?: React.ReactNode, tag?: string, info?: React.ReactNode, maxWidth?: string }> = ({ id, name, tag, info, maxWidth }) => {
-  const { setState } = useTable();
+  const { setState } = client.useTable();
   const handleClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
     setState(prev => prev.withPopperOpen(id, !prev.popperOpen, event.currentTarget))
   }, [setState, id]);

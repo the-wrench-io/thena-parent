@@ -1,7 +1,6 @@
 import React from 'react';
-import { Box, Button, TableHead, TableCell, TableRow, TableSortLabel } from '@mui/material';
+import { Button, TableHead, TableCell, TableRow } from '@mui/material';
 
-import { visuallyHidden } from '@mui/utils';
 import { FormattedMessage, useIntl } from 'react-intl';
 
 import client from '@taskclient';
@@ -21,27 +20,6 @@ const headCells: readonly HeadCell[] = [
 
 
 
-const SortableHeader: React.FC<{
-  id: keyof client.TaskDescriptor,
-  content: client.TablePagination<client.TaskDescriptor>,
-  setContent: React.Dispatch<React.SetStateAction<client.TablePagination<client.TaskDescriptor>>>
-}> = ({ id, content, setContent }) => {
-
-  const { order, orderBy } = content;
-
-  const createSortHandler = (property: keyof client.TaskDescriptor) =>
-    (_event: React.MouseEvent<unknown>) => setContent(prev => prev.withOrderBy(property))
-
-  return (
-    <TableCell key={id} align='left' padding='none' sortDirection={orderBy === id ? order : false}>
-
-      <TableSortLabel active={orderBy === id} direction={orderBy === id ? order : 'asc'} onClick={createSortHandler(id)}>
-        <FormattedMessage id={`tasktable.header.${id}`} />
-        {orderBy === id ? (<Box component="span" sx={visuallyHidden}>{order === 'desc' ? 'sorted descending' : 'sorted ascending'}</Box>) : null}
-      </TableSortLabel>
-    </TableCell>
-  );
-}
 
 const StyledSpotLight: React.FC<{ value: client.Group }> = ({ value }) => {
   const intl = useIntl();
@@ -83,7 +61,7 @@ const DescriptorTableHeader: React.FC<{
         <TableCell align='left' padding='none'>
           <StyledSpotLight value={def} />
         </TableCell>
-        {headCells.map((headCell) => (<SortableHeader key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
+        {headCells.map((headCell) => (<client.Styles.TableHeaderSortable key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
       </TableRow>
     </TableHead>
   );

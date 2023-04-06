@@ -2,12 +2,22 @@ import { ServiceImpl as ServiceImplAs } from './client';
 import { DefaultStore as DefaultStoreAs } from './client-store';
 
 import { TablePagination, TablePagination as TablePaginationAs } from './table-pagination';
+import * as Styled from './Styled';
+
+import { 
+  DescriptorTableStateBuilder, DescriptorTableContextType, DescriptorTableState, 
+  Provider as TableProviderAs, 
+  useTable as useTableAs,
+  CustomTable
+} from './table-ctx';
+
+//export { Provider, useTable };
+//export type { DescriptorTableStateBuilder, DescriptorTableContextType, DescriptorTableState };
 
 import {
-  ClientEntity,
   HeadState,
   ClientError, CreateBuilder, Client, StoreConfig, Store,
-  TaskId, Task, TaskPriority, TaskStatus, ClientEntityType, ProgramMessage
+  TaskId, Task, TaskPriority, TaskStatus, ProgramMessage, Org, User
 } from './client-types';
 
 import {
@@ -42,12 +52,13 @@ import * as Hooks from './hooks';
 
 
 declare namespace TaskClient {
+  export type { DescriptorTableStateBuilder, DescriptorTableContextType, DescriptorTableState };
   export type { TablePagination };
   export type { ClientContextType, ComposerContextType };
   export type {
-    ClientEntity, TaskId, Task, TaskPriority, TaskStatus, HeadState,
+    TaskId, Task, TaskPriority, TaskStatus, HeadState,
     ClientError, CreateBuilder, Client, StoreConfig, Store,
-    ClientEntityType,
+    Org, User,
     ProgramMessage
   }
 
@@ -72,20 +83,33 @@ declare namespace TaskClient {
 
 
 namespace TaskClient {
+  export const TableProvider = TableProviderAs;
   export const TablePaginationImpl = TablePaginationAs;
   export const ServiceImpl = ServiceImplAs;
   export const DefaultStore = DefaultStoreAs;
   export const StoreErrorImpl = StoreErrorImplAs;
   export const Error = ErrorView;
   export const Provider = ProviderImpl;
+  export const useTable = useTableAs;
   export const useBackend = Hooks.useBackend;
   export const useTasks = Hooks.useTasks;
+  export const useOrg = Hooks.useOrg;
   export const useSite = Hooks.useSite;
   export const useUnsaved = Hooks.useUnsaved;
   export const useComposer = Hooks.useComposer;
   export const useSession = Hooks.useSession;
   export const useNav = Hooks.useNav;
   export const _nobody_ = taskCtxImpl._nobody_;
+  export const Styles = {
+    Table: CustomTable,
+    TableCell: Styled.StyledTableCell,
+    TableBody: Styled.StyledTableBody,
+    TableRowEmpty: Styled.StyledEmptyTableRow,
+    TableHeaderSortable: Styled.StyledSortableHeader,
+    lineHeight: Styled.lineHeight,
+    lineHeightLarge: Styled.lineHeightLarge,
+    
+  }; 
 }
 
 export default TaskClient;

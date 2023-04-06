@@ -75,6 +75,9 @@ public class TestResource {
       .owners(provider.getOwners())
       .status(provider.getStatus())
       .userId("demo-gen-1")
+      .addAllExtensions(provider.getExtensions())
+      .addAllExternalComments(provider.getExtComments())
+      .addAllInternalComments(provider.getIntComments())
       .build();
       bulk.add(newTask);
     }

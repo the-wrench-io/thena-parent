@@ -7,7 +7,7 @@ import TaskClient from '@taskclient';
 
 import Activities from './Activities';
 import Tasks from './Tasks';
-
+import MyWork from './MyWork';
 
 const root: SxProps = { height: `100%`, backgroundColor: "mainContent.main" };
 
@@ -34,7 +34,9 @@ const Main: React.FC<{}> = () => {
     } 
     if (active.id === 'tasks') {
       return (<Box sx={root}><Tasks /></Box>);  
-    }     
+    } else if (active.id === 'mytasks') {
+      return (<Box sx={root}><MyWork /></Box>);  
+    }
     if (entity) {
       return <Box sx={root}>entity editor: {JSON.stringify(active)}</Box>
     }

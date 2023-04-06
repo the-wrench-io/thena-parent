@@ -1,4 +1,4 @@
-import { Task, TaskPriority, TaskStatus } from './client-types';
+import { Task, TaskExtension, TaskPriority, TaskStatus } from './client-types';
 import {
   PalleteType, TasksState, TasksMutatorBuilder, TaskDescriptor, FilterBy, Group, GroupBy,
   RoleUnassigned, OwnerUnassigned, TasksStatePallette,
@@ -28,6 +28,10 @@ const Pallette: PalleteType = {
     'COMPLETED': steelblue,
     'CREATED': ultraviolet,
   },
+  mywork: {
+    review: ultraviolet,
+    upload: bittersweet
+  },
   colors: { red: bittersweet, green: emerald, yellow: sunglow, blue: steelblue, violet: ultraviolet }
 };
 
@@ -46,6 +50,7 @@ interface ExtendedInit extends TasksState {
 
 class TasksStateBuilder implements TasksMutatorBuilder {
   private _tasks: TaskDescriptor[];
+  private _tasksByOwner: Record<string, TaskDescriptor[]>;
   private _filtered: TaskDescriptor[];
   private _groupBy: GroupBy;
   private _groups: Group[];
@@ -57,6 +62,7 @@ class TasksStateBuilder implements TasksMutatorBuilder {
 
   constructor(init: ExtendedInit) {
     this._tasks = init.tasks;
+    this._tasksByOwner = init.tasksByOwner;
     this._groupBy = init.groupBy;
     this._groups = init.groups;
     this._filterBy = init.filterBy;
@@ -75,13 +81,18 @@ class TasksStateBuilder implements TasksMutatorBuilder {
   get filterBy(): FilterBy[] { return this._filterBy };
   get searchString(): string | undefined { return this._searchString };
   get filtered(): TaskDescriptor[] { return this._filtered };
+  get tasksByOwner(): Record<string, TaskDescriptor[]> { return this._tasksByOwner };
 
   withTasks(input: Task[]): TasksStateBuilder {
     const tasks: TaskDescriptor[] = [];
     const roles: string[] = [_nobody_];
     const owners: string[] = [_nobody_];
+    const tasksByOwner: Record<string, TaskDescriptor[]> = {};
+    
     input.forEach(task => {
-      tasks.push(new TaskDescriptorImpl(task));
+      const item = new TaskDescriptorImpl(task);
+      tasks.push(item);
+      
       task.roles.forEach(role => {
         if (!roles.includes(role)) {
           roles.push(role)
@@ -91,7 +102,21 @@ class TasksStateBuilder implements TasksMutatorBuilder {
         if (!owners.includes(owner)) {
           owners.push(owner)
         }
+        
+        if(!tasksByOwner[owner]) {
+          tasksByOwner[owner] = [];
+        }
+        tasksByOwner[owner].push(item);
+        
       });
+      
+      if(task.owners.length === 0) {
+        if(!tasksByOwner[_nobody_]) {
+          tasksByOwner[_nobody_] = [];
+        }
+        tasksByOwner[_nobody_].push(item);
+      }
+      
     });
 
     owners.sort();
@@ -123,7 +148,8 @@ class TasksStateBuilder implements TasksMutatorBuilder {
       pallette,
       tasks,
       filtered,
-      groups: grouping.build()
+      groups: grouping.build(),
+      tasksByOwner
     });
   }
   withSearchString(searchString: string): TasksMutatorBuilder {
@@ -166,6 +192,7 @@ class TasksStateBuilder implements TasksMutatorBuilder {
     const init = this;
     return {
       tasks: init.tasks,
+      tasksByOwner: init.tasksByOwner,
       groupBy: init.groupBy,
       groups: init.groups,
       filterBy: init.filterBy,
@@ -339,14 +366,19 @@ class GroupVisitor {
 class TaskDescriptorImpl implements TaskDescriptor {
   private _entry: Task;
   private _created: Date;
+  private _dialobId: string;
   private _dueDate: Date | undefined;
-
+  private _uploads: TaskExtension[];
+  
   constructor(entry: Task) {
     this._entry = entry;
     this._created = new Date(entry.created);
     this._dueDate = entry.dueDate ? new Date(entry.dueDate) : undefined;
+    this._dialobId = entry.extensions.find(t => t.type === 'dialob')!.body;
+    this._uploads = entry.extensions.filter(t => t.type === 'upload');
   }
   get id() { return this._entry.id }
+  get dialobId() { return this._dialobId }
   get entry() { return this._entry }
   get created() { return this._created }
   get dueDate() { return this._dueDate }
@@ -358,6 +390,7 @@ class TaskDescriptorImpl implements TaskDescriptor {
   get labels() { return this._entry.labels }
   get subject() { return this._entry.subject }
   get description() { return this._entry.description }
+  get uploads() { return this._uploads }
 }
 
 function applyDescFilters(desc: TaskDescriptor, filters: FilterBy[]): boolean {

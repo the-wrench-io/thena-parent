@@ -15,8 +15,26 @@ const en = {
 
   'activities.title': 'Activities',
   'activities.desc': ' ',
-  'activities.tasks.title': 'Tasks',
-  'activities.tasks.desc': 'Manage tasks',
+
+  'activities.tasks.title': 'Admin board',
+  'activities.tasks.desc': 'See and manage everything',
+
+  'activities.group.title': 'Group Todo',
+  'activities.group.desc': 'See all tasks that are assigned to my group but nobody is working on',
+
+  'activities.mytasks.title': 'My Work',
+  'activities.mytasks.desc': 'All of my tasks that I am working on',
+
+  'activities.myhistory.title': 'My history',
+  'activities.myhistory.desc': 'See everything I have ever done',
+  
+  'activities.search.title': 'Search...',
+  'activities.search.desc': 'Search from everything ever done',
+  
+  'activities.reporting.title': 'Reporting',
+  'activities.reporting.desc': 'Generate json report of data. Allows grouping and filtering.',
+  
+  'mywork.button.review': 'Review Form',
 
   'project.dialog.requireProject.createdMessage': 'Project successfully created',
   'project.dialog.requireProject.errorsTitle': 'Errors while creating project',
@@ -28,6 +46,11 @@ const en = {
 
   'explorer.title': 'Digiexpress task managment',
   'explorer.tasks': "View and search tasks",
+  
+  'mywork.table.header': 'My Work',
+  'mywork.table.header.subject': 'Subject',
+  'mywork.table.header.description': 'Description',
+  'mywork.table.header.dueDate': 'Due date',
 
   'tasktable.header.subject': 'Subject',
   'tasktable.header.priority': 'Priority',

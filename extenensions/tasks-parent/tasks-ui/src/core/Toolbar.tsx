@@ -4,15 +4,10 @@ import { Tabs, Tab, Box, TabProps, TabsProps } from '@mui/material';
 import { styled } from "@mui/material/styles";
 
 
-import { FormattedMessage } from 'react-intl';
 import FlipToFrontOutlinedIcon from '@mui/icons-material/FlipToFrontOutlined';
-import ArticleOutlinedIcon from '@mui/icons-material/ArticleOutlined';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import HelpOutlineOutlinedIcon from '@mui/icons-material/HelpOutlineOutlined';
-import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
-import SaveIcon from '@mui/icons-material/Save';
 import FeedbackOutlinedIcon from '@mui/icons-material/FeedbackOutlined';
-import { useSnackbar } from 'notistack';
 
 import Burger from '@the-wrench-io/react-burger';
 import DeClient from '@taskclient';
@@ -43,7 +38,6 @@ const Toolbar: React.FC<{}> = () => {
   const drawer = Burger.useDrawer();
   const tabs = Burger.useTabs();
   const secondary = Burger.useSecondary();
-  const { enqueueSnackbar } = useSnackbar();
   
   const tabActions = tabs.actions;  
   const drawerOpen = drawer.session.drawer;
@@ -111,7 +105,6 @@ const Toolbar: React.FC<{}> = () => {
           value={secondary.session.secondary}>
 
           <StyledTab value='toolbar.activities' icon={<DashboardIcon />} />
-          <StyledTab value='toolbar.tasks' icon={<SearchOutlinedIcon />} />
           <StyledTab value='toolbar.help' icon={<HelpOutlineOutlinedIcon />} />
           <StyledTab value='toolbar.expand' icon={<FlipToFrontOutlinedIcon />} />
           <StyledTab value='feedback' icon={<FeedbackOutlinedIcon />} />

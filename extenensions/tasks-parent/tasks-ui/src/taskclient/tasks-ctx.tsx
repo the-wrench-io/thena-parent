@@ -14,6 +14,7 @@ const init: TasksMutatorBuilder = new TasksStateBuilder({
   filtered: [],
   groups: [],
   tasks: [],
+  tasksByOwner: {},
   searchString: undefined,
   pallette: {
     roles: {},
@@ -43,6 +44,7 @@ const TasksProvider: React.FC<{ children: React.ReactNode, backend: Client }> = 
     });
     
   }, [loading, setLoading]);
+  
 
   return (<TasksContext.Provider value={contextValue}>{children}</TasksContext.Provider>);
 };

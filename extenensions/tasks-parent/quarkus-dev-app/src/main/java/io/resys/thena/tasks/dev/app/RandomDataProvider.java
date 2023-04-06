@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.dev.app;
 
+import java.time.LocalDateTime;
+
 /*-
  * #%L
  * thena-quarkus-dev-app
@@ -21,12 +23,19 @@ package io.resys.thena.tasks.dev.app;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
+import io.resys.thena.tasks.client.api.model.ImmutableTaskComment;
+import io.resys.thena.tasks.client.api.model.ImmutableTaskExtension;
 import io.resys.thena.tasks.client.api.model.Task.Priority;
 import io.resys.thena.tasks.client.api.model.Task.Status;
+import io.resys.thena.tasks.client.api.model.Task.TaskComment;
+import io.resys.thena.tasks.client.api.model.Task.TaskExtension;
 
 public class RandomDataProvider {
 
@@ -37,7 +46,18 @@ public class RandomDataProvider {
       2, "water-department",
       3, "education-department",
       4, "elderly-care-department",
-      5, "sanitization-department"); 
+      5, "sanitization-department"
+      ); 
+  
+
+  private final Map<Integer, String> DOCS = Map.of(
+      0, "file-01.pdf",
+      1, "file-21.pdf",
+      2, "file-6.pdf",
+      3, "file-9.pdf",
+      4, "file-31.pdf"
+      ); 
+  
   
   private final Map<Integer, String> OWNERS = Map.of(
       1, "sam vimes",
@@ -54,11 +74,11 @@ public class RandomDataProvider {
       5, "General message"); 
 
   private final Map<Integer, String> SSN = Map.of(
-      1, "Anette Lampen - 121097-676M",
-      2, "Piia-Noora Salmelainen - 131274-780A",
-      3, "Arto Hakola - 170344-6999",
-      4, "Kyllikki Multala - 270698-194T",
-      5, "Pentti Parviainen - 171064-319U"); 
+      1, "Anette Lampen - 121097-676M, anette.lampen@resys.io, Jalonkatu 56, 90120, OULU",
+      2, "Piia-Noora Salmelainen - 131274-780A, piia.noora.salmelainen@resys.io, tawastintie 43, 15300, LAHTI",
+      3, "Arto Hakola - 170344-6999, arto.hakola@resys.io, Kajaaninkatu 29, 2120, ESPOO",
+      4, "Kyllikki Multala - 270698-194T, kyllikki.multala@resys.io, Pohjoisesplanadi 49, 240, HELSINKI",
+      5, "Pentti Parviainen - 171064-319U, pentti.parviainen@resys.io, Ilmalankuja 98, 28500, PORI"); 
   
   
   
@@ -68,13 +88,11 @@ public class RandomDataProvider {
   }
   
   public String getDescription() {
-    return "Long text description....";
+    return SSN.get(nextInt(1, SSN.size()));
   }
   
   public String getSubject() {
-    final var subject = SUBJECTS.get(nextInt(1, SUBJECTS.size()));
-    final var ssn = SSN.get(nextInt(1, SSN.size()));
-    return subject + " " + ssn;
+    return SUBJECTS.get(nextInt(1, SUBJECTS.size()));
   }
 
   public List<String> getRoles() {
@@ -108,6 +126,59 @@ public class RandomDataProvider {
       } while(defined);
     }
     return owners;
+  }
+  
+  public List<TaskComment> getExtComments() {
+    if(nextInt(1, 2) == 2) {
+      final var result = new ArrayList<TaskComment>();
+      final var total = nextInt(1, 5);
+      for(var index = 0; index < total; index++) {
+        result.add(ImmutableTaskComment.builder()
+            .created(LocalDateTime.now())
+            .username("random-data-gen")
+            .id(UUID.randomUUID().toString())
+            .commentText("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+            .build());
+      }
+    }
+    
+    return Collections.emptyList();    
+  }
+  
+  public List<TaskComment> getIntComments() {
+    if(nextInt(1, 2) == 2) {
+      final var result = new ArrayList<TaskComment>();
+      final var total = nextInt(1, 3);
+      for(var index = 0; index < total; index++) {
+        result.add(ImmutableTaskComment.builder()
+            .created(LocalDateTime.now())
+            .username("random-data-gen")
+            .id(UUID.randomUUID().toString())
+            .commentText("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
+            .build());
+      }
+    }
+    
+    return Collections.emptyList();
+  }
+  
+  public List<TaskExtension> getExtensions() {
+    final var dialob = ImmutableTaskExtension.builder()
+      .id(UUID.randomUUID().toString())
+      .type("dialob")
+      .body("dialob-content")
+      .name("dialob-form")
+      .build();
+    if(nextInt(1, 2) == 2) {
+      final var pdf = ImmutableTaskExtension.builder()
+          .id(UUID.randomUUID().toString())
+          .type("upload")
+          .body("")
+          .name(DOCS.get(nextInt(1, DOCS.size()) -1))
+          .build();
+      return Arrays.asList(dialob, pdf);
+    }
+    return Arrays.asList(dialob);
   }
 
   public Priority getPriority() {

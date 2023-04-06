@@ -62,6 +62,7 @@ public interface Task extends Document {
   interface TaskExtension extends Serializable {
     String getId();
     String getType();
+    String getName();
     String getBody();
   }
   
