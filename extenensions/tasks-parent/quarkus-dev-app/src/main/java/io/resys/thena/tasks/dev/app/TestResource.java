@@ -2,6 +2,7 @@ package io.resys.thena.tasks.dev.app;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 
 /*-
  * #%L
@@ -30,11 +31,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
+import io.quarkus.vertx.http.Compressed;
 import io.resys.thena.tasks.client.api.TasksClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import lombok.Builder;
@@ -115,10 +116,11 @@ public class TestResource {
         .onItem().transform(created -> HeadState.builder().created(created).build());
   }
   
+  @Compressed
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("active/tasks")
-  public Multi<Task> findAllActiveTasks() {
-    return client.query().active().findAll();
+  public Uni<List<Task>> findAllActiveTasks() {
+    return client.query().active().findAll().collect().asList();
   }
 }

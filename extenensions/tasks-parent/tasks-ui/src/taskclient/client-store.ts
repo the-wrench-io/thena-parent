@@ -14,6 +14,7 @@ class DefaultStore implements Store {
     this._defRef = {
       method: "GET",
       credentials: 'same-origin',
+      keepalive: true,
       headers: {
         "Content-Type": "application/json;charset=UTF-8"
       }
@@ -82,43 +83,57 @@ class DefaultStore implements Store {
     }
     const url = this._config.url;
     const finalInit: RequestInit & { notFound?: () => T } = Object.assign({}, this._defRef, req ? req : {});
-    const response = await fetch(url + path, finalInit);
-    if (response.status === 302) {
-      throw Error(`Response error, status: ${response.status}, statusText: ${response.statusText}`);
-    }
-    if (response.status === 404) {
-      if (finalInit.notFound) {
-        return finalInit.notFound();
+    return fetch(url + path, finalInit).then(response => {
+      if (response.status === 302) {
+        console.error("302", path);
+        throw Error(`Response error, status: ${response.status}, statusText: ${response.statusText}`);
       }
-      throw Error(`Response error, status: ${response.status}, statusText: ${response.statusText}`)
-    }
-    if (response.status === 401) {
-      const response_1 = await this.handle401().then(() => fetch(url + path, finalInit));
-      if (response_1.ok) {
-        return response_1.json();
+      if (response.status === 404) {
+        if (finalInit.notFound) {
+          console.error("404", path);
+          return finalInit.notFound();
+        }
+        throw Error(`Response error, status: ${response.status}, statusText: ${response.statusText}`)
       }
-      
-      return response_1.json().then(data => {
-        console.error(data);
-        throw new StoreErrorImpl({
-          text: response_1.statusText,
-          status: response_1.status,
-          errors: data
-        });
-      });
-    }
+      if (response.status === 401) {
+        console.error("401", path);
+        return this.handle401().then(() => fetch(url + path, finalInit))
+          .then(response_1 => {
+            if (response_1.ok) {
+              return response_1.json();
+            }
+            return response_1.json().then(data => {
+              console.error(data);
+              throw new StoreErrorImpl({
+                text: response_1.statusText,
+                status: response_1.status,
+                errors: data
+              });
+            });
+          });
 
-    if (!response.ok) {
-      return response.json().then(data_1 => {
-        console.error(data_1);
-        throw new StoreErrorImpl({
-          text: response.statusText,
-          status: response.status,
-          errors: data_1
+      }
+
+      if (!response.ok) {
+        console.error("Not ok", path);
+        return response.json().then(data_1 => {
+          console.error(data_1);
+          throw new StoreErrorImpl({
+            text: response.statusText,
+            status: response.status,
+            errors: data_1
+          });
         });
-      });
-    }
-    return response.json();
+      }
+      console.log("RESPONSE: ", path, " OK", response);
+      return response.json()
+      .then(text => {
+        console.log("badddd ", text);
+        return text;
+      })
+    })
+
+
   }
 };
 

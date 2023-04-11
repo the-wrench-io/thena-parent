@@ -51,6 +51,7 @@ import io.vertx.sqlclient.PoolOptions;
 })
 public class BeanFactory {
 
+
   @ConfigProperty(name = "tasks.db.pg.repositoryName") 
   String repositoryName;
   String branchSpecifier = "main";
