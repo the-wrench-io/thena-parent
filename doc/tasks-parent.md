@@ -13,7 +13,7 @@ Backend and frontend are found in tasks-parent
 **run backend**
 
 thena-parent/extensions/tasks-parent/quarkus-dev-app    
-'mvn compile quarkus:dev'
+`mvn compile quarkus:dev`
 
 **run frontend**
 
@@ -34,10 +34,10 @@ http://localhost:8080/q/tasks/api/demo/populate/1000
 
 Drop order:
 
-nested_10_refs
-nested_10_tags
-nested_10_commits
-nested_10_treeitems
-nested_10_trees
-nested_10_blobs
+nested_10_refs  
+nested_10_tags  
+nested_10_commits  
+nested_10_treeitems  
+nested_10_trees  
+nested_10_blobs  
 repos
