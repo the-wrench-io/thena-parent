@@ -27,9 +27,9 @@ tasks:
   db:
     pg: 
       repositoryName: "tasks-repo"
-      pgPort: 5432 
+      pgPort: 32788 
       pgHost: "localhost"
-      pgDb: "digiexpress"
-      pgUser: "digiexpress"
-      pgPass: "example"
+      pgDb: "tasks_db"
+      pgUser: "postgres"
+      pgPass: "postgres"
       pgPoolSize: 5
