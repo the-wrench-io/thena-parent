@@ -60,7 +60,7 @@
 14. **Search**
     - Search for tasks by name, user, role, etc.
 
-15. **“Kanban/Sprint” style board to show current/planned data**
+15. **“Kanban/Sprint” style board to show current/planned data** needs proof, tentative
     - Provide a view of tasks that are in progress, completed, etc
 
 16. **Data export for reporting**
