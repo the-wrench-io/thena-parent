@@ -68,7 +68,7 @@
       - workers can set targets for themselves or admins can set targets for workers and groups of workers
       - this can be used for reporting
 
-17. **Overview center** 
+17. **My dashboard** 
     - For individual workers
     - This could be a place where workers can see their assigned tasks, messages, notifications, etc. in a visually coherent way
     - Calendar view of tasks with due dates
