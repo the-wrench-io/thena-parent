@@ -44,7 +44,7 @@ public interface Task extends Document {
   List<String> getOwners();
   
   @Nullable LocalDate getDueDate();
-  String getSubject();
+  String getTitle();
   String getDescription();
   Priority getPriority();
   Status getStatus();
@@ -52,8 +52,7 @@ public interface Task extends Document {
   List<String> getLabels();
   List<TaskExtension> getExtensions();
 
-  List<TaskComment> getExternalComments();
-  List<TaskComment> getInternalComments();
+  List<TaskComment> getComments();
   
   enum Status { CREATED, IN_PROGRESS, COMPLETED, REJECTED }
   enum Priority { LOW, MEDIUM, HIGH }  

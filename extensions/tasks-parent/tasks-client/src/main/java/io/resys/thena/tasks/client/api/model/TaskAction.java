@@ -51,14 +51,14 @@ public interface TaskAction extends Serializable {
     
     @Nullable Status getStatus();
     @Nullable LocalDate getDueDate();
-    String getSubject();
+    String getTitle();
     String getDescription();
     Priority getPriority();
     
     List<String> getLabels();
     List<TaskExtension> getExtensions();
-    List<TaskComment> getExternalComments();
-    List<TaskComment> getInternalComments();
+    List<TaskComment> getComments();
+
   }
   
   

@@ -50,7 +50,7 @@ public class IntegrationTest extends TaskTestCase {
     
     client.changes().create(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
-        .subject("very important subject")
+        .title("very important subject")
         .description("first task ever")
         .priority(Priority.LOW)
         .addRoles("admin-users", "view-only-users")

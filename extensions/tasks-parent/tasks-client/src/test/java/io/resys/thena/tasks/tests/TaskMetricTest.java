@@ -72,7 +72,7 @@ public class TaskMetricTest extends TaskTestCase {
     for(int index = 0; index < total; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(getTargetDate())
-      .subject("very important subject no: " + index)
+      .title("very important subject no: " + index)
       .description("first task ever no: "  + index)
       .priority(Priority.LOW)
       .addRoles("admin-users", "view-only-users")

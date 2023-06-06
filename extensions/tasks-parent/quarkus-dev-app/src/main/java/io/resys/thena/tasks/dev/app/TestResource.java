@@ -69,7 +69,7 @@ public class TestResource {
     for(int index = 0; index < count; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(targetDate)
-      .subject(provider.getSubject())
+      .title(provider.getTitle())
       .description(provider.getDescription())
       .priority(provider.getPriority())
       .roles(provider.getRoles())
@@ -77,8 +77,7 @@ public class TestResource {
       .status(provider.getStatus())
       .userId("demo-gen-1")
       .addAllExtensions(provider.getExtensions())
-      .addAllExternalComments(provider.getExtComments())
-      .addAllInternalComments(provider.getIntComments())
+      .comments(provider.getComments())
       .build();
       bulk.add(newTask);
     }
