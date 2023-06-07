@@ -40,9 +40,9 @@ public interface Task extends Document {
   
   List<TaskAction> getActions(); 
   
-  //+1 field reporterId
   List<String> getRoles();
-  List<String> getOwners(); //---> assigneeIds
+  List<String> getAssigneeIds();
+  String getReporterId();
   
   @Nullable LocalDate getDueDate();
   String getTitle();

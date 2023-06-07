@@ -73,7 +73,8 @@ public class TestResource {
       .description(provider.getDescription())
       .priority(provider.getPriority())
       .roles(provider.getRoles())
-      .owners(provider.getOwners())
+      .assigneeIds(provider.getAssigneeIds())
+      .reporterId(provider.getReporterId())
       .status(provider.getStatus())
       .userId("demo-gen-1")
       .addAllExtensions(provider.getExtensions())
@@ -85,7 +86,7 @@ public class TestResource {
     return client.repo().createIfNot()
         .onItem().transformToUni(created -> {
           if(created) {
-            return client.changes().create(bulk)
+            return client.actions().create().createMany(bulk)
                 .onItem().transform(tasks -> HeadState.builder().created(created).build());
           }
           return Uni.createFrom().item(HeadState.builder().created(created).build());
@@ -99,7 +100,7 @@ public class TestResource {
     return client.repo().createIfNot()
         .onItem().transformToUni(created -> {
           if(created) {
-            return client.query().delete().deleteAll().collect().asList()
+            return client.actions().delete().deleteAll().collect().asList()
                 .onItem().transform(tasks -> HeadState.builder().created(created).build());
           }
           return Uni.createFrom().item(HeadState.builder().created(created).build());
@@ -120,6 +121,6 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("active/tasks")
   public Uni<List<Task>> findAllActiveTasks() {
-    return client.query().active().findAll().collect().asList();
+    return client.actions().active().findAll().collect().asList();
   }
 }

@@ -1,4 +1,4 @@
-package io.resys.thena.tasks.client.spi.query;
+package io.resys.thena.tasks.client.spi.actions;
 
 /*-
  * #%L
@@ -31,7 +31,7 @@ import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
-import io.resys.thena.tasks.client.api.actions.QueryActions.ActiveTaskQuery;
+import io.resys.thena.tasks.client.api.actions.TaskActions.ActiveTaskActions;
 import io.resys.thena.tasks.client.api.model.Document;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class ActiveTaskQueryImpl implements ActiveTaskQuery {
+public class ActiveTaskActionsImpl implements ActiveTaskActions {
   private final DocumentStore ctx;
   
   @Override
@@ -68,11 +68,11 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
             .build()))
         .build();
     
-    return query.onItem().transform(this::map).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
+    return query.onItem().transform(this::mapQuery).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
   }
 
 
-  private List<Task> map(ObjectsResult<RefObjects> state) {
+  private List<Task> mapQuery(ObjectsResult<RefObjects> state) {
     if(state.getStatus() != ObjectsStatus.OK) {
       final var config = ctx.getConfig();
       throw new DocumentStoreException("FIND_ALL_TASKS_FAIL", ImmutableDocumentExceptionMsg.builder()
@@ -88,10 +88,10 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
     }
     
     final var tree = objects.getTree();
-    return tree.getValues().values().stream().map(treeValue -> map(state, treeValue)).collect(Collectors.toList());
+    return tree.getValues().values().stream().map(treeValue -> mapTree(state, treeValue)).collect(Collectors.toList());
   }
   
-  private Task map(ObjectsResult<RefObjects> state, TreeValue treeValue) {
+  private Task mapTree(ObjectsResult<RefObjects> state, TreeValue treeValue) {
     final var blobId = treeValue.getBlob();
     final var blob = state.getObjects().getBlobs().get(blobId);
     return blob.getValue().mapTo(ImmutableTask.class);
@@ -106,7 +106,7 @@ public class ActiveTaskQueryImpl implements ActiveTaskQuery {
 
 
   @Override
-  public Multi<Task> findByAssignee(List<String> roles) {
+  public Multi<Task> findByAssignee(List<String> assignees) {
     // TODO Auto-generated method stub
     return null;
   }

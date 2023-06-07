@@ -47,7 +47,8 @@ public interface TaskAction extends Serializable {
   @Value.Immutable @JsonSerialize(as = ImmutableCreateTask.class) @JsonDeserialize(as = ImmutableCreateTask.class)
   interface CreateTask extends TaskAction {
     List<String> getRoles();
-    List<String> getOwners();
+    List<String> getAssigneeIds();
+    String getReporterId();
     
     @Nullable Status getStatus();
     @Nullable LocalDate getDueDate();
@@ -70,16 +71,22 @@ public interface TaskAction extends Serializable {
     String getCommentText();
   }
   
-  @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskOwner.class) @JsonDeserialize(as = ImmutableAssignTaskOwner.class)
-  interface AssignTaskOwner extends TaskAction {
+  @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskReporter.class) @JsonDeserialize(as = ImmutableAssignTaskReporter.class)
+  interface AssignTaskReporter extends TaskAction {
     String getTaskId();
-    String getOwner();
+    String getReporterId();
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskRoles.class) @JsonDeserialize(as = ImmutableAssignTaskRoles.class)
   interface AssignTaskRoles extends TaskAction {
     String getTaskId();
     String getRoles();
+  }
+
+  @Value.Immutable @JsonSerialize(as = ImmutableAssignTask.class) @JsonDeserialize(as = ImmutableAssignTask.class)
+  interface AssignTask extends TaskAction {
+    String getTaskId();
+    String getAssigneeIds();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskPriority.class) @JsonDeserialize(as = ImmutableChangeTaskPriority.class)

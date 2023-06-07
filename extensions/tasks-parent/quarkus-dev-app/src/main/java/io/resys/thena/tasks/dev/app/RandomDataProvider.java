@@ -59,7 +59,7 @@ public class RandomDataProvider {
       ); 
   
   
-  private final Map<Integer, String> OWNERS = Map.of(
+  private final Map<Integer, String> ASSIGNEES = Map.of(
       1, "sam vimes",
       2, "lord vetinari",
       3, "lady sybil vimes",
@@ -112,20 +112,24 @@ public class RandomDataProvider {
   }
 
   
-  public List<String> getOwners() {
-    final var owners = new ArrayList<String>();
-    final var groups = nextInt(1, OWNERS.size()) -1;
+  public List<String> getAssigneeIds() {
+    final var assignees = new ArrayList<String>();
+    final var groups = nextInt(1, ASSIGNEES.size()) -1;
     for(var index = 0; index < groups; index++) {
       boolean defined = false;
       do {
-        final var ownerId = OWNERS.get(nextInt(1, OWNERS.size()));
-        defined = owners.contains(ownerId);
+        final var ownerId = ASSIGNEES.get(nextInt(1, ASSIGNEES.size()));
+        defined = assignees.contains(ownerId);
         if(!defined) {
-          owners.add(ownerId);
+          assignees.add(ownerId);
         }
       } while(defined);
     }
-    return owners;
+    return assignees;
+  }
+
+  public String getReporterId() {
+    return ASSIGNEES.get(nextInt(1, ASSIGNEES.size()));
   }
   
   public List<TaskComment> getComments() {

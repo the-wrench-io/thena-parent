@@ -21,11 +21,14 @@ package io.resys.thena.tasks.client.spi;
  */
 
 import io.resys.thena.tasks.client.api.TasksClient;
-import io.resys.thena.tasks.client.api.actions.ChangeActions;
-import io.resys.thena.tasks.client.api.actions.QueryActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
-import io.resys.thena.tasks.client.spi.changes.ChangeActionsImpl;
-import io.resys.thena.tasks.client.spi.query.QueryActionsImpl;
+import io.resys.thena.tasks.client.api.actions.TaskActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.ActiveTaskActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.CreateTaskActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.DeleteTaskActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.UpdateTaskActions;
+import io.resys.thena.tasks.client.spi.actions.CreateTaskActionsImpl;
+import io.resys.thena.tasks.client.spi.actions.TaskActionsImpl;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
@@ -35,13 +38,8 @@ public class TaskClientImpl implements TasksClient {
   private final DocumentStore ctx;
   
   @Override
-  public ChangeActions changes() {
-    return new ChangeActionsImpl(ctx);
-  }
-
-  @Override
-  public QueryActions query() {
-    return new QueryActionsImpl(ctx);
+  public TaskActions actions() {
+    return new TaskActionsImpl(ctx);
   }
 
   @Override
@@ -52,13 +50,13 @@ public class TaskClientImpl implements TasksClient {
 
   @Override
   public TaskRepositoryQuery repo() {
-    DocumentStore.RepositoryQuery next = ctx.repo();
+    DocumentStore.RepositoryQuery repo = ctx.repo();
     return new TaskRepositoryQuery() {
-      @Override public TaskRepositoryQuery repoName(String repoName) { next.repoName(repoName); return this; }
-      @Override public TaskRepositoryQuery headName(String headName) { next.headName(headName); return this; }
-      @Override public Uni<Boolean> createIfNot() { return next.createIfNot(); }
-      @Override public Uni<TasksClient> create() { return next.create().onItem().transform(doc -> new TaskClientImpl(doc)); }
-      @Override public TasksClient build() { return new TaskClientImpl(next.build()); }
+      @Override public TaskRepositoryQuery repoName(String repoName) { repo.repoName(repoName); return this; }
+      @Override public TaskRepositoryQuery headName(String headName) { repo.headName(headName); return this; }
+      @Override public Uni<Boolean> createIfNot() { return repo.createIfNot(); }
+      @Override public Uni<TasksClient> create() { return repo.create().onItem().transform(doc -> new TaskClientImpl(doc)); }
+      @Override public TasksClient build() { return new TaskClientImpl(repo.build()); }
     };
   }
 }

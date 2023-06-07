@@ -20,25 +20,51 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
+import java.io.Serializable;
+import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.annotation.Nullable;
+
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.api.model.TaskAction;
+import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
-public interface QueryActions {
-  ActiveTaskQuery active();
-  DeleteTaskQuery delete();
-  
-  
-  interface DeleteTaskQuery {
+
+public interface TaskActions {
+
+  CreateTaskActions create();
+  UpdateTaskActions update();
+  ActiveTaskActions active();
+  DeleteTaskActions delete();
+
+  interface CreateTaskActions {
+    Uni<Task> createOne(CreateTask command);
+    Uni<List<Task>> createMany(List<CreateTask> commands);
+  }
+
+  interface UpdateTaskActions {
+    Uni<Task> updateOne(TaskAction command);
+    Uni<Task> updateOne(List<TaskAction> commands);
+    Uni<List<Task>> updateMany(List<TaskAction> commands);
+  }
+
+  interface DeleteTaskActions {
     Multi<Task> deleteAll();
   }
-  
-  interface ActiveTaskQuery {
+
+  interface ActiveTaskActions {
     Multi<Task> findAll();
     Multi<Task> findByRoles(List<String> roles);
-    Multi<Task> findByAssignee(List<String> roles);
+    Multi<Task> findByAssignee(List<String> assignees);
     Uni<Task> get(String id);
   }
+  
+  interface Command extends Serializable {
+    String getUserId();
+    @Nullable LocalDateTime getTargetDate();
+  }
+
 }

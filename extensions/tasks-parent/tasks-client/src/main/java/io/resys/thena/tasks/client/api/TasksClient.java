@@ -20,14 +20,12 @@ package io.resys.thena.tasks.client.api;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.actions.ChangeActions;
-import io.resys.thena.tasks.client.api.actions.QueryActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions;
 import io.smallrye.mutiny.Uni;
 
 public interface TasksClient {
-  ChangeActions changes();
-  QueryActions query();
+  TaskActions actions();
   StatisticsActions statistics();
   TaskRepositoryQuery repo();
   

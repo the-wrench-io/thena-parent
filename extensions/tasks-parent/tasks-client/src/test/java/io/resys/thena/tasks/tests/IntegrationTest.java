@@ -48,16 +48,17 @@ public class IntegrationTest extends TaskTestCase {
   public void createAndReadTheTask() throws JsonProcessingException, JSONException {
     final var client = getClient().repo().repoName("integration-test").create().await().atMost(atMost);
     
-    client.changes().create(ImmutableCreateTask.builder()
+    client.actions().create().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
-        .title("very important subject")
+        .title("very important title")
         .description("first task ever")
         .priority(Priority.LOW)
         .addRoles("admin-users", "view-only-users")
         .userId("user-1")
+        .reporterId("reporter-1")
         .build()).await().atMost(atMost);
     
-    final var allActive = client.query().active().findAll().collect().asList().await().atMost(atMost);
+    final var allActive = client.actions().active().findAll().collect().asList().await().atMost(atMost);
     Assertions.assertEquals(1, allActive.size());
     
     final var created = JsonObject.mapFrom(allActive.get(0))
@@ -66,7 +67,7 @@ public class IntegrationTest extends TaskTestCase {
     final var actual = created.encode();
     log.debug(actual);
     JSONAssert.assertEquals(
-        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"actions\":[],\"roles\":[\"admin-users\",\"view-only-users\"],\"owners\":[],\"dueDate\":null,\"subject\":\"very important subject\",\"description\":\"first task ever\",\"status\":\"CREATED\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"externalComments\":[],\"internalComments\":[]}"
+        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"actions\":[],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"reporterId\":\"reporter-1\",\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"status\":\"CREATED\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"comments\":[]}"
         , actual, true);
   }
 }

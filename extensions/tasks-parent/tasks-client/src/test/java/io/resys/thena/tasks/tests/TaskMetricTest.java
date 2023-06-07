@@ -57,7 +57,7 @@ public class TaskMetricTest extends TaskTestCase {
   private void select(TasksClient client) {
     final var start = System.currentTimeMillis();
     
-    final var blobs = client.query().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
+    final var blobs = client.actions().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
     
     log.debug("total time for selecting: {} entries is: {} millis", blobs.size(), end-start);
@@ -72,11 +72,12 @@ public class TaskMetricTest extends TaskTestCase {
     for(int index = 0; index < total; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(getTargetDate())
-      .title("very important subject no: " + index)
+      .title("very important title no: " + index)
       .description("first task ever no: "  + index)
       .priority(Priority.LOW)
       .addRoles("admin-users", "view-only-users")
       .userId("user-1")
+      .reporterId("reporter-1")
       .build();
       bulk.add(newTask);
     }
@@ -85,7 +86,7 @@ public class TaskMetricTest extends TaskTestCase {
     
     start = System.currentTimeMillis();
     
-    client.changes().create(bulk).await().atMost(atMost);
+    client.actions().create().createMany(bulk).await().atMost(atMost);
     end = System.currentTimeMillis();
     log.debug("total time for inserting: {} entries is: {} millis, loop time: {}", total, end-start, loopTime);
   }

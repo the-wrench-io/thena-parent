@@ -59,13 +59,14 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     final var client = getClient().repo().repoName(repoName).create().await().atMost(atMost);
     
     // first commit
-    client.changes().create(ImmutableCreateTask.builder()
+    client.actions().create().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
-        .title("very important subject no: init")
+        .title("very important title no: init")
         .description("first task ever no: init")
         .priority(Priority.LOW)
         .addRoles("admin-users", "view-only-users")
         .userId("user-1")
+        .reporterId("reporter-1")
         .build())
     .await().atMost(atMost);;
     
@@ -87,12 +88,12 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
         .toList());
     
     Assertions.assertEquals(index.get() - fails.get() +1, blobs.size());
-    // log.debug(blobs.encodePrettily());
+    log.debug(blobs.encodePrettily());
     
     JsonArray expected = new JsonArray();
-    expected.add(JsonObject.of("subject", "very important subject no: init"));
+    expected.add(JsonObject.of("title", "very important title no: init"));
     for(int index = 0; index < 49; index++) {
-      expected.add(JsonObject.of("subject", "very important subject no: " + index));
+      expected.add(JsonObject.of("title", "very important title no: " + index));
     }
     JSONAssert.assertEquals(expected.encodePrettily(), blobs.encodePrettily(), false);
   }
@@ -100,7 +101,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
 
   private void runSelect(TasksClient client) {
     final var start = System.currentTimeMillis();
-    final var blobs = client.query().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
+    final var blobs = client.actions().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
     
     log.debug("total time for selecting: {} entries is: {} millis", blobs.size(), end-start);
@@ -112,11 +113,12 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     for(int index = 0; index < total; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(getTargetDate())
-      .title("very important subject no: " + index)
+      .title("very important title no: " + index)
       .description("first task ever no: "  + index)
       .priority(Priority.LOW)
       .addRoles("admin-users", "view-only-users")
       .userId("user-1")
+      .reporterId("reporter-1")
       .build();
       bulk.add(newTask);
     }
@@ -124,7 +126,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     final var insertStart = System.currentTimeMillis();
     
     Multi.createFrom().items(bulk.stream()).onItem().transformToUni(item -> {
-      final var commit = client.changes().create(item)
+      final var commit = client.actions().create().createOne(item)
       .onItem().transform(c -> {
         log.debug("Record stored: {}", index.getAndIncrement());
         return c;
@@ -140,7 +142,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     .onItem().transformToUni(e -> {
       final var insertEnd = System.currentTimeMillis();
       final var start = System.currentTimeMillis();
-      return client.query().active().findAll().collect().asList().onItem().transform(blobs -> {
+      return client.actions().active().findAll().collect().asList().onItem().transform(blobs -> {
         // log select time
         final var end = System.currentTimeMillis();
         log.debug("total time for inserting: {} entries is: {} millis", blobs.size(), insertEnd-insertStart);

@@ -1,4 +1,4 @@
-package io.resys.thena.tasks.client.spi.query;
+package io.resys.thena.tasks.client.spi.actions;
 
 /*-
  * #%L
@@ -32,7 +32,7 @@ import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
-import io.resys.thena.tasks.client.api.actions.QueryActions.DeleteTaskQuery;
+import io.resys.thena.tasks.client.api.actions.TaskActions.DeleteTaskActions;
 import io.resys.thena.tasks.client.api.model.Document;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
@@ -44,7 +44,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class DeleteTaskQueryImpl implements DeleteTaskQuery {
+public class DeleteTaskActionsImpl implements DeleteTaskActions {
   private final DocumentStore ctx;
   
   
@@ -63,7 +63,7 @@ public class DeleteTaskQueryImpl implements DeleteTaskQuery {
             .build()))
         .build();
     
-    return query.onItem().transform(this::map)
+    return query.onItem().transform(this::mapQuery)
         .onItem().transformToUni(items -> client.commit().builder()
           .head(config.getRepoName(), config.getHeadName())
           .message("Delete all tasks")
@@ -81,7 +81,7 @@ public class DeleteTaskQueryImpl implements DeleteTaskQuery {
   }
 
 
-  private List<Task> map(ObjectsResult<RefObjects> state) {
+  private List<Task> mapQuery(ObjectsResult<RefObjects> state) {
     if(state.getStatus() != ObjectsStatus.OK) {
       final var config = ctx.getConfig();
       throw new DocumentStoreException("FIND_ALL_TASKS_FAIL", ImmutableDocumentExceptionMsg.builder()
@@ -97,10 +97,10 @@ public class DeleteTaskQueryImpl implements DeleteTaskQuery {
     }
     
     final var tree = objects.getTree();
-    return tree.getValues().values().stream().map(treeValue -> map(state, treeValue)).collect(Collectors.toList());
+    return tree.getValues().values().stream().map(treeValue -> mapTree(state, treeValue)).collect(Collectors.toList());
   }
   
-  private Task map(ObjectsResult<RefObjects> state, TreeValue treeValue) {
+  private Task mapTree(ObjectsResult<RefObjects> state, TreeValue treeValue) {
     final var blobId = treeValue.getBlob();
     final var blob = state.getObjects().getBlobs().get(blobId);
     return blob.getValue().mapTo(ImmutableTask.class);

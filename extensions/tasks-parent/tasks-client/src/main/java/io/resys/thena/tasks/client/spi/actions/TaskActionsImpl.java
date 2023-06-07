@@ -1,8 +1,8 @@
-package io.resys.thena.tasks.client.api.actions;
+package io.resys.thena.tasks.client.spi.actions;
 
 /*-
  * #%L
- * thena-tasks-api
+ * thena-tasks-client
  * %%
  * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
@@ -20,30 +20,37 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
-import java.io.Serializable;
-import java.time.LocalDateTime;
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import io.resys.thena.tasks.client.api.actions.TaskActions;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskAction;
-import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
+import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.smallrye.mutiny.Uni;
+import lombok.RequiredArgsConstructor;
+
+import java.util.List;
 
 
-public interface ChangeActions {
-  Uni<Task> create(CreateTask command);
-  Uni<List<Task>> create(List<CreateTask> commands);
-  
-  Uni<Task> updateOne(TaskAction command);
-  Uni<Task> updateOne(List<TaskAction> commands);
+@RequiredArgsConstructor
+public class TaskActionsImpl implements TaskActions {
+  private final DocumentStore ctx;
 
-  
-  interface Command extends Serializable {
-    String getUserId();
-    @Nullable LocalDateTime getTargetDate();
+  @Override
+  public CreateTaskActions create() {
+    return new CreateTaskActionsImpl(ctx);
   }
-  
 
+  @Override
+  public UpdateTaskActions update() {
+    return new UpdateTaskActionsImpl(ctx);
+  }
+
+  @Override
+  public ActiveTaskActions active() {
+    return new ActiveTaskActionsImpl(ctx);
+  }
+
+  @Override
+  public DeleteTaskActions delete() {
+    return new DeleteTaskActionsImpl(ctx);
+  }
 }

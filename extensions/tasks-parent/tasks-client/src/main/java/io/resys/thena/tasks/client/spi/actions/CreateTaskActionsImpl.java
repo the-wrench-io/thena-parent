@@ -1,4 +1,4 @@
-package io.resys.thena.tasks.client.spi.changes;
+package io.resys.thena.tasks.client.spi.actions;
 
 /*-
  * #%L
@@ -26,12 +26,11 @@ import java.util.List;
 import java.util.Optional;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.tasks.client.api.actions.ChangeActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.CreateTaskActions;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.Task.Status;
-import io.resys.thena.tasks.client.api.model.TaskAction;
 import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
@@ -42,12 +41,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class ChangeActionsImpl implements ChangeActions {
+public class CreateTaskActionsImpl implements CreateTaskActions {
   private final DocumentStore ctx;
   
   @Override
-  public Uni<Task> create(CreateTask command) {
-    final var entity = map(command);
+  public Uni<Task> createOne(CreateTask command) {
+    final var entity = mapTask(command);
     final var json = JsonObject.mapFrom(entity);
     final var config = ctx.getConfig();
     return config.getClient().commit().builder()
@@ -65,12 +64,12 @@ public class ChangeActionsImpl implements ChangeActions {
   }
 
   @Override
-  public Uni<List<Task>> create(List<CreateTask> commands) {
+  public Uni<List<Task>> createMany(List<CreateTask> commands) {
     final var config = ctx.getConfig();
     final var client = config.getClient().commit().builder();
     final var entities = new ArrayList<Task>();
     for(final var command : commands) {
-      final var entity = map(command);
+      final var entity = mapTask(command);
       final var json = JsonObject.mapFrom(entity);
       client.append(entity.getId(), json);
       entities.add(entity);
@@ -87,29 +86,17 @@ public class ChangeActionsImpl implements ChangeActions {
         throw new DocumentStoreException("SAVE_FAIL", DocumentStoreException.convertMessages(commit));
       });
   }
-
-  @Override
-  public Uni<Task> updateOne(TaskAction command) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
-  @Override
-  public Uni<Task> updateOne(List<TaskAction> commands) {
-    // TODO Auto-generated method stub
-    return null;
-  }
-
   
-  private Task map(CreateTask command) {
+  private Task mapTask(CreateTask command) {
     final var gen = ctx.getConfig().getGid();
     final var targetDate = Optional.ofNullable(command.getTargetDate()).orElseGet(() -> LocalDateTime.now());
     return ImmutableTask.builder()
         .id(gen.getNextId(DocumentType.TASK))
         .version(gen.getNextVersion(DocumentType.TASK))
         .documentType(DocumentType.TASK)
-        .addAllOwners(command.getOwners().stream().distinct().toList())
+        .addAllAssigneeIds(command.getAssigneeIds().stream().distinct().toList())
         .addAllRoles(command.getRoles().stream().distinct().toList())
+        .reporterId(command.getReporterId())
         .labels(command.getLabels().stream().distinct().toList())
         .extensions(command.getExtensions())
         .comments(command.getComments())
