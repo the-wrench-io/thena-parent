@@ -32,7 +32,7 @@ import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
-import io.resys.thena.tasks.client.api.actions.TaskActions.ActiveTaskQuery;
+import io.resys.thena.tasks.client.api.actions.TaskActions.ActiveTasksQuery;
 import io.resys.thena.tasks.client.api.model.Document;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
@@ -45,7 +45,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class ActiveTasksQueryImpl implements ActiveTaskQuery {
+public class ActiveTasksQueryImpl implements ActiveTasksQuery {
   private final DocumentStore ctx;
   
   @Override

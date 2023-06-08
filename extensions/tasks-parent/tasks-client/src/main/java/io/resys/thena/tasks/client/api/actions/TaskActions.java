@@ -33,7 +33,7 @@ public interface TaskActions {
 
   CreateTasks createTask();
   UpdateTasks updateTask();
-  ActiveTaskQuery queryActiveTasks();
+  ActiveTasksQuery queryActiveTasks();
 
   interface CreateTasks {
     Uni<Task> createOne(CreateTask command);
@@ -46,7 +46,7 @@ public interface TaskActions {
     Uni<List<Task>> updateMany(List<TaskAction> commands);
   }
 
-  interface ActiveTaskQuery {
+  interface ActiveTasksQuery {
     Multi<Task> findAll();
     Multi<Task> findByRoles(List<String> roles);
     Multi<Task> findByAssignee(List<String> assignees);

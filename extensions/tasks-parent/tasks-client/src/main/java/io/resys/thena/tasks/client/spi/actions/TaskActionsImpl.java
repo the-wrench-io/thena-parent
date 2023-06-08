@@ -40,7 +40,7 @@ public class TaskActionsImpl implements TaskActions {
   }
 
   @Override
-  public ActiveTaskQuery queryActiveTasks() {
+  public ActiveTasksQuery queryActiveTasks() {
     return new ActiveTasksQueryImpl(ctx);
   }
 }
