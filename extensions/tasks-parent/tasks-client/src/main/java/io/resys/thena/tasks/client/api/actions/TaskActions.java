@@ -11,9 +11,9 @@ import io.smallrye.mutiny.Uni;
 
 public interface TaskActions {
 
-  CreateTaskActions create();
-  UpdateTaskActions update();
-  ActiveTaskActions active();
+  CreateTaskActions createTask();
+  UpdateTaskActions updateTask();
+  ActiveTaskActions queryActiveTasks();
   DeleteTaskActions delete();
 
   interface CreateTaskActions {
