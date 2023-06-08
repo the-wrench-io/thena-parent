@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.client.api.actions;
 
+import java.time.LocalDate;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -23,6 +25,7 @@ package io.resys.thena.tasks.client.api.actions;
 import java.util.List;
 
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.api.model.Task.TaskHistory;
 import io.resys.thena.tasks.client.api.model.TaskAction;
 import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
 import io.smallrye.mutiny.Multi;
@@ -54,17 +57,30 @@ public interface TaskActions {
     Multi<Task> deleteAll();
   }
   
+  interface ArchivedTasksQuery {
+    ArchivedTasksQuery title(String likeTitle); // like == doesn't need to match exactly. If a title contains "bob", then it can be matched by bob
+    ArchivedTasksQuery description(String likeDescription);
+    ArchivedTasksQuery reporterId(String reporterId);
+    ArchivedTasksQuery fromCreatedOrUpdated(LocalDate fromCreatedOrUpdated);
+    ArchivedTasksQuery status(List<Task.Status> status);
+    ArchivedTasksQuery status(Task.Status ... status);
+    ArchivedTasksQuery assignees(List<String> assignees);
+    ArchivedTasksQuery assignees(String ... assignees);
+    ArchivedTasksQuery roles(List<String> roles);
+    ArchivedTasksQuery roles(String ... roles);
+    Uni<List<Task>> build();
+  }
+  
+  interface TaskHistoryQuery {
+    Uni<TaskHistory> get(String taskId); 
+  }
+  
+  
+  
   /* 
    * NEEDED INTERFACES
    * 
    * export / import data 
-   * query historic data
-   * task transactions
-   *  - multiple actions can be performed on a task at once, such as updating status, owner, priority, etc.
-   *  - if these are saved as one whole, the actions are part of a transaction (group of actions)
-   *  - interface will dictate the date of the transaction
-   *  - will exist to group actions together 
-   *  - is needed because without it, you can't tell which actions were part of a transaction or which were simply individual actions
-  
+
   */
 }
