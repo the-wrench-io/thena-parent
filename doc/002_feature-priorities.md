@@ -7,6 +7,7 @@
 - View assigned tasks and task details (personal worker board)
 - Admin board
 - Audit logging
+- Historization
 - Error handling
 - Messaging / communication / notification module
 - File sharing / attachments
