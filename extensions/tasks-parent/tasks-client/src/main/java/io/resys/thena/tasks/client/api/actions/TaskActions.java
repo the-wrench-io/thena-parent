@@ -68,7 +68,7 @@ public interface TaskActions {
     ArchivedTasksQuery assignees(String ... assignees);
     ArchivedTasksQuery roles(List<String> roles);
     ArchivedTasksQuery roles(String ... roles);
-    Uni<List<Task>> build();
+    Uni<List<Task>> find();
   }
   
   interface TaskHistoryQuery {
