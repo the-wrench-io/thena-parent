@@ -21,13 +21,8 @@ package io.resys.thena.tasks.client.spi.actions;
  */
 
 import io.resys.thena.tasks.client.api.actions.TaskActions;
-import io.resys.thena.tasks.client.api.model.Task;
-import io.resys.thena.tasks.client.api.model.TaskAction;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
-import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
-
-import java.util.List;
 
 
 @RequiredArgsConstructor
@@ -35,22 +30,17 @@ public class TaskActionsImpl implements TaskActions {
   private final DocumentStore ctx;
 
   @Override
-  public CreateTaskActions create() {
-    return new CreateTaskActionsImpl(ctx);
+  public CreateTasks createTask(){
+    return new CreateTasksImpl(ctx);
   }
 
   @Override
-  public UpdateTaskActions update() {
-    return new UpdateTaskActionsImpl(ctx);
+  public UpdateTasks updateTask() {
+    return new UpdateTasksImpl(ctx);
   }
 
   @Override
-  public ActiveTaskActions active() {
-    return new ActiveTaskActionsImpl(ctx);
-  }
-
-  @Override
-  public DeleteTaskActions delete() {
-    return new DeleteTaskActionsImpl(ctx);
+  public ActiveTaskQuery queryActiveTasks() {
+    return new ActiveTasksQueryImpl(ctx);
   }
 }

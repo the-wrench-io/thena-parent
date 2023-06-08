@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.tasks.client.api.actions.TaskActions.CreateTaskActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.CreateTasks;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
-public class CreateTaskActionsImpl implements CreateTaskActions {
+public class CreateTasksImpl implements CreateTasks {
   private final DocumentStore ctx;
   
   @Override

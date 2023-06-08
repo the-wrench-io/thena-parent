@@ -32,7 +32,7 @@ import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
-import io.resys.thena.tasks.client.api.actions.TaskActions.DeleteTaskActions;
+import io.resys.thena.tasks.client.api.actions.TaskActions.ActiveTaskQuery;
 import io.resys.thena.tasks.client.api.model.Document;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
@@ -40,14 +40,38 @@ import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.resys.thena.tasks.client.spi.store.ImmutableDocumentExceptionMsg;
 import io.smallrye.mutiny.Multi;
+import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class DeleteTaskActionsImpl implements DeleteTaskActions {
+public class ActiveTasksQueryImpl implements ActiveTaskQuery {
   private final DocumentStore ctx;
   
+  @Override
+  public Uni<Task> get(String id) {
+    // TODO Auto-generated method stub
+    return null;
+  }
   
+  
+  @Override
+  public Multi<Task> findAll() {
+    final var config = ctx.getConfig();
+    final var query = config.getClient()
+        .objects().refState()
+        .repo(config.getRepoName())
+        .ref(config.getHeadName())
+        .blobs()
+        .blobCriteria(Arrays.asList(ImmutableBlobCriteria.builder()
+            .key("documentType").value(Document.DocumentType.TASK.name())
+            .type(CriteriaType.EXACT)
+            .build()))
+        .build();
+    
+    return query.onItem().transform(this::mapQuery).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
+  }
+
   @Override
   public Multi<Task> deleteAll() {
     final var config = ctx.getConfig();
@@ -80,7 +104,6 @@ public class DeleteTaskActionsImpl implements DeleteTaskActions {
         .onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
   }
 
-
   private List<Task> mapQuery(ObjectsResult<RefObjects> state) {
     if(state.getStatus() != ObjectsStatus.OK) {
       final var config = ctx.getConfig();
@@ -106,4 +129,17 @@ public class DeleteTaskActionsImpl implements DeleteTaskActions {
     return blob.getValue().mapTo(ImmutableTask.class);
   }
 
+
+  @Override
+  public Multi<Task> findByRoles(List<String> roles) {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+
+  @Override
+  public Multi<Task> findByAssignee(List<String> assignees) {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

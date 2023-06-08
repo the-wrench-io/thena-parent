@@ -57,7 +57,7 @@ public class TaskMetricTest extends TaskTestCase {
   private void select(TasksClient client) {
     final var start = System.currentTimeMillis();
     
-    final var blobs = client.actions().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
+    final var blobs = client.actions().queryActiveTasks().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
     
     log.debug("total time for selecting: {} entries is: {} millis", blobs.size(), end-start);
@@ -86,7 +86,7 @@ public class TaskMetricTest extends TaskTestCase {
     
     start = System.currentTimeMillis();
     
-    client.actions().create().createMany(bulk).await().atMost(atMost);
+    client.actions().createTask().createMany(bulk).await().atMost(atMost);
     end = System.currentTimeMillis();
     log.debug("total time for inserting: {} entries is: {} millis, loop time: {}", total, end-start, loopTime);
   }
