@@ -67,8 +67,7 @@ public interface TaskAction extends Serializable {
     String getTaskId();
     @Nullable String getParentId(); 
   }
-  
-  
+    
   @Value.Immutable @JsonSerialize(as = ImmutableCommentOnTask.class) @JsonDeserialize(as = ImmutableCommentOnTask.class)
   interface CommentOnTask extends TaskAction {
     String getTaskId();

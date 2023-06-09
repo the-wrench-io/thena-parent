@@ -63,7 +63,7 @@ public interface Task extends Document {
   @Value.Immutable @JsonSerialize(as = ImmutableTaskExtension.class) @JsonDeserialize(as = ImmutableTaskExtension.class)
   interface TaskExtension extends Serializable {
     String getId();
-    String getType();
+    String getType(); //attachment, dialob, etc.
     String getName();
     String getBody();
   }
