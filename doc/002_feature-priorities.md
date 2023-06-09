@@ -17,6 +17,8 @@
 - Historization
 - Search
 - Data export for reporting
+- Data export for backup / migration
+- Data import for restoring backup / migration
 - Task linking / dependencies
 
 ### Priority 3 (P3) - Could have
