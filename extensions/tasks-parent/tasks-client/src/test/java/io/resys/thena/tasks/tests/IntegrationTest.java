@@ -67,7 +67,7 @@ public class IntegrationTest extends TaskTestCase {
     final var actual = created.encode();
     log.debug(actual);
     JSONAssert.assertEquals(
-        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"actions\":[],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"reporterId\":\"reporter-1\",\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"status\":\"CREATED\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"comments\":[]}"
+        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"actions\":[],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"parentId\":null,\"reporterId\":\"reporter-1\",\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"status\":\"CREATED\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"comments\":[]}"
         , actual, true);
   }
 }
