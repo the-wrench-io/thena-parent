@@ -20,15 +20,20 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.model.Statistics.StatisticsSummary;
+
+import io.resys.thena.tasks.client.api.model.Export;
 import io.smallrye.mutiny.Uni;
 
-public interface StatisticsActions {
+import java.time.LocalDate;
 
-  StatisticsQuery query();
+public interface ExportActions {
 
-  
-  interface StatisticsQuery {
-    Uni<StatisticsSummary> summary();
+  ExportQuery export();
+
+  interface ExportQuery {
+    ExportQuery name(String name);
+    ExportQuery startDate(LocalDate startDate); // including startDate
+    ExportQuery endDate(LocalDate endDate); // including endDate
+    Uni<Export> build();
   }
 }

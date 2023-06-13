@@ -43,4 +43,16 @@ public class TaskActionsImpl implements TaskActions {
   public ActiveTasksQuery queryActiveTasks() {
     return new ActiveTasksQueryImpl(ctx);
   }
+
+  @Override
+  public ArchivedTasksQuery queryArchivedTasks() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public TaskHistoryQuery queryTaskHistory() {
+    // TODO Auto-generated method stub
+    return null;
+  }
 }

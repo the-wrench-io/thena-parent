@@ -23,6 +23,7 @@ package io.resys.thena.tasks.client.spi;
 import io.resys.thena.tasks.client.api.TasksClient;
 import io.resys.thena.tasks.client.api.actions.MigrationActions;
 import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
+import io.resys.thena.tasks.client.api.actions.ExportActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
 import io.resys.thena.tasks.client.spi.actions.TaskActionsImpl;
@@ -44,6 +45,18 @@ public class TaskClientImpl implements TasksClient {
     // TODO Auto-generated method stub
     return null;
   }
+  @Override
+  public MigrationActions migrate() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
+  @Override
+  public ExportActions export() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+
 
   @Override
   public RepositoryQuery repo() {
@@ -55,11 +68,5 @@ public class TaskClientImpl implements TasksClient {
       @Override public Uni<TasksClient> create() { return repo.create().onItem().transform(doc -> new TaskClientImpl(doc)); }
       @Override public TasksClient build() { return new TaskClientImpl(repo.build()); }
     };
-  }
-
-  @Override
-  public MigrationActions migrate() {
-    // TODO Auto-generated method stub
-    return null;
   }
 }
