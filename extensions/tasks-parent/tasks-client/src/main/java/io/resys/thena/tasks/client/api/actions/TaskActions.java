@@ -37,6 +37,8 @@ public interface TaskActions {
   CreateTasks createTask();
   UpdateTasks updateTask();
   ActiveTasksQuery queryActiveTasks();
+  ArchivedTasksQuery queryArchivedTasks();
+  TaskHistoryQuery queryTaskHistory();
 
   interface CreateTasks {
     Uni<Task> createOne(CreateTask command);
@@ -68,7 +70,7 @@ public interface TaskActions {
     ArchivedTasksQuery assignees(String ... assignees);
     ArchivedTasksQuery roles(List<String> roles);
     ArchivedTasksQuery roles(String ... roles);
-    Uni<List<Task>> find();
+    Uni<List<Task>> build();
   }
   
   interface TaskHistoryQuery {

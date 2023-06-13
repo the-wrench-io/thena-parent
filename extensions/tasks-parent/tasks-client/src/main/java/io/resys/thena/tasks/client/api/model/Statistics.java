@@ -36,7 +36,7 @@ public interface Statistics extends Serializable {
 
   @Value.Immutable @JsonSerialize(as = ImmutableByPriority.class) @JsonDeserialize(as = ImmutableByPriority.class)
   interface ByPriority extends Statistics {
-    Map<Integer, Long> getCountByPriority();
+    Map<String, Long> getCountByPriority();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableByStatus.class) @JsonDeserialize(as = ImmutableByStatus.class)
@@ -55,8 +55,8 @@ public interface Statistics extends Serializable {
     Map<String, Long> getCountByStatus();
   }
   
-  @Value.Immutable @JsonSerialize(as = ImmutableStatisticsDump.class) @JsonDeserialize(as = ImmutableStatisticsDump.class)
-  interface StatisticsDump {
+  @Value.Immutable @JsonSerialize(as = ImmutableStatisticsSummary.class) @JsonDeserialize(as = ImmutableStatisticsSummary.class)
+  interface StatisticsSummary {
     String getCommitId();
     ByPriority getByPriority();
     ByPriority getByStatus();

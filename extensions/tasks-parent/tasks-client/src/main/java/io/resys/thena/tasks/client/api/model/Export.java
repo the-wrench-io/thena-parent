@@ -1,4 +1,4 @@
-package io.resys.thena.tasks.client.api.actions;
+package io.resys.thena.tasks.client.api.model;
 
 /*-
  * #%L
@@ -20,15 +20,25 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.model.Statistics.StatisticsSummary;
-import io.smallrye.mutiny.Uni;
 
-public interface StatisticsActions {
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import org.immutables.value.Value;
 
-  StatisticsQuery query();
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
-  
-  interface StatisticsQuery {
-    Uni<StatisticsSummary> summary();
-  }
+@Value.Immutable @JsonSerialize(as = ImmutableExport.class) @JsonDeserialize(as = ImmutableExport.class)
+public interface Export {
+
+  String getId();
+  String getHash();
+  LocalDateTime getCreated();
+  LocalDate getStartDate();
+  LocalDate getEndDate();
+  String getName();
+  List<Task> getEntries();
+  Statistics.StatisticsSummary getStatistics();
+
 }
