@@ -39,13 +39,13 @@ import io.resys.thena.tasks.client.api.model.Task.TaskComment;
 import io.resys.thena.tasks.client.api.model.Task.TaskExtension;
 
 
-public interface TaskAction extends Serializable {
+public interface TaskCommand extends Serializable {
   String getUserId();
   @Nullable LocalDateTime getTargetDate();
   
   
   @Value.Immutable @JsonSerialize(as = ImmutableCreateTask.class) @JsonDeserialize(as = ImmutableCreateTask.class)
-  interface CreateTask extends TaskAction {
+  interface CreateTask extends TaskCommand {
     List<String> getRoles();
     List<String> getAssigneeIds();
     String getReporterId();
@@ -63,13 +63,13 @@ public interface TaskAction extends Serializable {
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskParent.class) @JsonDeserialize(as = ImmutableAssignTaskParent.class)
-  interface AssignTaskParent extends TaskAction {
+  interface AssignTaskParent extends TaskCommand {
     String getTaskId();
     @Nullable String getParentId(); 
   }
     
   @Value.Immutable @JsonSerialize(as = ImmutableCommentOnTask.class) @JsonDeserialize(as = ImmutableCommentOnTask.class)
-  interface CommentOnTask extends TaskAction {
+  interface CommentOnTask extends TaskCommand {
     String getTaskId();
     @Nullable String getCommentId();
     @Nullable String getReplyToCommentId();
@@ -77,47 +77,47 @@ public interface TaskAction extends Serializable {
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskReporter.class) @JsonDeserialize(as = ImmutableAssignTaskReporter.class)
-  interface AssignTaskReporter extends TaskAction {
+  interface AssignTaskReporter extends TaskCommand {
     String getTaskId();
     String getReporterId();
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskRoles.class) @JsonDeserialize(as = ImmutableAssignTaskRoles.class)
-  interface AssignTaskRoles extends TaskAction {
+  interface AssignTaskRoles extends TaskCommand {
     String getTaskId();
     String getRoles();
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTask.class) @JsonDeserialize(as = ImmutableAssignTask.class)
-  interface AssignTask extends TaskAction {
+  interface AssignTask extends TaskCommand {
     String getTaskId();
     String getAssigneeIds();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskPriority.class) @JsonDeserialize(as = ImmutableChangeTaskPriority.class)
-  interface ChangeTaskPriority extends TaskAction {
+  interface ChangeTaskPriority extends TaskCommand {
     String getTaskId();
     Priority getPriority();
   }
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskStatus.class) @JsonDeserialize(as = ImmutableChangeTaskStatus.class)
-  interface ChangeTaskStatus extends TaskAction {
+  interface ChangeTaskStatus extends TaskCommand {
     Task.Status getStatus();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskDueDate.class) @JsonDeserialize(as = ImmutableChangeTaskDueDate.class)
-  interface ChangeTaskDueDate extends TaskAction {
+  interface ChangeTaskDueDate extends TaskCommand {
     String getTaskId();
     Optional<LocalDate> getDueDate();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskInfo.class) @JsonDeserialize(as = ImmutableChangeTaskInfo.class)
-  interface ChangeTaskInfo extends TaskAction {
+  interface ChangeTaskInfo extends TaskCommand {
     String getTaskId();
     String getSubject();
     String getDescription();
   }
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskExtension.class) @JsonDeserialize(as = ImmutableChangeTaskExtension.class)
-  interface ChangeTaskExtension extends TaskAction {
+  interface ChangeTaskExtension extends TaskCommand {
     String getTaskId();
     @Nullable String getId(); // create | update
     String getType();

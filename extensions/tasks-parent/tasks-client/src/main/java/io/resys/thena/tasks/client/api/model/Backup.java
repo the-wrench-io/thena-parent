@@ -1,7 +1,4 @@
-package io.resys.thena.tasks.client.api;
-
-import io.resys.thena.tasks.client.api.actions.MigrationActions;
-import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
+package io.resys.thena.tasks.client.api.model;
 
 /*-
  * #%L
@@ -23,12 +20,22 @@ import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.actions.StatisticsActions;
-import io.resys.thena.tasks.client.api.actions.TaskActions;
+import java.time.LocalDateTime;
+import java.util.List;
 
-public interface TasksClient {
-  TaskActions tasks();
-  MigrationActions migrate();
-  StatisticsActions statistics();
-  RepositoryQuery repo();
+import org.immutables.value.Value;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
+import io.resys.thena.tasks.client.api.model.Task.TaskHistory;
+
+@Value.Immutable @JsonSerialize(as = ImmutableBackup.class) @JsonDeserialize(as = ImmutableBackup.class)
+public interface Backup {
+  String getId();
+  String getHash();
+  LocalDateTime getCreated();
+  String getName();
+  String getUserId();
+  List<TaskHistory> getEntries();
 }

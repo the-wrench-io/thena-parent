@@ -48,7 +48,7 @@ public class IntegrationTest extends TaskTestCase {
   public void createAndReadTheTask() throws JsonProcessingException, JSONException {
     final var client = getClient().repo().repoName("integration-test").create().await().atMost(atMost);
     
-    client.actions().createTask().createOne(ImmutableCreateTask.builder()
+    client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
         .title("very important title")
         .description("first task ever")
@@ -58,7 +58,7 @@ public class IntegrationTest extends TaskTestCase {
         .reporterId("reporter-1")
         .build()).await().atMost(atMost);
     
-    final var allActive = client.actions().queryActiveTasks().findAll().collect().asList().await().atMost(atMost);
+    final var allActive = client.tasks().queryActiveTasks().findAll().collect().asList().await().atMost(atMost);
     Assertions.assertEquals(1, allActive.size());
     
     final var created = JsonObject.mapFrom(allActive.get(0))

@@ -57,11 +57,11 @@ public class DocumentStoreImpl implements DocumentStore {
   private final DocumentConfig config;
   
   @Override public DocumentConfig getConfig() { return config; }
-  @Override public RepositoryQuery repo() {
-    return new RepositoryQuery() {
+  @Override public DocumentRepositoryQuery repo() {
+    return new DocumentRepositoryQuery() {
       private String repoName, headName;
-      @Override public RepositoryQuery repoName(String repoName) { this.repoName = repoName; return this; }
-      @Override public RepositoryQuery headName(String headName) { this.headName = headName; return this; }
+      @Override public DocumentRepositoryQuery repoName(String repoName) { this.repoName = repoName; return this; }
+      @Override public DocumentRepositoryQuery headName(String headName) { this.headName = headName; return this; }
       @Override public Uni<DocumentStore> create() { return createRepo(repoName, headName); }
       @Override public DocumentStore build() { return createClientStore(repoName, headName); }
       @Override public Uni<Boolean> createIfNot() { return createRepoOrGetRepo(); }

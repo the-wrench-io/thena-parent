@@ -35,7 +35,7 @@ import io.quarkus.vertx.http.Compressed;
 import io.resys.thena.tasks.client.api.TasksClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
-import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
+import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import lombok.Builder;
@@ -86,7 +86,7 @@ public class TestResource {
     return client.repo().createIfNot()
         .onItem().transformToUni(created -> {
           if(created) {
-            return client.actions().createTask().createMany(bulk)
+            return client.tasks().createTask().createMany(bulk)
                 .onItem().transform(tasks -> HeadState.builder().created(created).build());
           }
           return Uni.createFrom().item(HeadState.builder().created(created).build());
@@ -100,7 +100,7 @@ public class TestResource {
     return client.repo().createIfNot()
         .onItem().transformToUni(created -> {
           if(created) {
-            return client.actions().queryActiveTasks().deleteAll().collect().asList()
+            return client.tasks().queryActiveTasks().deleteAll().collect().asList()
                 .onItem().transform(tasks -> HeadState.builder().created(created).build());
           }
           return Uni.createFrom().item(HeadState.builder().created(created).build());
@@ -121,6 +121,6 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("active/tasks")
   public Uni<List<Task>> findAllActiveTasks() {
-    return client.actions().queryActiveTasks().findAll().collect().asList();
+    return client.tasks().queryActiveTasks().findAll().collect().asList();
   }
 }

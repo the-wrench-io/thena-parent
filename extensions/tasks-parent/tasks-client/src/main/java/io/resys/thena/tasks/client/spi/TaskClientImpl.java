@@ -21,6 +21,8 @@ package io.resys.thena.tasks.client.spi;
  */
 
 import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.actions.MigrationActions;
+import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
 import io.resys.thena.tasks.client.spi.actions.TaskActionsImpl;
@@ -33,7 +35,7 @@ public class TaskClientImpl implements TasksClient {
   private final DocumentStore ctx;
   
   @Override
-  public TaskActions actions() {
+  public TaskActions tasks() {
     return new TaskActionsImpl(ctx);
   }
 
@@ -44,14 +46,20 @@ public class TaskClientImpl implements TasksClient {
   }
 
   @Override
-  public TaskRepositoryQuery repo() {
-    DocumentStore.RepositoryQuery repo = ctx.repo();
-    return new TaskRepositoryQuery() {
-      @Override public TaskRepositoryQuery repoName(String repoName) { repo.repoName(repoName); return this; }
-      @Override public TaskRepositoryQuery headName(String headName) { repo.headName(headName); return this; }
+  public RepositoryQuery repo() {
+    DocumentStore.DocumentRepositoryQuery repo = ctx.repo();
+    return new RepositoryQuery() {
+      @Override public RepositoryQuery repoName(String repoName) { repo.repoName(repoName); return this; }
+      @Override public RepositoryQuery headName(String headName) { repo.headName(headName); return this; }
       @Override public Uni<Boolean> createIfNot() { return repo.createIfNot(); }
       @Override public Uni<TasksClient> create() { return repo.create().onItem().transform(doc -> new TaskClientImpl(doc)); }
       @Override public TasksClient build() { return new TaskClientImpl(repo.build()); }
     };
+  }
+
+  @Override
+  public MigrationActions migrate() {
+    // TODO Auto-generated method stub
+    return null;
   }
 }

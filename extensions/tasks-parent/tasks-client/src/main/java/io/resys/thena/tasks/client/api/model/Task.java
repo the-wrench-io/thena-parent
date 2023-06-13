@@ -40,7 +40,7 @@ public interface Task extends Document {
   
   @Nullable String getParentId(); //for task linking/grouping 
 
-  List<TaskAction> getActions(); 
+  List<TaskCommand> getActions(); 
   
   List<String> getRoles();
   List<String> getAssigneeIds();

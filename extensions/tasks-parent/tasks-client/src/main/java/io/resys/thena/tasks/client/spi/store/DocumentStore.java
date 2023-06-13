@@ -23,13 +23,13 @@ package io.resys.thena.tasks.client.spi.store;
 import io.smallrye.mutiny.Uni;
 
 public interface DocumentStore {
-  RepositoryQuery repo();
+  DocumentRepositoryQuery repo();
   DocumentConfig getConfig();
   
   
-  interface RepositoryQuery {
-    RepositoryQuery repoName(String repoName);
-    RepositoryQuery headName(String headName);
+  interface DocumentRepositoryQuery {
+    DocumentRepositoryQuery repoName(String repoName);
+    DocumentRepositoryQuery headName(String headName);
     Uni<DocumentStore> create();    
     DocumentStore build();
     Uni<Boolean> createIfNot();

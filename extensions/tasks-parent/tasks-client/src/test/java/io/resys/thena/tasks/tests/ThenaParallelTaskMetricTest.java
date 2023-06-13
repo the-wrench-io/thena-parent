@@ -36,7 +36,7 @@ import io.quarkus.test.junit.TestProfile;
 import io.resys.thena.tasks.client.api.TasksClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task.Priority;
-import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
+import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
 import io.resys.thena.tasks.client.spi.store.MainBranch;
 import io.resys.thena.tasks.tests.config.TaskPgProfile;
 import io.resys.thena.tasks.tests.config.TaskTestCase;
@@ -59,7 +59,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     final var client = getClient().repo().repoName(repoName).create().await().atMost(atMost);
     
     // first commit
-    client.actions().createTask().createOne(ImmutableCreateTask.builder()
+    client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
         .title("very important title no: init")
         .description("first task ever no: init")
@@ -101,7 +101,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
 
   private void runSelect(TasksClient client) {
     final var start = System.currentTimeMillis();
-    final var blobs = client.actions().queryActiveTasks().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
+    final var blobs = client.tasks().queryActiveTasks().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
     
     log.debug("total time for selecting: {} entries is: {} millis", blobs.size(), end-start);
@@ -126,7 +126,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     final var insertStart = System.currentTimeMillis();
     
     Multi.createFrom().items(bulk.stream()).onItem().transformToUni(item -> {
-      final var commit = client.actions().createTask().createOne(item)
+      final var commit = client.tasks().createTask().createOne(item)
       .onItem().transform(c -> {
         log.debug("Record stored: {}", index.getAndIncrement());
         return c;
@@ -142,7 +142,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     .onItem().transformToUni(e -> {
       final var insertEnd = System.currentTimeMillis();
       final var start = System.currentTimeMillis();
-      return client.actions().queryActiveTasks().findAll().collect().asList().onItem().transform(blobs -> {
+      return client.tasks().queryActiveTasks().findAll().collect().asList().onItem().transform(blobs -> {
         // log select time
         final var end = System.currentTimeMillis();
         log.debug("total time for inserting: {} entries is: {} millis", blobs.size(), insertEnd-insertStart);

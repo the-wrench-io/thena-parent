@@ -24,7 +24,7 @@ import java.util.List;
 
 import io.resys.thena.tasks.client.api.actions.TaskActions.UpdateTasks;
 import io.resys.thena.tasks.client.api.model.Task;
-import io.resys.thena.tasks.client.api.model.TaskAction;
+import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
@@ -35,19 +35,19 @@ public class UpdateTasksImpl implements UpdateTasks {
   private final DocumentStore ctx;
 
   @Override
-  public Uni<Task> updateOne(TaskAction command) {
+  public Uni<Task> updateOne(TaskCommand command) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public Uni<Task> updateOne(List<TaskAction> commands) {
+  public Uni<Task> updateOne(List<TaskCommand> commands) {
     // TODO Auto-generated method stub
     return null;
   }
 
   @Override
-  public Uni<List<Task>> updateMany(List<TaskAction> commands) {
+  public Uni<List<Task>> updateMany(List<TaskCommand> commands) {
     // TODO Auto-generated method stub
     return null;
   }

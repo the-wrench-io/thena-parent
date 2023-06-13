@@ -1,7 +1,4 @@
-package io.resys.thena.tasks.client.api;
-
-import io.resys.thena.tasks.client.api.actions.MigrationActions;
-import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
+package io.resys.thena.tasks.client.api.actions;
 
 /*-
  * #%L
@@ -23,12 +20,11 @@ import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.actions.StatisticsActions;
-import io.resys.thena.tasks.client.api.actions.TaskActions;
+import io.resys.thena.tasks.client.api.model.Backup;
+import io.smallrye.mutiny.Uni;
 
-public interface TasksClient {
-  TaskActions tasks();
-  MigrationActions migrate();
-  StatisticsActions statistics();
-  RepositoryQuery repo();
+public interface MigrationActions {
+
+  Uni<Backup> backup(String backupName);
+  Uni<Void> restore(Backup dataToRestore);
 }
