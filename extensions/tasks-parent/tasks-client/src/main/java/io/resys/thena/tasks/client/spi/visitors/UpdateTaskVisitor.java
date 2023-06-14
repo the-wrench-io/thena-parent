@@ -24,6 +24,8 @@ import java.util.List;
 
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskReporter;
+import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStatus;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 
@@ -40,8 +42,11 @@ public class UpdateTaskVisitor {
   public UpdateTaskVisitor visit(TaskUpdateCommand command) {
     if(command instanceof ChangeTaskStatus) {
       return visitChangeTaskStatus((ChangeTaskStatus) command);
+    } else if(command instanceof ChangeTaskPriority) {
+      return visitChangeTaskPriority((ChangeTaskPriority) command);
+    } else if(command instanceof AssignTaskReporter) {
+      return visitAssignTaskReporter((AssignTaskReporter) command);
     }
-    
     
     throw new UpdateTaskVisitorException(String.format("Unsupport command type: %s, body: %s", command.getClass().getSimpleName(), command.toString()));
   }
@@ -58,6 +63,21 @@ public class UpdateTaskVisitor {
     return this;
   }
   
+  private UpdateTaskVisitor visitChangeTaskPriority(ChangeTaskPriority command) {
+    this.current = this.current
+        .withPriority(command.getPriority())
+        .withUpdated(command.getTargetDate());
+    return this;
+  }
+    
+  private UpdateTaskVisitor visitAssignTaskReporter(AssignTaskReporter command) {
+    this.current = this.current
+        .withReporterId(command.getReporterId())
+        .withUpdated(command.getTargetDate());
+    return this;
+  }
+  
+
 
   public Task build() {
     return this.current;

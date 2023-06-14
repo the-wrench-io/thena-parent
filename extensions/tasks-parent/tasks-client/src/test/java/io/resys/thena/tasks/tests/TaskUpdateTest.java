@@ -26,6 +26,8 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
+import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskReporter;
+import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskStatus;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
@@ -57,12 +59,10 @@ public class TaskUpdateTest extends TaskTestCase {
         .build())
     .await().atMost(atMost);
 
-    
-    
     Task createdTask_2 = client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
         .title("very important title no: init")
-        .description("first task ever no: init")
+        .description("second task ever no: init")
         .priority(Priority.LOW)
         .addRoles("admin-users", "view-only-users")
         .userId("user-1")
@@ -70,11 +70,28 @@ public class TaskUpdateTest extends TaskTestCase {
         .build())
     .await().atMost(atMost);
     
+    
     client.tasks().updateTask().updateOne(ImmutableChangeTaskStatus.builder()
         .userId("tester-bob")
         .taskId(createdTask_1.getId())
         .targetDate(getTargetDate().plusDays(1).plusHours(1))
         .status(Task.Status.IN_PROGRESS)
+        .build())
+    .await().atMost(atMost);
+    
+    client.tasks().updateTask().updateOne(ImmutableChangeTaskPriority.builder()
+        .userId("tester-bob")
+        .taskId(createdTask_1.getId())
+        .targetDate(getTargetDate().plusDays(1).plusHours(1))
+        .priority(Task.Priority.HIGH)
+        .build())
+    .await().atMost(atMost);
+    
+    client.tasks().updateTask().updateOne(ImmutableAssignTaskReporter.builder()
+        .userId("tester-bob")
+        .taskId(createdTask_1.getId())
+        .targetDate(getTargetDate().plusDays(1).plusHours(1))
+        .reporterId("citizen jane")
         .build())
     .await().atMost(atMost);
     
