@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.resys.thena.docdb.api.DocDB;
 import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.OidUtils;
 import io.resys.thena.docdb.spi.pgsql.DocDBFactoryPgSql;
 import io.resys.thena.docdb.spi.pgsql.PgErrors;
@@ -56,26 +57,33 @@ import lombok.extern.slf4j.Slf4j;
 public class DocumentStoreImpl implements DocumentStore {
   private final DocumentConfig config;
   
+
+  @Override
+  public Uni<Repo> getRepo() {
+    final var client = config.getClient();
+    return client.repo().query().id(config.getRepoName()).get();
+  }
   @Override public DocumentConfig getConfig() { return config; }
-  @Override public DocumentRepositoryQuery repo() {
+  @Override public DocumentRepositoryQuery query() {
     return new DocumentRepositoryQuery() {
       private String repoName, headName;
       @Override public DocumentRepositoryQuery repoName(String repoName) { this.repoName = repoName; return this; }
       @Override public DocumentRepositoryQuery headName(String headName) { this.headName = headName; return this; }
       @Override public Uni<DocumentStore> create() { return createRepo(repoName, headName); }
       @Override public DocumentStore build() { return createClientStore(repoName, headName); }
-      @Override public Uni<Boolean> createIfNot() { return createRepoOrGetRepo(); }
+      @Override public Uni<DocumentStore> createIfNot() { return createRepoOrGetRepo(); }
     };
   }
   
-  private Uni<Boolean> createRepoOrGetRepo() {
+  private Uni<DocumentStore> createRepoOrGetRepo() {
     final var client = config.getClient();
     
-    return client.repo().query().id(config.getRepoName()).get().onItem().transformToUni(repo -> {
-      if(repo == null) {
-        return client.repo().create().name(config.getRepoName()).build().onItem().transform(newRepo -> true); 
-      }
-      return Uni.createFrom().item(true);
+    return client.repo().query().id(config.getRepoName()).get()
+        .onItem().transformToUni(repo -> {        
+          if(repo == null) {
+            return createRepo(config.getRepoName(), config.getHeadName()); 
+          }
+          return Uni.createFrom().item(createClientStore(config.getRepoName(), config.getHeadName()));
     });
   }
   
@@ -198,4 +206,5 @@ public class DocumentStoreImpl implements DocumentStore {
       return new DocumentStoreImpl(config);
     }
   }
+
 }

@@ -20,14 +20,10 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.docdb.api.models.Repo;
 import io.smallrye.mutiny.Uni;
 
-public interface RepositoryQuery {
-  RepositoryQuery repoName(String repoName);
-  RepositoryQuery headName(String headName);
-  TasksClient build();
-  
-  Uni<TasksClient> create();    
-  Uni<TasksClient> createIfNot();
-} 
+public interface RepositoryActions {
+  RepositoryQuery query();
+  Uni<Repo> getRepo();
+}

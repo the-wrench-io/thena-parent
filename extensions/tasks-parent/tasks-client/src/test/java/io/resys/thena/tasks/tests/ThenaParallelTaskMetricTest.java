@@ -56,7 +56,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
   
   @org.junit.jupiter.api.Test
   public void createAndReadTheTask() throws JsonProcessingException, JSONException {
-    final var client = getClient().repo().repoName(repoName).create().await().atMost(atMost);
+    final var client = getClient().repo().query().repoName(repoName).create().await().atMost(atMost);
     
     // first commit
     client.tasks().createTask().createOne(ImmutableCreateTask.builder()
@@ -68,7 +68,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
         .userId("user-1")
         .reporterId("reporter-1")
         .build())
-    .await().atMost(atMost);;
+    .await().atMost(atMost);
     
     
     runInserts(client, 49);

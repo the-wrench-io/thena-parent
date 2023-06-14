@@ -58,7 +58,11 @@ public class BlobStateBuilderDefault implements BlobStateBuilder {
   private String anyId; //anyId;
   private List<String> blobName = new ArrayList<>();
 
-  
+  @Override
+  public BlobStateBuilder ref(String refId) {
+    this.anyId = refId;
+    return this;
+  }
   @Value.Immutable
   public static interface BlobAndTree {
     List<Blob> getBlob();

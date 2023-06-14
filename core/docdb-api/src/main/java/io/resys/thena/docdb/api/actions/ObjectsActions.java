@@ -42,6 +42,7 @@ public interface ObjectsActions {
   interface BlobStateBuilder {
     BlobStateBuilder repo(String repoName);
     BlobStateBuilder anyId(String refOrCommitOrTag);
+    BlobStateBuilder ref(String refId);
     BlobStateBuilder blobNames(List<String> blobName);
     BlobStateBuilder blobName(String blobName);
     BlobStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);

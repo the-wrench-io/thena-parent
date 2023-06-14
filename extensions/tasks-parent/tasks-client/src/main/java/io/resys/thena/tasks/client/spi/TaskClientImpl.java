@@ -21,14 +21,14 @@ package io.resys.thena.tasks.client.spi;
  */
 
 import io.resys.thena.tasks.client.api.TasksClient;
-import io.resys.thena.tasks.client.api.actions.MigrationActions;
-import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
 import io.resys.thena.tasks.client.api.actions.ExportActions;
+import io.resys.thena.tasks.client.api.actions.MigrationActions;
+import io.resys.thena.tasks.client.api.actions.RepositoryActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
+import io.resys.thena.tasks.client.spi.actions.RepositoryActionsImpl;
 import io.resys.thena.tasks.client.spi.actions.TaskActionsImpl;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
-import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -39,7 +39,6 @@ public class TaskClientImpl implements TasksClient {
   public TaskActions tasks() {
     return new TaskActionsImpl(ctx);
   }
-
   @Override
   public StatisticsActions statistics() {
     // TODO Auto-generated method stub
@@ -50,23 +49,13 @@ public class TaskClientImpl implements TasksClient {
     // TODO Auto-generated method stub
     return null;
   }
-
   @Override
   public ExportActions export() {
     // TODO Auto-generated method stub
     return null;
   }
-
-
   @Override
-  public RepositoryQuery repo() {
-    DocumentStore.DocumentRepositoryQuery repo = ctx.repo();
-    return new RepositoryQuery() {
-      @Override public RepositoryQuery repoName(String repoName) { repo.repoName(repoName); return this; }
-      @Override public RepositoryQuery headName(String headName) { repo.headName(headName); return this; }
-      @Override public Uni<Boolean> createIfNot() { return repo.createIfNot(); }
-      @Override public Uni<TasksClient> create() { return repo.create().onItem().transform(doc -> new TaskClientImpl(doc)); }
-      @Override public TasksClient build() { return new TaskClientImpl(repo.build()); }
-    };
+  public RepositoryActions repo() {
+    return new RepositoryActionsImpl(ctx);
   }
 }

@@ -22,13 +22,16 @@ package io.resys.thena.tasks.client.api;
 
 import io.resys.thena.tasks.client.api.actions.ExportActions;
 import io.resys.thena.tasks.client.api.actions.MigrationActions;
-import io.resys.thena.tasks.client.api.actions.RepositoryQuery;
+import io.resys.thena.tasks.client.api.actions.RepositoryActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
+
+
 public interface TasksClient {
   TaskActions tasks();
   MigrationActions migrate();
   StatisticsActions statistics();
   ExportActions export();
-  RepositoryQuery repo();
+  RepositoryActions repo();
+
 }

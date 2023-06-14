@@ -1,0 +1,32 @@
+
+Repo
+  - id: 1, rev: 2
+    name: junit-tasks-
+
+Refs
+  - 3: main
+
+Tags
+
+Commits
+  - id: 4
+    tree: 5, parent: , message: Creating task
+  - id: 6
+    tree: 7, parent: 4, message: Creating task
+  - id: 3
+    tree: 8, parent: 6, message: Update task
+
+Trees
+  - id: 5
+    9: 1_TASK
+  - id: 7
+    9: 1_TASK
+    10: 3_TASK
+  - id: 8
+    11: 1_TASK
+    10: 3_TASK
+
+Blobs
+  - 9: {"id":"1_TASK","roles":["admin-users","view-only-users"],"title":"very important title no: init","labels":[],"status":"CREATED","actions":[],"created":[2023,1,1,1,1],"dueDate":null,"updated":null,"version":"2_TASK","comments":[],"parentId":null,"priority":"LOW","extensions":[],"reporterId":"reporter-1","assigneeIds":[],"description":"first task ever no: init","documentType":"TASK"}
+  - 10: {"id":"3_TASK","roles":["admin-users","view-only-users"],"title":"very important title no: init","labels":[],"status":"CREATED","actions":[],"created":[2023,1,1,1,1],"dueDate":null,"updated":null,"version":"4_TASK","comments":[],"parentId":null,"priority":"LOW","extensions":[],"reporterId":"reporter-1","assigneeIds":[],"description":"first task ever no: init","documentType":"TASK"}
+  - 11: {"id":"1_TASK","roles":["admin-users","view-only-users"],"title":"very important title no: init","labels":[],"status":"IN_PROGRESS","actions":[],"created":[2023,1,1,1,1],"dueDate":null,"updated":[2023,1,2,2,1],"version":"2_TASK","comments":[],"parentId":null,"priority":"LOW","extensions":[],"reporterId":"reporter-1","assigneeIds":[],"description":"first task ever no: init","documentType":"TASK"}

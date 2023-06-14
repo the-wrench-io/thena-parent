@@ -1,6 +1,7 @@
 package io.resys.thena.tasks.client.api.actions;
 
 import java.time.LocalDate;
+import java.util.Collection;
 
 /*-
  * #%L
@@ -26,8 +27,8 @@ import java.util.List;
 
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.Task.TaskHistory;
-import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
+import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
@@ -46,15 +47,16 @@ public interface TaskActions {
   }
 
   interface UpdateTasks {
-    Uni<Task> updateOne(TaskCommand command);
-    Uni<Task> updateOne(List<TaskCommand> commands);
-    Uni<List<Task>> updateMany(List<TaskCommand> commands);
+    Uni<Task> updateOne(TaskUpdateCommand command);
+    Uni<Task> updateOne(List<TaskUpdateCommand> commands);
+    Uni<List<Task>> updateMany(List<TaskUpdateCommand> commands);
   }
 
   interface ActiveTasksQuery {
     Multi<Task> findAll();
-    Multi<Task> findByRoles(List<String> roles);
-    Multi<Task> findByAssignee(List<String> assignees);
+    Multi<Task> findByTaskIds(Collection<String> taskIds);
+    Multi<Task> findByRoles(Collection<String> roles);
+    Multi<Task> findByAssignee(Collection<String> assignees);
     Uni<Task> get(String id);
     Multi<Task> deleteAll();
   }

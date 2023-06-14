@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.client.spi.actions;
 
+import java.util.ArrayList;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -21,11 +23,14 @@ package io.resys.thena.tasks.client.spi.actions;
  */
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.ObjectsResult;
@@ -50,8 +55,15 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
   
   @Override
   public Uni<Task> get(String id) {
-    // TODO Auto-generated method stub
-    return null;
+    final var config = ctx.getConfig();
+    final Uni<ObjectsResult<BlobObject>> query = config.getClient()
+        .objects().blobState()
+        .repo(config.getRepoName())
+        .ref(config.getHeadName())
+        .blobName(id)
+        .get();
+    
+    return query.onItem().transform(this::mapQueryForBlob);
   }
   
   
@@ -69,7 +81,7 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
             .build()))
         .build();
     
-    return query.onItem().transform(this::mapQuery).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
+    return query.onItem().transform(this::mapQueryForTree).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
   }
 
   @Override
@@ -87,7 +99,7 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
             .build()))
         .build();
     
-    return query.onItem().transform(this::mapQuery)
+    return query.onItem().transform(this::mapQueryForTree)
         .onItem().transformToUni(items -> client.commit().builder()
           .head(config.getRepoName(), config.getHeadName())
           .message("Delete all tasks")
@@ -104,7 +116,57 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
         .onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
   }
 
-  private List<Task> mapQuery(ObjectsResult<RefObjects> state) {
+  
+  private Task mapQueryForBlob(ObjectsResult<BlobObject> state) {
+    if(state.getStatus() != ObjectsStatus.OK) {
+      final var config = ctx.getConfig();
+      throw new DocumentStoreException("FIND_ALL_TASKS_FAIL", ImmutableDocumentExceptionMsg.builder()
+          .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
+          .value(state.getRepo() == null ? "no-repo" : state.getRepo().getId())
+          .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
+          .build()); 
+    }
+    
+    final BlobObject objects = state.getObjects();
+    if(objects == null) {
+      final var config = ctx.getConfig();
+      throw new DocumentStoreException("FIND_TASKS_BY_ID_FAIL", ImmutableDocumentExceptionMsg.builder()
+          .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
+          .value(state.getRepo() == null ? "no-repo" : state.getRepo().getId())
+          .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
+          .build()); 
+    }
+    
+    final var blob = objects.getBlob();
+    return blob.getValue().mapTo(ImmutableTask.class);
+  }
+  
+  private List<Task> mapQueryForBlobs(ObjectsResult<BlobObjects> state) {
+    if(state.getStatus() != ObjectsStatus.OK) {
+      final var config = ctx.getConfig();
+      throw new DocumentStoreException("FIND_ALL_TASKS_FAIL", ImmutableDocumentExceptionMsg.builder()
+          .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
+          .value(state.getRepo() == null ? "no-repo" : state.getRepo().getId())
+          .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
+          .build()); 
+    }
+    
+    final BlobObjects objects = state.getObjects();
+    if(objects == null) {
+      final var config = ctx.getConfig();
+      throw new DocumentStoreException("FIND_TASKS_BY_IDS_FAIL", ImmutableDocumentExceptionMsg.builder()
+          .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
+          .value(state.getRepo() == null ? "no-repo" : state.getRepo().getId())
+          .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
+          .build()); 
+    }
+    return objects.getBlob().stream().map(blob -> blob.getValue().mapTo(ImmutableTask.class))
+        .collect(Collectors.toList());
+  }
+  
+  
+  
+  private List<Task> mapQueryForTree(ObjectsResult<RefObjects> state) {
     if(state.getStatus() != ObjectsStatus.OK) {
       final var config = ctx.getConfig();
       throw new DocumentStoreException("FIND_ALL_TASKS_FAIL", ImmutableDocumentExceptionMsg.builder()
@@ -129,17 +191,30 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
     return blob.getValue().mapTo(ImmutableTask.class);
   }
 
-
   @Override
-  public Multi<Task> findByRoles(List<String> roles) {
+  public Multi<Task> findByRoles(Collection<String> roles) {
     // TODO Auto-generated method stub
     return null;
   }
 
 
   @Override
-  public Multi<Task> findByAssignee(List<String> assignees) {
+  public Multi<Task> findByAssignee(Collection<String> assignees) {
     // TODO Auto-generated method stub
     return null;
+  }
+
+
+  @Override
+  public Multi<Task> findByTaskIds(Collection<String> taskIds) {
+    final var config = ctx.getConfig();
+    final var query = config.getClient()
+        .objects().blobState()
+        .repo(config.getRepoName())
+        .ref(config.getHeadName())
+        .blobNames(new ArrayList<>(taskIds))
+        .list();
+    
+    return query.onItem().transform(this::mapQueryForBlobs).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
   }
 }

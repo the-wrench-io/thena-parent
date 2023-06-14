@@ -46,7 +46,7 @@ public class IntegrationTest extends TaskTestCase {
   
   @Test
   public void createAndReadTheTask() throws JsonProcessingException, JSONException {
-    final var client = getClient().repo().repoName("integration-test").create().await().atMost(atMost);
+    final var client = getClient().repo().query().repoName("integration-test").create().await().atMost(atMost);
     
     client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())

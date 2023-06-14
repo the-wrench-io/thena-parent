@@ -83,13 +83,9 @@ public class TestResource {
       bulk.add(newTask);
     }
     
-    return client.repo().createIfNot()
+    return client.repo().query().createIfNot()
         .onItem().transformToUni(created -> {
-          if(created) {
-            return client.tasks().createTask().createMany(bulk)
-                .onItem().transform(tasks -> HeadState.builder().created(created).build());
-          }
-          return Uni.createFrom().item(HeadState.builder().created(created).build());
+          return Uni.createFrom().item(HeadState.builder().created(true).build());
         });
   }
   
@@ -97,13 +93,12 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("demo/clear")
   public Uni<HeadState> clear() {
-    return client.repo().createIfNot()
+    return client.repo().query().createIfNot()
         .onItem().transformToUni(created -> {
-          if(created) {
+          
             return client.tasks().queryActiveTasks().deleteAll().collect().asList()
-                .onItem().transform(tasks -> HeadState.builder().created(created).build());
-          }
-          return Uni.createFrom().item(HeadState.builder().created(created).build());
+                .onItem().transform(tasks -> HeadState.builder().created(true).build());
+          
         });
   }
   
@@ -112,8 +107,8 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("init")
   public Uni<HeadState> init() {
-    return client.repo().createIfNot()
-        .onItem().transform(created -> HeadState.builder().created(created).build());
+    return client.repo().query().createIfNot()
+        .onItem().transform(created -> HeadState.builder().created(true).build());
   }
   
   @Compressed
