@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.client.spi.visitors;
 
+import java.util.ArrayList;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -23,7 +25,9 @@ package io.resys.thena.tasks.client.spi.visitors;
 import java.util.List;
 
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
+import io.resys.thena.tasks.client.api.model.ImmutableTaskTransaction;
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskReporter;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStatus;
@@ -31,7 +35,9 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 
 public class UpdateTaskVisitor {
   private final Task start;
+  private final List<TaskCommand> visitedCommands = new ArrayList<>();
   private ImmutableTask current;
+  
   public UpdateTaskVisitor(Task start) {
     this.start = start;
     this.current = ImmutableTask.builder().from(start).build();
@@ -40,6 +46,7 @@ public class UpdateTaskVisitor {
   
   
   public UpdateTaskVisitor visit(TaskUpdateCommand command) {
+    visitedCommands.add(command);
     if(command instanceof ChangeTaskStatus) {
       return visitChangeTaskStatus((ChangeTaskStatus) command);
     } else if(command instanceof ChangeTaskPriority) {
@@ -80,7 +87,9 @@ public class UpdateTaskVisitor {
 
 
   public Task build() {
-    return this.current;
+    final var transactions = new ArrayList<>(start.getTransactions());
+    transactions.add(ImmutableTaskTransaction.builder().id(String.valueOf(transactions.size() +1)).commands(visitedCommands).build());
+    return this.current.withTransactions(transactions);
   }
   
   public static class UpdateTaskVisitorException extends RuntimeException {

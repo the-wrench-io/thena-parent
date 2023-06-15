@@ -42,6 +42,7 @@ import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.spi.DocumentStoreImpl;
 import io.resys.thena.tasks.client.spi.TaskClientImpl;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocumentGidProvider;
+import io.vertx.core.json.JsonObject;
 import io.vertx.core.json.jackson.DatabindCodec;
 import io.vertx.core.json.jackson.VertxModule;
 import lombok.extern.slf4j.Slf4j;
@@ -135,6 +136,12 @@ public class TaskTestCase {
     final var expected = toExpectedFile(expectedFileName);
     final var actual = toStaticData();
     Assertions.assertEquals(expected, actual);
+    
+  }
+  public void assertEquals(String expectedFileName, Object actual ) {
+    final var expected = toExpectedFile(expectedFileName);
+    final var actualJson = JsonObject.mapFrom(actual).encodePrettily();
+    Assertions.assertEquals(expected, actualJson);
     
   }
 }

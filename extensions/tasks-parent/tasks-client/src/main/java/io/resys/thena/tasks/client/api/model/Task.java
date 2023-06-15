@@ -40,7 +40,7 @@ public interface Task extends Document {
   
   @Nullable String getParentId(); //for task linking/grouping 
 
-  List<TaskCommand> getActions(); 
+  List<TaskTransaction> getTransactions(); 
   
   List<String> getRoles();
   List<String> getAssigneeIds();
@@ -59,6 +59,12 @@ public interface Task extends Document {
   
   enum Status { CREATED, IN_PROGRESS, COMPLETED, REJECTED }
   enum Priority { LOW, MEDIUM, HIGH }  
+  
+  @Value.Immutable @JsonSerialize(as = ImmutableTaskTransaction.class) @JsonDeserialize(as = ImmutableTaskTransaction.class)
+  interface TaskTransaction extends Serializable {
+    String getId();
+    List<TaskCommand> getCommands(); 
+  }
   
   @Value.Immutable @JsonSerialize(as = ImmutableTaskExtension.class) @JsonDeserialize(as = ImmutableTaskExtension.class)
   interface TaskExtension extends Serializable {

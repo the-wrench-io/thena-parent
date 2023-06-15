@@ -26,6 +26,7 @@ import io.resys.thena.tasks.client.api.actions.MigrationActions;
 import io.resys.thena.tasks.client.api.actions.RepositoryActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
+import io.resys.thena.tasks.client.spi.actions.ExportActionsImpl;
 import io.resys.thena.tasks.client.spi.actions.RepositoryActionsImpl;
 import io.resys.thena.tasks.client.spi.actions.TaskActionsImpl;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
@@ -51,8 +52,7 @@ public class TaskClientImpl implements TasksClient {
   }
   @Override
   public ExportActions export() {
-    // TODO Auto-generated method stub
-    return null;
+    return new ExportActionsImpl(ctx);
   }
   @Override
   public RepositoryActions repo() {

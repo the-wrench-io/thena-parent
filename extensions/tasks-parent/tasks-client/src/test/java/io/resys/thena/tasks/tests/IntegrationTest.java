@@ -56,7 +56,9 @@ public class IntegrationTest extends TaskTestCase {
         .addRoles("admin-users", "view-only-users")
         .userId("user-1")
         .reporterId("reporter-1")
-        .build()).await().atMost(atMost);
+        .build())
+    .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
+    .await().atMost(atMost);
     
     final var allActive = client.tasks().queryActiveTasks().findAll().collect().asList().await().atMost(atMost);
     Assertions.assertEquals(1, allActive.size());
@@ -67,7 +69,7 @@ public class IntegrationTest extends TaskTestCase {
     final var actual = created.encode();
     log.debug(actual);
     JSONAssert.assertEquals(
-        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"actions\":[],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"parentId\":null,\"reporterId\":\"reporter-1\",\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"status\":\"CREATED\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"comments\":[]}"
+        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"parentId\":null,\"transactions\":[{\"id\":\"1\",\"commands\":[{\"commandType\":\"CreateTask\",\"userId\":\"user-1\",\"targetDate\":[2023,1,1,1,1],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"reporterId\":\"reporter-1\",\"status\":null,\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"comments\":[]}]}],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"reporterId\":\"reporter-1\",\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"priority\":\"LOW\",\"status\":\"CREATED\",\"labels\":[],\"extensions\":[],\"comments\":[]}"
         , actual, true);
   }
 }

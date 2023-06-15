@@ -1,5 +1,13 @@
 package io.resys.thena.tasks.client.api.model;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.immutables.value.Value;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -23,11 +31,6 @@ package io.resys.thena.tasks.client.api.model;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.immutables.value.Value;
-
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.List;
 
 @Value.Immutable @JsonSerialize(as = ImmutableExport.class) @JsonDeserialize(as = ImmutableExport.class)
 public interface Export {
@@ -38,7 +41,24 @@ public interface Export {
   LocalDate getStartDate();
   LocalDate getEndDate();
   String getName();
-  List<Task> getEntries();
-  Statistics.StatisticsSummary getStatistics();
+  List<ExportEvent> getEvents();
 
+  
+  @Value.Immutable @JsonSerialize(as = ImmutableExportEvent.class) @JsonDeserialize(as = ImmutableExportEvent.class)
+  interface ExportEvent {
+    String getId();
+    String getTaskId();
+    ExportEventType getEventType();
+    LocalDate getEventDate(); // when the event happened
+    
+    @Nullable
+    LocalDate getEndDate(); // only when a date period is used in combination with the event date
+    @Nullable
+    Task.Status getTaskStatus(); // only used for Task Status events
+  }
+  
+  enum ExportEventType {
+    TASK_UPDATED,
+    TASK_STATUS_SET
+  }
 }

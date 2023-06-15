@@ -29,6 +29,7 @@ import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.tasks.client.api.actions.TaskActions.CreateTasks;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
+import io.resys.thena.tasks.client.api.model.ImmutableTaskTransaction;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.Task.Status;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
@@ -106,6 +107,7 @@ public class CreateTasksImpl implements CreateTasks {
         .dueDate(command.getDueDate())
         .created(targetDate)
         .status(command.getStatus() == null ? Status.CREATED : command.getStatus())
+        .addTransactions(ImmutableTaskTransaction.builder().id(String.valueOf(1)).addCommands(command).build())
         .build();
 
   }
