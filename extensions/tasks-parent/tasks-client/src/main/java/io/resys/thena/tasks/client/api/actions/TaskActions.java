@@ -53,6 +53,7 @@ public interface TaskActions {
 
   interface ActiveTasksQuery {
     Multi<Task> findAll();
+    Multi<Task> findInDateRange(LocalDate startDate, LocalDate endDate);
     Multi<Task> findByRoles(List<String> roles);
     Multi<Task> findByAssignee(List<String> assignees);
     Uni<Task> get(String id);

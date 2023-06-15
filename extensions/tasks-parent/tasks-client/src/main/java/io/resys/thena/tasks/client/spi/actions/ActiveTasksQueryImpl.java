@@ -20,6 +20,9 @@ package io.resys.thena.tasks.client.spi.actions;
  * #L%
  */
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -53,7 +56,7 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
     // TODO Auto-generated method stub
     return null;
   }
-  
+
   
   @Override
   public Multi<Task> findAll() {
@@ -69,7 +72,35 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
             .build()))
         .build();
     
-    return query.onItem().transform(this::mapQuery).onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()));
+    return query.onItem()
+        .transform(this::mapQuery)
+        .onItem()
+        .transformToMulti(items -> Multi.createFrom().items(items.stream()));
+  }
+
+  @Override
+  public Multi<Task> findInDateRange(LocalDate startDate, LocalDate endDate) {
+    LocalDateTime start = LocalDateTime.of(startDate, LocalTime.of(0,0));
+    LocalDateTime end = LocalDateTime.of(endDate, LocalTime.of(0,0));
+
+    final var config = ctx.getConfig();
+    final var query = config.getClient()
+        .objects().refState()
+        .repo(config.getRepoName())
+        .ref(config.getHeadName())
+        .blobs()
+        .blobCriteria(Arrays.asList(ImmutableBlobCriteria.builder()
+            .key("documentType").value(Document.DocumentType.TASK.name())
+            .type(CriteriaType.EXACT)
+            .build()))
+        .build();
+
+    return query.onItem()
+        .transform(this::mapQuery)
+        .onItem()
+        .transformToMulti(items -> Multi.createFrom()
+            .items(items.stream()
+                .filter(item -> item.getCreated().compareTo(start) >= 0 && item.getCreated().compareTo(end) <= 0)));
   }
 
   @Override
