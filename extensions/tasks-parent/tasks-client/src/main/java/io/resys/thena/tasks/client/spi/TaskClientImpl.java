@@ -20,7 +20,7 @@ package io.resys.thena.tasks.client.spi;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.actions.ExportActions;
 import io.resys.thena.tasks.client.api.actions.MigrationActions;
 import io.resys.thena.tasks.client.api.actions.RepositoryActions;
@@ -33,7 +33,7 @@ import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class TaskClientImpl implements TasksClient {
+public class TaskClientImpl implements TaskClient {
   private final DocumentStore ctx;
   
   @Override
@@ -57,5 +57,8 @@ public class TaskClientImpl implements TasksClient {
   @Override
   public RepositoryActions repo() {
     return new RepositoryActionsImpl(ctx);
+  }
+  public DocumentStore getCtx() {
+    return ctx;
   }
 }

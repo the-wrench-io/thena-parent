@@ -71,19 +71,19 @@ public class DocumentStoreImpl implements DocumentStore {
       @Override public DocumentRepositoryQuery headName(String headName) { this.headName = headName; return this; }
       @Override public Uni<DocumentStore> create() { return createRepo(repoName, headName); }
       @Override public DocumentStore build() { return createClientStore(repoName, headName); }
-      @Override public Uni<DocumentStore> createIfNot() { return createRepoOrGetRepo(); }
+      @Override public Uni<DocumentStore> createIfNot() { return createRepoOrGetRepo(repoName, headName); }
     };
   }
   
-  private Uni<DocumentStore> createRepoOrGetRepo() {
+  private Uni<DocumentStore> createRepoOrGetRepo(String repoName, String headName) {
     final var client = config.getClient();
     
-    return client.repo().query().id(config.getRepoName()).get()
+    return client.repo().query().id(repoName).get()
         .onItem().transformToUni(repo -> {        
           if(repo == null) {
-            return createRepo(config.getRepoName(), config.getHeadName()); 
+            return createRepo(repoName, headName); 
           }
-          return Uni.createFrom().item(createClientStore(config.getRepoName(), config.getHeadName()));
+          return Uni.createFrom().item(createClientStore(repoName, headName));
     });
   }
   

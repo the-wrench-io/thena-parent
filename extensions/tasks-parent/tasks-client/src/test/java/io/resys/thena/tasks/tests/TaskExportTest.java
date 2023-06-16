@@ -40,10 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 @QuarkusTest
 @TestProfile(TaskPgProfile.class)
 public class TaskExportTest extends TaskTestCase {
-  private static final String repoName = TaskExportTest.class.getSimpleName();
-  
   @org.junit.jupiter.api.Test
-  public void createTaskAndUpdate() throws JsonProcessingException, JSONException {
+  public void createExportTest() throws JsonProcessingException, JSONException {
+    final var repoName = TaskExportTest.class.getSimpleName() + "createExportTest";
     final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
 //    log.debug(super.printRepo(client));
     

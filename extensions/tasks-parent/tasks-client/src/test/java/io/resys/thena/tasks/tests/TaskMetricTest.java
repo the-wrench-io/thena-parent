@@ -30,7 +30,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task.Priority;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
@@ -54,7 +54,7 @@ public class TaskMetricTest extends TaskTestCase {
   }
   
   
-  private void select(TasksClient client) {
+  private void select(TaskClient client) {
     final var start = System.currentTimeMillis();
     
     final var blobs = client.tasks().queryActiveTasks().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
@@ -65,7 +65,7 @@ public class TaskMetricTest extends TaskTestCase {
   
   
   
-  private void runInserts(TasksClient client, int total) {
+  private void runInserts(TaskClient client, int total) {
     var start = System.currentTimeMillis();
     
     List<CreateTask> bulk = new ArrayList<>();

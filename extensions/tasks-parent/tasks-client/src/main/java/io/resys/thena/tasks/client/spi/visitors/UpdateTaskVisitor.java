@@ -31,6 +31,7 @@ import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskReporter;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStatus;
+import io.resys.thena.tasks.client.api.model.TaskCommand.TaskCommandType;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 
 public class UpdateTaskVisitor {
@@ -45,13 +46,13 @@ public class UpdateTaskVisitor {
   
   
   
-  public UpdateTaskVisitor visit(TaskUpdateCommand command) {
+  public UpdateTaskVisitor visit(TaskUpdateCommand command) {    
     visitedCommands.add(command);
-    if(command instanceof ChangeTaskStatus) {
+    if(command.getCommandType() == TaskCommandType.ChangeTaskStatus) {
       return visitChangeTaskStatus((ChangeTaskStatus) command);
-    } else if(command instanceof ChangeTaskPriority) {
+    } else if(command.getCommandType() == TaskCommandType.ChangeTaskPriority) {
       return visitChangeTaskPriority((ChangeTaskPriority) command);
-    } else if(command instanceof AssignTaskReporter) {
+    } else if(command.getCommandType() == TaskCommandType.AssignTaskReporter) {
       return visitAssignTaskReporter((AssignTaskReporter) command);
     }
     

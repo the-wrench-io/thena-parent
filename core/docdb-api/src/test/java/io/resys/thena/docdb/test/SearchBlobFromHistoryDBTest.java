@@ -167,6 +167,8 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
     
     Assertions.assertEquals(41, history.getValues().size());
+    log.debug("Found 41 historic entries: \r\n {}", JsonArray.of(history).encodePrettily());
+    
     
     history = getClient().history().blob()
         .repo(getRepo().getName(), "main")

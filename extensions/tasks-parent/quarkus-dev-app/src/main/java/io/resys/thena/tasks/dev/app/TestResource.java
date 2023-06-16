@@ -32,7 +32,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.quarkus.vertx.http.Compressed;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
@@ -47,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TestResource {
   @Inject Vertx vertx;
-  @Inject TasksClient client;
+  @Inject TaskClient client;
 
   //http://localhost:8080/portal/active/tasks
   @Jacksonized @Data @Builder

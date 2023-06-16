@@ -20,14 +20,14 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.smallrye.mutiny.Uni;
 
 public interface RepositoryQuery {
   RepositoryQuery repoName(String repoName);
   RepositoryQuery headName(String headName);
-  TasksClient build();
+  TaskClient build();
   
-  Uni<TasksClient> create();    
-  Uni<TasksClient> createIfNot();
+  Uni<TaskClient> create();    
+  Uni<TaskClient> createIfNot();
 } 

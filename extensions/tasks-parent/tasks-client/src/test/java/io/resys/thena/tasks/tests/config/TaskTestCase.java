@@ -37,7 +37,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import io.resys.thena.docdb.spi.DocDBDefault;
 import io.resys.thena.docdb.spi.DocDBPrettyPrinter;
 import io.resys.thena.docdb.spi.jackson.VertexExtModule;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.spi.DocumentStoreImpl;
 import io.resys.thena.tasks.client.spi.TaskClientImpl;
@@ -61,8 +61,9 @@ public class TaskTestCase {
   
   @BeforeEach
   public void setUp() {
+    final var db = DB + DB_ID.getAndIncrement();
     store = DocumentStoreImpl.builder()
-        .repoName(DB).pgPool(pgPool).pgDb(DB + DB_ID.getAndIncrement())
+        .repoName(db).pgPool(pgPool).pgDb(db)
         .gidProvider(new DocumentGidProvider() {
           @Override
           public String getNextVersion(DocumentType entity) {
@@ -113,16 +114,16 @@ public class TaskTestCase {
     return targetDate;
   }
 
-  public String printRepo(TasksClient client) {
-    final var config = getStore().getConfig();
+  public String printRepo(TaskClient client) {
+    final var config = ((TaskClientImpl) client).getCtx().getConfig();
     final var state = ((DocDBDefault) config.getClient()).getState();
     final var repo = client.repo().getRepo().await().atMost(Duration.ofMinutes(1));
     final String result = new DocDBPrettyPrinter(state).print(repo);
     return result;
   }
   
-  public String toStaticData() {
-    final var config = getStore().getConfig();
+  public String toStaticData(TaskClient client) {
+    final var config = ((TaskClientImpl) client).getCtx().getConfig();
     final var state = ((DocDBDefault) config.getClient()).getState();
     final var repo = client.repo().getRepo().await().atMost(Duration.ofMinutes(1));
     return new RepositoryToStaticData(state).print(repo);
@@ -132,13 +133,13 @@ public class TaskTestCase {
     return RepositoryToStaticData.toString(TaskTestCase.class, fileName);
   }
   
-  public void assertRepo(String expectedFileName) {
+  public void assertRepo(TaskClient client, String expectedFileName) {
     final var expected = toExpectedFile(expectedFileName);
-    final var actual = toStaticData();
+    final var actual = toStaticData(client);
     Assertions.assertEquals(expected, actual);
     
   }
-  public void assertEquals(String expectedFileName, Object actual ) {
+  public void assertEquals(String expectedFileName, Object actual) {
     final var expected = toExpectedFile(expectedFileName);
     final var actualJson = JsonObject.mapFrom(actual).encodePrettily();
     Assertions.assertEquals(expected, actualJson);

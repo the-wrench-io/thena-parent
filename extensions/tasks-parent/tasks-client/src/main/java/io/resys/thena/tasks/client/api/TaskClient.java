@@ -27,7 +27,7 @@ import io.resys.thena.tasks.client.api.actions.StatisticsActions;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
 
 
-public interface TasksClient {
+public interface TaskClient {
   TaskActions tasks();
   MigrationActions migrate();
   StatisticsActions statistics();

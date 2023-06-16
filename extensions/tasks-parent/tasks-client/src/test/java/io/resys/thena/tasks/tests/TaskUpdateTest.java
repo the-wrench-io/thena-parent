@@ -40,12 +40,11 @@ import lombok.extern.slf4j.Slf4j;
 @QuarkusTest
 @TestProfile(TaskPgProfile.class)
 public class TaskUpdateTest extends TaskTestCase {
-  private static final String repoName = TaskUpdateTest.class.getSimpleName();
   
   @org.junit.jupiter.api.Test
   public void createTaskAndUpdate() throws JsonProcessingException, JSONException {
+    final var repoName = TaskUpdateTest.class.getSimpleName() + "CreateTaskAndUpdate";
     final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
-//    log.debug(super.printRepo(client));
     
     // first commit
     Task createdTask_1 = client.tasks().createTask().createOne(ImmutableCreateTask.builder()
@@ -98,7 +97,7 @@ public class TaskUpdateTest extends TaskTestCase {
 
     
     log.debug(super.printRepo(client));
-    assertRepo("update-test-cases/createTaskAndUpdate.txt");
+    assertRepo(client, "update-test-cases/createTaskAndUpdate.txt");
     
   }
 }

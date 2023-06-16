@@ -31,7 +31,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.resys.thena.docdb.spi.jackson.VertexExtModule;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskComment;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskExtension;
@@ -73,7 +73,7 @@ public class BeanFactory {
   
   
   @Produces
-  public TasksClient client(Vertx vertx, ObjectMapper om) {
+  public TaskClient client(Vertx vertx, ObjectMapper om) {
     final var modules = new com.fasterxml.jackson.databind.Module[] {
       new JavaTimeModule(), 
       new Jdk8Module(), 
