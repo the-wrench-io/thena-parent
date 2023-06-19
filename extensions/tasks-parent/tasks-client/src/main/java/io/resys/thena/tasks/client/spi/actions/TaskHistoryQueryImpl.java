@@ -33,6 +33,7 @@ import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.resys.thena.tasks.client.spi.store.ImmutableDocumentExceptionMsg;
+import io.resys.thena.tasks.client.spi.visitors.HistoryVisitor;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,8 +75,8 @@ public class TaskHistoryQueryImpl implements TaskActions.TaskHistoryQuery {
           .build());
     }
 
-    final var tasks = state.getValues();
-    if(tasks == null) {
+    final var historyItems = new HistoryVisitor().visitBlobHistory(state.getValues()).build();
+    if(historyItems == null) {
       final var config = ctx.getConfig();
       throw new DocumentStoreException("FIND_TASK_HISTORY_FAIL", ImmutableDocumentExceptionMsg.builder()
           .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
@@ -83,7 +84,7 @@ public class TaskHistoryQueryImpl implements TaskActions.TaskHistoryQuery {
           .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
           .build());
     }
-    return tasks.stream().map(task -> task.getBlob().getValue().mapTo(ImmutableTask.class))
+    return historyItems.stream().map(item -> item.getBlob().getValue().mapTo(ImmutableTask.class))
         .collect(Collectors.toList());
   }
 }

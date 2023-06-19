@@ -97,6 +97,7 @@ public class TaskHistoryTest extends TaskTestCase {
 
     final var history = client.tasks().queryTaskHistory().get("1_TASK").await().atMost(Duration.ofMinutes(1));
     log.debug("history: {}", history);
-    Assertions.assertEquals(5, history.getVersions().size());
+    String repo = super.printRepo(client);
+    Assertions.assertEquals(4, history.getVersions().size());
   }
 }
