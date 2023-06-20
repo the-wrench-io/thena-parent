@@ -24,12 +24,17 @@ package io.resys.thena.tasks.dev.app;
 import io.quarkus.vertx.http.Compressed;
 import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.api.model.TaskCommand;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import java.util.List;
@@ -47,5 +52,47 @@ public class TaskResource {
   @Path("active/tasks")
   public Uni<List<Task>> findAllActiveTasks() {
     return client.tasks().queryActiveTasks().findAll().collect().asList();
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("task/{id}")
+  public Uni<Task> findTaskById(@PathParam("id") String id) {
+    return client.tasks().queryActiveTasks().get(id);
+  }
+
+  @GET
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("tasks")
+  public Multi<Task> findTasksByIds(List<String> ids) {
+    return client.tasks().queryActiveTasks().findByTaskIds(ids);
+  }
+
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("task")
+  public Uni<Task> createTask(TaskCommand.CreateTask command) {
+    return client.tasks().createTask().createOne(command);
+  }
+
+  @POST
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("tasks")
+  public Uni<List<Task>> createTasks(List<TaskCommand.CreateTask> commands) {
+    return client.tasks().createTask().createMany(commands);
+  }
+
+  @PUT
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("task")
+  public Uni<Task> updateTask(TaskCommand.TaskUpdateCommand command) {
+    return client.tasks().updateTask().updateOne(command);
+  }
+
+  @PUT
+  @Produces(MediaType.APPLICATION_JSON)
+  @Path("tasks")
+  public Uni<List<Task>> updateTasks(List<TaskCommand.TaskUpdateCommand> commands) {
+    return client.tasks().updateTask().updateMany(commands);
   }
 }
