@@ -30,6 +30,7 @@ import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -56,19 +57,20 @@ public class TaskResource {
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("task/{id}")
-  public Uni<Task> findTaskById(@PathParam("id") String id) {
-    return client.tasks().queryActiveTasks().get(id);
+  @Path("task/{blobId}")
+  public Uni<Task> findTaskByBlobId(@PathParam("blobId") String blobId) {
+    return client.tasks().queryActiveTasks().get(blobId);
   }
 
   @GET
   @Produces(MediaType.APPLICATION_JSON)
   @Path("tasks")
-  public Multi<Task> findTasksByIds(List<String> ids) {
-    return client.tasks().queryActiveTasks().findByTaskIds(ids);
+  public Multi<Task> findTasksByIds(List<String> taskIds) {
+    return client.tasks().queryActiveTasks().findByTaskIds(taskIds);
   }
 
   @POST
+  @Consumes(MediaType.APPLICATION_JSON)
   @Produces(MediaType.APPLICATION_JSON)
   @Path("task")
   public Uni<Task> createTask(TaskCommand.CreateTask command) {
@@ -84,8 +86,8 @@ public class TaskResource {
 
   @PUT
   @Produces(MediaType.APPLICATION_JSON)
-  @Path("task")
-  public Uni<Task> updateTask(TaskCommand.TaskUpdateCommand command) {
+  @Path("task/{taskId}")
+  public Uni<Task> updateTask(@PathParam("taskId") String taskId, TaskCommand.TaskUpdateCommand command) {
     return client.tasks().updateTask().updateOne(command);
   }
 
