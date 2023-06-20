@@ -31,6 +31,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.tests.config.TaskPgProfile;
 import io.resys.thena.tasks.tests.config.TaskTestCase;
+import io.vertx.core.json.JsonObject;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONException;
 import org.junit.jupiter.api.Assertions;
@@ -42,7 +43,7 @@ import java.time.Duration;
 @TestProfile(TaskPgProfile.class)
 public class TaskHistoryTest extends TaskTestCase {
 
-  private static final String repoName = TaskUpdateTest.class.getSimpleName();
+  private static final String repoName = TaskHistoryTest.class.getSimpleName();
 
   @org.junit.jupiter.api.Test
   public void createTaskAndUpdateAndGetHistory() throws JsonProcessingException, JSONException {
@@ -96,8 +97,8 @@ public class TaskHistoryTest extends TaskTestCase {
         .await().atMost(atMost);
 
     final var history = client.tasks().queryTaskHistory().get("1_TASK").await().atMost(Duration.ofMinutes(1));
-    log.debug("history: {}", history);
-    String repo = super.printRepo(client);
+    log.debug("history: {}", JsonObject.mapFrom(history).encodePrettily());
     Assertions.assertEquals(4, history.getVersions().size());
+    assertEquals("history-test-cases/createTaskAndUpdateAndGetHistory.json", history);
   }
 }
