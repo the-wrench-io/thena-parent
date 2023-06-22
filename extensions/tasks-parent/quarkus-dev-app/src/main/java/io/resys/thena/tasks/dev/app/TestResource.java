@@ -96,7 +96,7 @@ public class TestResource {
     return client.repo().query().createIfNot()
         .onItem().transformToUni(created -> {
           
-            return client.tasks().queryActiveTasks().deleteAll().collect().asList()
+            return client.tasks().queryActiveTasks().deleteAll("", LocalDateTime.now()).collect().asList()
                 .onItem().transform(tasks -> HeadState.builder().created(true).build());
           
         });

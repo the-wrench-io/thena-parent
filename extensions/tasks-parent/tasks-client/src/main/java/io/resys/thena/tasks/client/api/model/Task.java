@@ -37,6 +37,7 @@ public interface Task extends Document {
 
   LocalDateTime getCreated();
   @Nullable LocalDateTime getUpdated();  
+  @Nullable LocalDateTime getArchived();  
   
   @Nullable String getParentId(); //for task linking/grouping 
 

@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.client.spi.store;
 
+import javax.annotation.Nullable;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -23,7 +25,11 @@ package io.resys.thena.tasks.client.spi.store;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.DocDB;
+import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
+import io.smallrye.mutiny.Uni;
 
 
 @Value.Immutable
@@ -34,6 +40,16 @@ public interface DocumentConfig {
   DocumentGidProvider getGid();
   DocumentAuthorProvider getAuthor();
 
+  default <T> Uni<T> accept(RefVisitor<T> visitor) {
+    final var builder = visitor.start(this, getClient()
+        .objects().refState()
+        .repo(getRepoName())
+        .ref(getHeadName()));
+    
+    return builder.build()
+        .onItem().transform(envelope -> visitor.visit(this, envelope))
+        .onItem().transform(ref -> visitor.end(this, ref));
+  }
 
   interface DocumentGidProvider {
     String getNextId(DocumentType entity);
@@ -43,5 +59,11 @@ public interface DocumentConfig {
   @FunctionalInterface
   interface DocumentAuthorProvider {
     String get();
+  }
+  
+  interface RefVisitor<T> { 
+    RefStateBuilder start(DocumentConfig config, RefStateBuilder builder);
+    @Nullable RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope);
+    T end(DocumentConfig config, @Nullable RefObjects ref);
   }
 }

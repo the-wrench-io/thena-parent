@@ -99,10 +99,11 @@ public interface ClientQuery {
   interface BlobCriteria {
     CriteriaType getType();
     String getKey();
-    String getValue();
+    
+    @Nullable String getValue();
   }
   
   enum CriteriaType {
-    EXACT, LIKE
+    EXACT, LIKE, NOT_NULL
   }
 }

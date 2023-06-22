@@ -88,8 +88,13 @@ public class UpdateTaskVisitor {
 
   public Task build() {
     final var transactions = new ArrayList<>(start.getTransactions());
-    transactions.add(ImmutableTaskTransaction.builder().id(String.valueOf(transactions.size() +1)).commands(visitedCommands).build());
-    return this.current.withTransactions(transactions);
+    final var id = String.valueOf(transactions.size() +1);
+    transactions
+      .add(ImmutableTaskTransaction.builder()
+        .id(id)
+        .commands(visitedCommands)
+        .build());
+    return this.current.withVersion(id).withTransactions(transactions);
   }
   
   public static class UpdateTaskVisitorException extends RuntimeException {

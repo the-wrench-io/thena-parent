@@ -40,7 +40,6 @@ import io.resys.thena.tasks.client.api.model.Task.Priority;
 import io.resys.thena.tasks.client.api.model.Task.Status;
 import io.resys.thena.tasks.client.api.model.Task.TaskComment;
 import io.resys.thena.tasks.client.api.model.Task.TaskExtension;
-import io.resys.thena.tasks.client.api.model.TaskCommand.TaskCommandType;
 
 
 @JsonTypeInfo(
@@ -52,22 +51,29 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.TaskCommandType;
   @Type(value = ImmutableChangeTaskStatus.class, name = "ChangeTaskStatus"),
   @Type(value = ImmutableChangeTaskPriority.class, name = "ChangeTaskPriority"),
   @Type(value = ImmutableAssignTaskReporter.class, name = "AssignTaskReporter"),
+  
+  @Type(value = ImmutableArchiveTask.class, name = "ArchiveTask"),
+  @Type(value = ImmutableCommentOnTask.class, name = "CommentOnTask"),
+  @Type(value = ImmutableAssignTaskRoles.class, name = "AssignTaskRoles"),
+  @Type(value = ImmutableAssignTask.class, name = "AssignTask"),
+  
+  @Type(value = ImmutableChangeTaskDueDate.class, name = "ChangeTaskDueDate"),
+  @Type(value = ImmutableChangeTaskInfo.class, name = "ChangeTaskInfo"),
+  @Type(value = ImmutableChangeTaskExtension.class, name = "ChangeTaskExtension"),
+  @Type(value = ImmutableAssignTaskParent.class, name = "AssignTaskParent"),
+
 })
 public interface TaskCommand extends Serializable {
   String getUserId();
   @Nullable LocalDateTime getTargetDate();
   TaskCommandType getCommandType();
   
-  
   enum TaskCommandType {
-    CreateTask, ChangeTaskStatus, ChangeTaskPriority, AssignTaskReporter
+    CreateTask, ChangeTaskStatus, ChangeTaskPriority, AssignTaskReporter, 
+    ArchiveTask, CommentOnTask, AssignTaskRoles, AssignTask, 
+    ChangeTaskDueDate, ChangeTaskInfo, ChangeTaskExtension, AssignTaskParent
   }
-  
-  interface TaskUpdateCommand extends TaskCommand {
-    String getTaskId();
-  }
-  
-  
+
   @Value.Immutable @JsonSerialize(as = ImmutableCreateTask.class) @JsonDeserialize(as = ImmutableCreateTask.class)
   interface CreateTask extends TaskCommand {
     List<String> getRoles();
@@ -87,11 +93,39 @@ public interface TaskCommand extends Serializable {
     @Override default TaskCommandType getCommandType() { return TaskCommandType.CreateTask; }
   }
   
+  @JsonTypeInfo(
+      use = JsonTypeInfo.Id.NAME,
+      include = JsonTypeInfo.As.PROPERTY,
+      property = "commandType")
+  @JsonSubTypes({
+    @Type(value = ImmutableChangeTaskStatus.class, name = "ChangeTaskStatus"),
+    @Type(value = ImmutableChangeTaskPriority.class, name = "ChangeTaskPriority"),
+    @Type(value = ImmutableAssignTaskReporter.class, name = "AssignTaskReporter"),
+    
+    @Type(value = ImmutableArchiveTask.class, name = "ArchiveTask"),
+    @Type(value = ImmutableCommentOnTask.class, name = "CommentOnTask"),
+    @Type(value = ImmutableAssignTaskRoles.class, name = "AssignTaskRoles"),
+    @Type(value = ImmutableAssignTask.class, name = "AssignTask"),
+    
+    @Type(value = ImmutableChangeTaskDueDate.class, name = "ChangeTaskDueDate"),
+    @Type(value = ImmutableChangeTaskInfo.class, name = "ChangeTaskInfo"),
+    @Type(value = ImmutableChangeTaskExtension.class, name = "ChangeTaskExtension"),
+    @Type(value = ImmutableAssignTaskParent.class, name = "AssignTaskParent"),
+  })
+  interface TaskUpdateCommand extends TaskCommand {
+    String getTaskId();
+  }
+  
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskReporter.class) @JsonDeserialize(as = ImmutableAssignTaskReporter.class)
   interface AssignTaskReporter extends TaskUpdateCommand {
     String getReporterId();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTaskReporter; }
 
+  }
+
+  @Value.Immutable @JsonSerialize(as = ImmutableArchiveTask.class) @JsonDeserialize(as = ImmutableArchiveTask.class)
+  interface ArchiveTask extends TaskUpdateCommand {
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.ArchiveTask; }
   }
 
   
@@ -111,6 +145,7 @@ public interface TaskCommand extends Serializable {
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskParent.class) @JsonDeserialize(as = ImmutableAssignTaskParent.class)
   interface AssignTaskParent extends TaskUpdateCommand {
     @Nullable String getParentId(); 
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTaskParent; }
   }
     
   @Value.Immutable @JsonSerialize(as = ImmutableCommentOnTask.class) @JsonDeserialize(as = ImmutableCommentOnTask.class)
@@ -118,33 +153,39 @@ public interface TaskCommand extends Serializable {
     @Nullable String getCommentId();
     @Nullable String getReplyToCommentId();
     String getCommentText();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.CommentOnTask; }
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskRoles.class) @JsonDeserialize(as = ImmutableAssignTaskRoles.class)
   interface AssignTaskRoles extends TaskUpdateCommand {
     String getRoles();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTaskRoles; }
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTask.class) @JsonDeserialize(as = ImmutableAssignTask.class)
   interface AssignTask extends TaskUpdateCommand {
     String getAssigneeIds();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTask; }
   }
   
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskDueDate.class) @JsonDeserialize(as = ImmutableChangeTaskDueDate.class)
   interface ChangeTaskDueDate extends TaskUpdateCommand {
     Optional<LocalDate> getDueDate();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskDueDate; }
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskInfo.class) @JsonDeserialize(as = ImmutableChangeTaskInfo.class)
   interface ChangeTaskInfo extends TaskUpdateCommand {
     String getSubject();
     String getDescription();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskInfo; }
   }
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskExtension.class) @JsonDeserialize(as = ImmutableChangeTaskExtension.class)
   interface ChangeTaskExtension extends TaskUpdateCommand {
     @Nullable String getId(); // create | update
     String getType();
     String getBody();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskExtension; }
   }
 }

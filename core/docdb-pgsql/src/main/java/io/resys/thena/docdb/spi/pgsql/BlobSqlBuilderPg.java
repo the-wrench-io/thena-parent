@@ -79,7 +79,7 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
       if(paramIndex > 1) {
         where.append(" AND ").ln();
       }
-      
+      // TODO:: null value props
       props.add(entry.getKey());
       if(entry.getType() == CriteriaType.EXACT) {
         props.add(entry.getValue());
@@ -87,12 +87,20 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
           .append(String.valueOf(paramIndex++))
           .append(" = $")
           .append(String.valueOf(paramIndex++)).ln();
-      } else {
+      } else if(entry.getType() == CriteriaType.LIKE)  {
         props.add("%"+ entry.getValue() + "%");
         where.append("blobs.value ->> $")
         .append(String.valueOf(paramIndex++))
         .append(" like $")
         .append(String.valueOf(paramIndex++)).ln();
+        
+      } else if(entry.getType() == CriteriaType.NOT_NULL)  {
+        where.append("blobs.value ->> $")
+        .append(String.valueOf(paramIndex++))
+        .append(" is not null").ln();
+        
+      } else {
+        throw new RuntimeException("Criteria type: " + entry.getType() + " not defined");
       }
     }
   

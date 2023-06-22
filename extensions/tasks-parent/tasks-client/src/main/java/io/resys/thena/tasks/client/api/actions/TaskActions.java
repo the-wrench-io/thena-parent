@@ -1,6 +1,7 @@
 package io.resys.thena.tasks.client.api.actions;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Collection;
 
 /*-
@@ -58,7 +59,7 @@ public interface TaskActions {
     Multi<Task> findByRoles(Collection<String> roles);
     Multi<Task> findByAssignee(Collection<String> assignees);
     Uni<Task> get(String id);
-    Multi<Task> deleteAll();
+    Multi<Task> deleteAll(String userId, LocalDateTime targetDate);
   }
   
   interface ArchivedTasksQuery {

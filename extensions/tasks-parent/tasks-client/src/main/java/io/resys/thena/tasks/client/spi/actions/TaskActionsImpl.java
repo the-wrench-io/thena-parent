@@ -46,8 +46,7 @@ public class TaskActionsImpl implements TaskActions {
 
   @Override
   public ArchivedTasksQuery queryArchivedTasks() {
-    // TODO Auto-generated method stub
-    return null;
+    return new ArchivedTasksQueryImpl(ctx);
   }
 
   @Override

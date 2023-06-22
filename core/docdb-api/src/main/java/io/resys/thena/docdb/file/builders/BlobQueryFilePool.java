@@ -125,11 +125,21 @@ public class BlobQueryFilePool implements BlobQuery {
     var found = true;
     for(final var crit : blobCriteria) {
       final var field = crit.getKey();
+      
+      // TODO :  EXACT or LIKE for undefined case???
       if(!item.getValue().containsKey(field)) {
         found = false;
         break;
       }
+      
       final var jsonValue = item.getValue().getValue(field);
+      if(( crit.getType() == CriteriaType.EXACT ||
+           crit.getType() == CriteriaType.LIKE)
+              
+          && jsonValue == null && crit.getValue() == null) {
+        found = true;
+        break;
+      }
       if(jsonValue == null) {
         found = false;
         break;

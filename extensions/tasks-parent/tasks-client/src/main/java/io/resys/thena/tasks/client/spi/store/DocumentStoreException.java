@@ -23,6 +23,7 @@ package io.resys.thena.tasks.client.spi.store;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
@@ -32,8 +33,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.vertx.core.json.JsonObject;
+import lombok.RequiredArgsConstructor;
 
 
 
@@ -91,4 +94,28 @@ public class DocumentStoreException extends RuntimeException {
         .build();
   }
 
+  public static Builder builder(String msgId) {
+    return new Builder(msgId);
+  }
+  
+  @RequiredArgsConstructor
+  public static class Builder {
+    private final String id;
+    private final ImmutableDocumentExceptionMsg.Builder msg = ImmutableDocumentExceptionMsg.builder();
+    
+    public Builder add(DocumentConfig config, ObjectsResult<RefObjects> envelope) {
+      msg.id(envelope.getRepo() == null ? config.getRepoName() : envelope.getRepo().getName())
+      .value(envelope.getRepo() == null ? "no-repo" : envelope.getRepo().getId())
+      .addAllArgs(envelope.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()));
+      return this;
+    }
+    public Builder add(Consumer<ImmutableDocumentExceptionMsg.Builder> callback) {
+      callback.accept(msg);
+      return this;
+    }
+    
+    public DocumentStoreException build() {
+      return new DocumentStoreException(id, msg.build());
+    }
+  }
 }
