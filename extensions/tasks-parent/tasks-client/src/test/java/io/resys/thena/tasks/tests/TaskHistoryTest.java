@@ -29,6 +29,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskStatus;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.resys.thena.tasks.tests.config.TaskPgProfile;
 import io.resys.thena.tasks.tests.config.TaskTestCase;
 import io.vertx.core.json.JsonObject;
@@ -100,5 +101,27 @@ public class TaskHistoryTest extends TaskTestCase {
     log.debug("history: {}", JsonObject.mapFrom(history).encodePrettily());
     Assertions.assertEquals(4, history.getVersions().size());
     assertEquals("history-test-cases/createTaskAndUpdateAndGetHistory.json", history);
+  }
+
+  @org.junit.jupiter.api.Test
+  public void findTaskFail() {
+    final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
+
+    client.tasks().createTask().createOne(ImmutableCreateTask.builder()
+            .targetDate(getTargetDate())
+            .title("very important title no: init")
+            .description("first task ever no: init")
+            .priority(Task.Priority.LOW)
+            .addRoles("admin-users", "view-only-users")
+            .userId("user-1")
+            .reporterId("reporter-1")
+            .build())
+        .await().atMost(atMost);
+
+    Assertions.assertThrowsExactly(
+        DocumentStoreException.class,
+        () -> client.tasks().queryTaskHistory().get("2_TASK").await().atMost(Duration.ofMinutes(1)),
+        "Task with id: 2_TASK not found!"
+    );
   }
 }

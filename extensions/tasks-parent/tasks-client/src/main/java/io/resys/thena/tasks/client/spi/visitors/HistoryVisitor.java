@@ -4,13 +4,9 @@ import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskHistory;
 import io.resys.thena.tasks.client.api.model.Task;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class HistoryVisitor {
-
-  private final List<BlobHistory> collectedHistory = new ArrayList<>();
   private BlobHistory previous = null;
   private final ImmutableTaskHistory.Builder historyBuilder = ImmutableTaskHistory.builder();
 
