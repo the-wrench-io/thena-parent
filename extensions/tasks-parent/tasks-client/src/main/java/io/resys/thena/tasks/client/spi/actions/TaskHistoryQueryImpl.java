@@ -20,17 +20,24 @@ package io.resys.thena.tasks.client.spi.actions;
  * #L%
  */
 
+import io.resys.thena.docdb.api.actions.HistoryActions;
+import io.resys.thena.docdb.api.models.Objects;
+import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.spi.ClientQuery;
 import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.tasks.client.api.actions.TaskActions;
-import io.resys.thena.tasks.client.api.model.ImmutableTaskHistory;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
+import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
+import io.resys.thena.tasks.client.spi.store.ImmutableDocumentExceptionMsg;
 import io.resys.thena.tasks.client.spi.visitors.HistoryVisitor;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -43,18 +50,34 @@ public class TaskHistoryQueryImpl implements TaskActions.TaskHistoryQuery {
     RepoAssert.notNull(taskId, () -> "taskId can't be null!");
 
     final var config = ctx.getConfig();
-    final var history = config.getClient().history().blob()
+    return config.getClient().history().blob()
         .repo(config.getRepoName(), config.getHeadName())
         .criteria(ImmutableBlobCriteria.builder().type(ClientQuery.CriteriaType.EXACT).key("id").value(taskId).build())
         .latestOnly(false)
-        .build();
+        .build()
+        .onItem().transform(historyResult -> this.validateHistory(historyResult, taskId))
+        .onItem().transform(blobHistory -> new HistoryVisitor().visitBlobHistory(blobHistory).build());
+  }
 
-    return history.onItem().transform(historyResult -> {
-      final var tasks = new HistoryVisitor(ctx).visitTaskHistory(historyResult, taskId).build();
-      return ImmutableTaskHistory.builder()
-          .id(taskId)
-          .versions(tasks)
-          .build();
-    });
+  private List<Objects.BlobHistory> validateHistory(HistoryActions.BlobHistoryResult state, String taskId) {
+    if(state.getStatus() != ObjectsResult.ObjectsStatus.OK) {
+      final var config = ctx.getConfig();
+      throw new DocumentStoreException("FIND_HISTORY_FAIL", ImmutableDocumentExceptionMsg.builder()
+          .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
+          .value(state.getRepo() == null ? "no-repo" : state.getRepo().getId())
+          .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
+          .build());
+    }
+
+    final var historyItems = state.getValues();
+    if(historyItems.isEmpty()) {
+      final var config = ctx.getConfig();
+      throw new DocumentStoreException("FIND_TASK_FAIL", ImmutableDocumentExceptionMsg.builder()
+          .id(state.getRepo() == null ? config.getRepoName() : state.getRepo().getName())
+          .value(state.getRepo() == null ? "no-repo" : state.getRepo().getId())
+          .addAllArgs(List.of("Task with id: " + taskId + " not found!"))
+          .build());
+    }
+    return historyItems;
   }
 }
