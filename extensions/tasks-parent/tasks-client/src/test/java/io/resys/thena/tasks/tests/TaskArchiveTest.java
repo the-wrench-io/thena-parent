@@ -68,10 +68,10 @@ public class TaskArchiveTest extends TaskTestCase {
     .await().atMost(atMost);
     
     
-    final var deletedTasks = client.tasks().queryActiveTasks().deleteAll("sam vimes", getTargetDate()).collect().asList().await().atMost(atMost);
+    final var deletedTasks = client.tasks().queryActiveTasks().deleteAll("sam vimes", getTargetDate()).await().atMost(atMost);
     Assertions.assertEquals(2, deletedTasks.size());
     
-    final var activeTasks = client.tasks().queryActiveTasks().findAll().collect().asList().await().atMost(atMost);
+    final var activeTasks = client.tasks().queryActiveTasks().findAll().await().atMost(atMost);
     Assertions.assertEquals(0, activeTasks.size());
     
     Task createdTask_3 = client.tasks().createTask().createOne(ImmutableCreateTask.builder()

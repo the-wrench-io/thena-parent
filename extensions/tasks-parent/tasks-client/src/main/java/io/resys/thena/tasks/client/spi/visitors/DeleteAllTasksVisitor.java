@@ -23,7 +23,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskTransaction;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.RefVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocRefVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.resys.thena.tasks.client.spi.visitors.DeleteAllTasksVisitor.DeleteAllTasksResult;
 import io.smallrye.mutiny.Uni;
@@ -33,7 +33,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DeleteAllTasksVisitor implements RefVisitor<DeleteAllTasksResult>{
+public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult>{
 
   @Data @Builder
   public static class DeleteAllTasksResult {
@@ -48,7 +48,7 @@ public class DeleteAllTasksVisitor implements RefVisitor<DeleteAllTasksResult>{
   
   @Override
   public RefStateBuilder start(DocumentConfig config, RefStateBuilder builder) {
-    // Create two commands one for making changes by adding archive flag, the other for deleting task from commit tree
+    // Create two commands: one for making changes by adding archive flag, the other for deleting task from commit tree
     this.archiveCommand = visitCommitCommand(config).message("Archive tasks");
     this.removeCommand = visitCommitCommand(config).message("Delete tasks");
     

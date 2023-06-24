@@ -1,5 +1,8 @@
 package io.resys.thena.tasks.client.spi.visitors;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -21,43 +24,106 @@ package io.resys.thena.tasks.client.spi.visitors;
  */
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.resys.thena.docdb.api.actions.ObjectsActions.BlobVisitor;
+import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
+import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
+import io.resys.thena.tasks.client.api.model.Document;
+import io.resys.thena.tasks.client.api.model.Export;
 import io.resys.thena.tasks.client.api.model.Export.ExportEvent;
 import io.resys.thena.tasks.client.api.model.Export.ExportEventType;
+import io.resys.thena.tasks.client.api.model.ImmutableExport;
 import io.resys.thena.tasks.client.api.model.ImmutableExportEvent;
+import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStatus;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocRefVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
+import io.vertx.core.json.JsonObject;
+import lombok.RequiredArgsConstructor;
 
-public class ExportVisitor {
-  private final List<ExportEvent> events = new ArrayList<>();
+@RequiredArgsConstructor
+public class ExportVisitor implements DocRefVisitor<Export>, BlobVisitor<List<ExportEvent>> {
+  private final String name;
+  private final LocalDate startDate;
+  private final LocalDate endDate;
+  private final LocalDateTime targetDate;
   private final Map<String, Integer> ids = new HashMap<>();
+  
+  @Override
+  public RefStateBuilder start(DocumentConfig config, RefStateBuilder builder) {
+    return builder.blobs()
+        .blobCriteria(Arrays.asList(ImmutableBlobCriteria.builder()
+            .key("documentType").value(Document.DocumentType.TASK.name())
+            .type(CriteriaType.EXACT)
+            .build()));
+  }
+  @Override
+  public RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope) {
+    if(envelope.getStatus() != ObjectsStatus.OK) {
+      throw DocumentStoreException.builder("FIND_ALL_TASKS_FOR_EXPORT_FAIL").add(config, envelope).build();
+    }
+    return envelope.getObjects();
+  }
 
-  public ExportVisitor visitTasks(List<Task> tasks) {
-    tasks.forEach(task -> {
-      this.vistTaskCreated(task);
-      this.vistTaskActions(task);
-    });
-    return this;
+  @Override
+  public Export end(DocumentConfig config, RefObjects ref) {
+    if(ref == null) {
+      return visitExport(Collections.emptyList());
+    }
+   
+    return visitExport(ref.accept(this).stream().flatMap(e -> e.stream()).toList());
   }
   
-  private ExportVisitor vistTaskActions(Task task) {
+  @Override
+  public List<ExportEvent> visit(JsonObject blobValue) {
+    final var task = blobValue.mapTo(ImmutableTask.class);
+    final var result = new ArrayList<ExportEvent>();
+    result.addAll(this.vistTaskCreated(task));
+    result.addAll(this.vistTaskActions(task));
+    return result;
+  }
+  
+  private Export visitExport(List<ExportEvent> events) {
+    return ImmutableExport.builder()
+        .startDate(startDate)
+        .endDate(endDate)
+        .name(name)
+        .created(targetDate)
+        .id("not implemented yet")
+        .hash("not implemented yet")
+        .events(events)
+        .build();
+  }
+
+  
+  private List<ExportEvent> vistTaskActions(Task task) {
+    final var events = new ArrayList<ExportEvent>();
     final var previous = new ArrayList<TaskCommand>();
     for(final var tx : task.getTransactions()) {
       for(final var command : tx.getCommands()) {
-        visitTaskAction(task, command, previous);
+        events.addAll(visitTaskAction(task, command, previous));
         previous.add(command);
       }
     }
-    return this;
+    return events;
   }
   
-  private ExportVisitor visitTaskAction(Task task, TaskCommand command, List<TaskCommand> previous) {
+  private List<ExportEvent> visitTaskAction(Task task, TaskCommand command, List<TaskCommand> previous) {
+    final var events = new ArrayList<ExportEvent>();
     if(previous.isEmpty()) {
-      return this;
+      return events;
     }
     if(command instanceof ChangeTaskStatus) {
       return visitChangeTaskStatus(task, (ChangeTaskStatus) command, previous);
@@ -69,11 +135,11 @@ public class ExportVisitor {
         .eventType(ExportEventType.TASK_UPDATED)
         .eventDate(command.getTargetDate().toLocalDate())
         .build());
-    return this;
+    return events;
   }
   
-  private ExportVisitor visitChangeTaskStatus(Task task, ChangeTaskStatus command, List<TaskCommand> previous) {
-    
+  private List<ExportEvent> visitChangeTaskStatus(Task task, ChangeTaskStatus command, List<TaskCommand> previous) {
+    final var events = new ArrayList<ExportEvent>();
     events.add(ImmutableExportEvent.builder()
         .id(allocateId(task))
         .taskId(task.getId())
@@ -81,10 +147,11 @@ public class ExportVisitor {
         .eventDate(command.getTargetDate().toLocalDate())
         .taskStatus(command.getStatus())
         .build());
-    return this;
+    return events;
   }
   
-  private ExportVisitor vistTaskCreated(Task task) {
+  private List<ExportEvent> vistTaskCreated(Task task) {
+    final var events = new ArrayList<ExportEvent>();
     events.add(ImmutableExportEvent.builder()
         .id(allocateId(task))
         .taskId(task.getId())
@@ -92,7 +159,7 @@ public class ExportVisitor {
         .eventDate(task.getCreated().toLocalDate())
         .taskStatus(Task.Status.CREATED)
         .build());
-    return this;
+    return events;
   }
   
   private String allocateId(Task task) {
@@ -106,7 +173,4 @@ public class ExportVisitor {
     return ids.get(task.getId()) + "";
   }
 
-  public List<ExportEvent> build() {
-    return events;
-  }
 }

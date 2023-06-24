@@ -33,7 +33,6 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
@@ -103,7 +102,7 @@ public class DocumentStoreException extends RuntimeException {
     private final String id;
     private final ImmutableDocumentExceptionMsg.Builder msg = ImmutableDocumentExceptionMsg.builder();
     
-    public Builder add(DocumentConfig config, ObjectsResult<RefObjects> envelope) {
+    public Builder add(DocumentConfig config, ObjectsResult<?> envelope) {
       msg.id(envelope.getRepo() == null ? config.getRepoName() : envelope.getRepo().getName())
       .value(envelope.getRepo() == null ? "no-repo" : envelope.getRepo().getId())
       .addAllArgs(envelope.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()));

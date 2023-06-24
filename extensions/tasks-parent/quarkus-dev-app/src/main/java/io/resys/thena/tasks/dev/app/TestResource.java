@@ -96,7 +96,7 @@ public class TestResource {
     return client.repo().query().createIfNot()
         .onItem().transformToUni(created -> {
           
-            return client.tasks().queryActiveTasks().deleteAll("", LocalDateTime.now()).collect().asList()
+            return client.tasks().queryActiveTasks().deleteAll("", LocalDateTime.now())
                 .onItem().transform(tasks -> HeadState.builder().created(true).build());
           
         });
@@ -116,6 +116,6 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("active/tasks")
   public Uni<List<Task>> findAllActiveTasks() {
-    return client.tasks().queryActiveTasks().findAll().collect().asList();
+    return client.tasks().queryActiveTasks().findAll();
   }
 }

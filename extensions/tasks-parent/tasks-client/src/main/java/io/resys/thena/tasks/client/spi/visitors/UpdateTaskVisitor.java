@@ -55,7 +55,7 @@ public class UpdateTaskVisitor {
     case CreateTask:
       break;
     }
-    throw new UpdateTaskVisitorException(String.format("Unsupport command type: %s, body: %s", command.getClass().getSimpleName(), command.toString()));
+    throw new UpdateTaskVisitorException(String.format("Unsupported command type: %s, body: %s", command.getClass().getSimpleName(), command.toString()));
   }
 
   public UpdateTaskVisitor visit(List<TaskUpdateCommand> commands) {

@@ -30,7 +30,6 @@ import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.Task.TaskHistory;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
-import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 
@@ -54,12 +53,12 @@ public interface TaskActions {
   }
 
   interface ActiveTasksQuery {
-    Multi<Task> findAll();
-    Multi<Task> findByTaskIds(Collection<String> taskIds);
-    Multi<Task> findByRoles(Collection<String> roles);
-    Multi<Task> findByAssignee(Collection<String> assignees);
+    Uni<List<Task>> findAll();
+    Uni<List<Task>> findByTaskIds(Collection<String> taskIds);
+    Uni<List<Task>> findByRoles(Collection<String> roles);
+    Uni<List<Task>> findByAssignee(Collection<String> assignees);
     Uni<Task> get(String id);
-    Multi<Task> deleteAll(String userId, LocalDateTime targetDate);
+    Uni<List<Task>> deleteAll(String userId, LocalDateTime targetDate);
   }
   
   interface ArchivedTasksQuery {

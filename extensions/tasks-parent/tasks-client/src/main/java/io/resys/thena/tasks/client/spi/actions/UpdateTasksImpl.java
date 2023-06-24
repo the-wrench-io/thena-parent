@@ -91,6 +91,7 @@ public class UpdateTasksImpl implements UpdateTasks {
 
     final Multi<Task> tasks = this.query.get()
         .findByTaskIds(commandByTaskId.keySet())
+        .onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()))
         .onItem().transform((Task taskBeforeUpdate) -> new UpdateTaskVisitor(taskBeforeUpdate).visit(commands).build());
     
     return tasks.collect().asList()

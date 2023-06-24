@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.client.spi.store;
 
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 /*-
@@ -25,6 +27,9 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.DocDB;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
 import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
 import io.resys.thena.docdb.api.models.ObjectsResult;
@@ -40,7 +45,7 @@ public interface DocumentConfig {
   DocumentGidProvider getGid();
   DocumentAuthorProvider getAuthor();
 
-  default <T> Uni<T> accept(RefVisitor<T> visitor) {
+  default <T> Uni<T> accept(DocRefVisitor<T> visitor) {
     final var builder = visitor.start(this, getClient()
         .objects().refState()
         .repo(getRepoName())
@@ -50,7 +55,31 @@ public interface DocumentConfig {
         .onItem().transform(envelope -> visitor.visit(this, envelope))
         .onItem().transform(ref -> visitor.end(this, ref));
   }
+  
+  default <T> Uni<T> accept(DocBlobVisitor<T> visitor) {
+    final BlobStateBuilder builder = visitor.start(this, getClient()
+        .objects().blobState()
+        .repo(getRepoName())
+        .ref(getHeadName()));
+    
+    return builder.get()
+        .onItem().transform(envelope -> visitor.visit(this, envelope))
+        .onItem().transform(ref -> visitor.end(this, ref));
+  }
 
+  
+  default <T> Uni<List<T>> accept(DocBlobsVisitor<T> visitor) {
+    final BlobStateBuilder builder = visitor.start(this, getClient()
+        .objects().blobState()
+        .repo(getRepoName())
+        .ref(getHeadName()));
+    
+    return builder.list()
+        .onItem().transform(envelope -> visitor.visit(this, envelope))
+        .onItem().transform(ref -> visitor.end(this, ref));
+  }
+
+  
   interface DocumentGidProvider {
     String getNextId(DocumentType entity);
     String getNextVersion(DocumentType entity);
@@ -61,9 +90,24 @@ public interface DocumentConfig {
     String get();
   }
   
-  interface RefVisitor<T> { 
+  interface DocRefVisitor<T> { 
     RefStateBuilder start(DocumentConfig config, RefStateBuilder builder);
     @Nullable RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope);
     T end(DocumentConfig config, @Nullable RefObjects ref);
   }
+  
+  interface DocBlobVisitor<T> { 
+    BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder);
+    @Nullable BlobObject visit(DocumentConfig config, ObjectsResult<BlobObject> envelope);
+    T end(DocumentConfig config, @Nullable BlobObject blob);
+  }
+  
+  interface DocBlobsVisitor<T> { 
+    BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder);
+    @Nullable BlobObjects visit(DocumentConfig config, ObjectsResult<BlobObjects> envelope);
+    List<T> end(DocumentConfig config, @Nullable BlobObjects blobs);
+  }
+  
+  
+  
 }

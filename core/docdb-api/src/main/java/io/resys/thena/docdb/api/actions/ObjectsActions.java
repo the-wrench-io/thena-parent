@@ -22,6 +22,7 @@ package io.resys.thena.docdb.api.actions;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
@@ -33,6 +34,7 @@ import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.smallrye.mutiny.Uni;
+import io.vertx.core.json.JsonObject;
 
 public interface ObjectsActions {
 
@@ -51,21 +53,6 @@ public interface ObjectsActions {
     Uni<ObjectsResult<BlobObjects>> list();
   }
 
-  @Value.Immutable
-  interface BlobObject {
-    Repo getRepo();
-    Commit getCommit();
-    //Tree getTree();
-    Blob getBlob();
-  }
-
-  @Value.Immutable
-  interface BlobObjects {
-    Repo getRepo();
-    Commit getCommit();
-    Tree getTree();
-    List<Blob> getBlob();
-  }
   
   // build REF world state, no blobs by default
   interface RefStateBuilder {
@@ -77,15 +64,55 @@ public interface ObjectsActions {
     Uni<ObjectsResult<RefObjects>> build();
   }
 
+  
+  interface BlobContainer {
+    <T> List<T> accept(BlobVisitor<T> visitor);
+  }
+  
+  @FunctionalInterface
+  interface BlobVisitor<T> {
+    T visit(JsonObject blobValue);
+  }
+  
+  @Value.Immutable
+  interface BlobObject {
+    Repo getRepo();
+    Commit getCommit();
+    //Tree getTree();
+    Blob getBlob();
+    
+    default <T> T accept(BlobVisitor<T> visitor) {
+      return visitor.visit(getBlob().getValue());
+    }
+  }
 
   @Value.Immutable
-  interface RefObjects {
+  interface BlobObjects extends BlobContainer {
+    Repo getRepo();
+    Commit getCommit();
+    Tree getTree();
+    List<Blob> getBlob();
+    
+    default <T> List<T> accept(BlobVisitor<T> visitor) {
+      return getBlob().stream()
+          .map(blob -> visitor.visit(blob.getValue()))
+          .collect(Collectors.toUnmodifiableList());
+    }
+  }
+
+  @Value.Immutable
+  interface RefObjects extends BlobContainer {
     Repo getRepo();
     Ref getRef();
     Commit getCommit();
     Tree getTree();
     Map<String, Blob> getBlobs(); //only if loaded
+    
+    default <T> List<T> accept(BlobVisitor<T> visitor) {
+      return getTree().getValues().values().stream()
+          .map(treeValue -> getBlobs().get(treeValue.getBlob()))
+          .map(blob -> visitor.visit(blob.getValue()))
+          .collect(Collectors.toUnmodifiableList());
+    }
   }
-  
-
 }
