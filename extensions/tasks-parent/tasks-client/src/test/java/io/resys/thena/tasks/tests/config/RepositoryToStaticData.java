@@ -30,8 +30,8 @@ import java.util.function.Function;
 
 import org.apache.commons.io.IOUtils;
 
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.spi.ClientState;
 import io.vertx.core.json.JsonObject;
 

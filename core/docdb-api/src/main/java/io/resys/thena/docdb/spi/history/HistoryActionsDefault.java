@@ -30,8 +30,8 @@ public class HistoryActionsDefault implements HistoryActions {
   private final ClientState state;
 
   @Override
-  public BlobHistoryBuilder blob() {
-    return new BlobHistoryBuilderDefault(state);
+  public BlobHistoryQuery blobQuery() {
+    return new BlobHistoryQueryImpl(state);
   }
 
 }

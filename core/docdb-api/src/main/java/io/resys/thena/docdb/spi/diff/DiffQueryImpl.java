@@ -23,16 +23,16 @@ package io.resys.thena.docdb.spi.diff;
 import java.util.Arrays;
 
 import io.resys.thena.docdb.api.actions.CommitActions;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitObjects;
-import io.resys.thena.docdb.api.actions.DiffActions.DiffBuilder;
+import io.resys.thena.docdb.api.actions.DiffActions.DiffQuery;
 import io.resys.thena.docdb.api.actions.DiffActions.DiffResult;
-import io.resys.thena.docdb.api.actions.DiffActions.DiffStatus;
+import io.resys.thena.docdb.api.actions.DiffActions.DiffResultStatus;
 import io.resys.thena.docdb.api.actions.ImmutableDiffResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.api.actions.RepoActions;
+import io.resys.thena.docdb.api.actions.PullActions;
+import io.resys.thena.docdb.api.actions.ProjectActions;
 import io.resys.thena.docdb.api.models.Diff;
-import io.resys.thena.docdb.api.models.Objects;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
+import io.resys.thena.docdb.api.models.ThenaObjects.CommitObjects;
+import io.resys.thena.docdb.api.models.ThenaObjects.ProjectObjects;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -42,48 +42,48 @@ import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class DiffBuilderImpl implements DiffBuilder {
+public class DiffQueryImpl implements DiffQuery {
   private final ClientState state;
-  private final ObjectsActions objects;
+  private final PullActions objects;
   private final CommitActions commits;
-  private final RepoActions repos;
+  private final ProjectActions repos;
   
-  private String repo;  //RepoIdOrName;
+  private String projectName;  //RepoIdOrName;
   private String left;  //HeadOrCommitOrTag;
   private String right; //HeadOrCommitOrTag;
 
   @Override
-  public Uni<DiffResult<Diff>> build() {
-    RepoAssert.notEmpty(repo, () -> "repo is not defined!");
+  public Uni<DiffResult<Diff>> get() {
+    RepoAssert.notEmpty(projectName, () -> "projectIdOrName is not defined!");
     RepoAssert.notEmpty(left, () -> "left is not defined!");
     RepoAssert.notEmpty(right, () -> "right is not defined!");
     
     return Uni.combine().all().unis(
-        repos.state().repo(repo).build(),
-        commits.state().anyId(left).repo(repo).build(), 
-        commits.state().anyId(right).repo(repo).build())
+        repos.projectQuery().projectName(projectName).get(),
+        commits.commitQuery().branchNameOrCommitOrTag(left).projectName(projectName).get(), 
+        commits.commitQuery().branchNameOrCommitOrTag(right).projectName(projectName).get())
 
       .asTuple().onItem().transform(tuple -> {
         final var objects = tuple.getItem1();
         final var left = tuple.getItem2();
         final var right = tuple.getItem3();
         
-        if(left.getStatus() != ObjectsStatus.OK || right.getStatus() != ObjectsStatus.OK) {
+        if(left.getStatus() != QueryEnvelopeStatus.OK || right.getStatus() != QueryEnvelopeStatus.OK) {
           return ImmutableDiffResult.<Diff>builder()
               .addAllMessages(left.getMessages())
               .addAllMessages(right.getMessages())
-              .status(DiffStatus.ERROR)
+              .status(DiffResultStatus.ERROR)
               .build();
         }
         return createDiff(objects.getObjects(), left.getObjects(), right.getObjects());
       });
   }
-  private DiffResult<Diff> createDiff(Objects objects, CommitObjects left, CommitObjects right) {
+  private DiffResult<Diff> createDiff(ProjectObjects objects, CommitObjects left, CommitObjects right) {
     final var diff = new DiffVisitor().visit(objects, left, Arrays.asList(right));
     return ImmutableDiffResult.<Diff>builder()
         .repo(left.getRepo())
         .objects(diff)
-        .status(DiffStatus.OK)
+        .status(DiffResultStatus.OK)
         .build();
   }
 }

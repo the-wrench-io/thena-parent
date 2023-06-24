@@ -21,27 +21,30 @@ package io.resys.thena.docdb.spi;
  */
 
 import io.resys.thena.docdb.api.DocDB;
+import io.resys.thena.docdb.api.actions.BranchActions;
 import io.resys.thena.docdb.api.actions.CommitActions;
 import io.resys.thena.docdb.api.actions.DiffActions;
 import io.resys.thena.docdb.api.actions.HistoryActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.api.actions.RepoActions;
+import io.resys.thena.docdb.api.actions.PullActions;
+import io.resys.thena.docdb.api.actions.ProjectActions;
 import io.resys.thena.docdb.api.actions.TagActions;
 import io.resys.thena.docdb.spi.commits.CommitActionsImpl;
 import io.resys.thena.docdb.spi.diff.DiffActionsImpl;
 import io.resys.thena.docdb.spi.history.HistoryActionsDefault;
-import io.resys.thena.docdb.spi.objects.ObjectsActionsDefault;
-import io.resys.thena.docdb.spi.repo.RepoActionsImpl;
+import io.resys.thena.docdb.spi.objects.BranchActionsImpl;
+import io.resys.thena.docdb.spi.objects.ObjectsActionsImpl;
+import io.resys.thena.docdb.spi.repo.ProjectActionsImpl;
 import io.resys.thena.docdb.spi.tags.TagActionsDefault;
 
 public class DocDBDefault implements DocDB {
   private final ClientState state;
-  private RepoActions repoActions;
+  private ProjectActions projectActions;
   private CommitActions commitActions;
   private TagActions tagActions;
   private HistoryActions historyActions;
-  private ObjectsActions objectsActions;
+  private PullActions pullActions;
   private DiffActions diffActions;
+  private BranchActions branchActions;
   
   
   public DocDBDefault(ClientState state) {
@@ -50,11 +53,11 @@ public class DocDBDefault implements DocDB {
   }
   
   @Override
-  public RepoActions repo() {
-    if(repoActions == null) {
-      repoActions = new RepoActionsImpl(state); 
+  public ProjectActions project() {
+    if(projectActions == null) {
+      projectActions = new ProjectActionsImpl(state); 
     }
-    return repoActions;
+    return projectActions;
   }
   @Override
   public CommitActions commit() {
@@ -79,21 +82,27 @@ public class DocDBDefault implements DocDB {
   }
 
   @Override
-  public ObjectsActions objects() {
-    if(objectsActions == null) {
-      objectsActions = new ObjectsActionsDefault(state); 
+  public PullActions pull() {
+    if(pullActions == null) {
+      pullActions = new ObjectsActionsImpl(state); 
     }
-    return objectsActions;
+    return pullActions;
   }
 
   @Override
   public DiffActions diff() {
     if(diffActions == null) {
-      diffActions = new DiffActionsImpl(state, objects(), commit(), repo()); 
+      diffActions = new DiffActionsImpl(state, pull(), commit(), project()); 
     }
     return diffActions;
   }
-
+  @Override
+  public BranchActions branch() {
+    if(branchActions == null) {
+      branchActions =  new BranchActionsImpl(state); 
+    }
+    return branchActions;
+  }
   public ClientState getState() {
     return state;
   }

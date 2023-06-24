@@ -23,17 +23,21 @@ import java.util.List;
  */
 
 import io.resys.thena.docdb.api.models.ImmutableMessage;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
 import io.resys.thena.docdb.file.tables.Table.FileTuple;
 import io.resys.thena.docdb.file.tables.Table.FileTupleList;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
+import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
+import io.resys.thena.docdb.spi.ClientInsertBuilder.InsertResult;
+import io.resys.thena.docdb.spi.ClientInsertBuilder.UpsertResult;
+import io.resys.thena.docdb.spi.ClientInsertBuilder.UpsertStatus;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableBatch;
 import io.resys.thena.docdb.spi.ImmutableInsertResult;

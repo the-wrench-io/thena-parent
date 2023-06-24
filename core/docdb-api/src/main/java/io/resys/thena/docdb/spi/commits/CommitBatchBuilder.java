@@ -29,12 +29,12 @@ import java.util.Optional;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.Batch;
 import io.vertx.core.json.JsonObject;
 import lombok.Builder;

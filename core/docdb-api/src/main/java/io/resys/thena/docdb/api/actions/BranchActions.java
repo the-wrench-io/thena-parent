@@ -22,37 +22,24 @@ package io.resys.thena.docdb.api.actions;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import org.immutables.value.Value;
-
-import io.resys.thena.docdb.api.models.Diff;
-import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObjects.BranchObjects;
 import io.smallrye.mutiny.Uni;
 
-public interface DiffActions {
+public interface BranchActions {
 
-  DiffQuery diffQuery();
+  BranchObjectsQuery branchQuery();
   
-  interface DiffQuery {
-    DiffQuery projectName(String projectName);
-    DiffQuery left(String headOrCommitOrTag);
-    DiffQuery right(String headOrCommitOrTag);
-    Uni<DiffResult<Diff>> get();
+  // build REF world state, no blobs by default
+  interface BranchObjectsQuery {
+    BranchObjectsQuery projectName(String project);
+    BranchObjectsQuery branchName(String ref);
+    BranchObjectsQuery docsIncluded();
+    BranchObjectsQuery docsIncluded(boolean docsIncluded);
+    BranchObjectsQuery matchBy(List<MatchCriteria> blobCriteria);
+    Uni<QueryEnvelope<BranchObjects>> get();
   }
-  
-  enum DiffResultStatus {
-    OK, ERROR
-  }
-  
-  @Value.Immutable
-  interface DiffResult<T> {
-    @Nullable
-    Repo getRepo();    
-    @Nullable
-    T getObjects();
-    DiffResultStatus getStatus();
-    List<Message> getMessages();
-  }
+
+
 }

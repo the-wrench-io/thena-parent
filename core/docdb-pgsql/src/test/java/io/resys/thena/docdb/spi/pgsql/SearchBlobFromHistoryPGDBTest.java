@@ -30,8 +30,8 @@ import org.skyscreamer.jsonassert.JSONAssert;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
-import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
+import io.resys.thena.docdb.api.actions.ImmutableMatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
 import io.resys.thena.docdb.spi.pgsql.config.PgDbTestTemplate;
 import io.resys.thena.docdb.spi.pgsql.config.PgProfile;
 import io.vertx.core.json.JsonArray;
@@ -48,7 +48,7 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
   public SearchBlobFromHistoryPGDBTest() {
     super((client, repo) -> {
       
-      client.commit().builder()
+      client.commit().commitBuilder()
           .head(repo.getName(), "main")
           .append("ID-1", new JsonObject(Map.of(
               "type", "person",
@@ -77,7 +77,7 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
   public void addSamVimesChanges(int changes, String id) {
     final var client = getClient();
     for(int index = 0; index < changes; index++) { 
-      client.commit().builder()
+      client.commit().commitBuilder()
       .head(getRepo().getName(), "main")
       .append(id, JsonObject.of(
         "type", "person",
@@ -86,7 +86,7 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
         ))
       .author("tester bob")
       .message("change commit!")
-      .parentIsLatest()
+      .latestCommit()
       .build()
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
@@ -96,7 +96,7 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
   public void addCassandraChaseChanges(int changes, String id) {
     final var client = getClient();
     for(int index = 0; index < changes; index++) { 
-      client.commit().builder()
+      client.commit().commitBuilder()
       .head(getRepo().getName(), "main")
       .append(id, JsonObject.of(
         "type", "person",
@@ -105,7 +105,7 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
         ))
       .author("tester bob")
       .message("change commit!")
-      .parentIsLatest()
+      .latestCommit()
       .build()
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
@@ -118,11 +118,11 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
     addSamVimesChanges(20, "ID-1");
     addCassandraChaseChanges(20, "ID-2");
     
-    final var history = getClient().history().blob()
-      .repo(getRepo().getName(), "main")
-      .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.EXACT).key("name").value("sam").build())
+    final var history = getClient().history().blobQuery()
+      .head(getRepo().getName(), "main")
+      .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.EQUALS).key("name").value("sam").build())
       .latestOnly()
-      .build()
+      .get()
       .await().atMost(Duration.ofMinutes(1));
     
     log.debug("Found type=person from history, body: {}", JsonArray.of(history).toString());
@@ -138,11 +138,11 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
     addSamVimesChanges(20, "ID-1");
     addCassandraChaseChanges(20, "ID-2");
     
-    final var history = getClient().history().blob()
-      .repo(getRepo().getName(), "main")
-      .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.LIKE).key("name").value("sam").build())
+    final var history = getClient().history().blobQuery()
+      .head(getRepo().getName(), "main")
+      .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.LIKE).key("name").value("sam").build())
       .latestOnly()
-      .build()
+      .get()
       .await().atMost(Duration.ofMinutes(1));
     
     log.debug("Found type=person from history, body: {}", JsonArray.of(history).toString());
@@ -160,20 +160,20 @@ public class SearchBlobFromHistoryPGDBTest extends PgDbTestTemplate {
     addCassandraChaseChanges(20, "ID-2");
     
     
-    var history = getClient().history().blob()
-      .repo(getRepo().getName(), "main")
-      .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.LIKE).key("name").value("sam").build())
+    var history = getClient().history().blobQuery()
+      .head(getRepo().getName(), "main")
+      .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.LIKE).key("name").value("sam").build())
       .latestOnly(false)
-      .build()
+      .get()
       .await().atMost(Duration.ofMinutes(1));
     
     Assertions.assertEquals(41, history.getValues().size());
     
-    history = getClient().history().blob()
-        .repo(getRepo().getName(), "main")
-        .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.EXACT).key("name").value("sam").build())
+    history = getClient().history().blobQuery()
+        .head(getRepo().getName(), "main")
+        .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.EQUALS).key("name").value("sam").build())
         .latestOnly(false)
-        .build()
+        .get()
         .await().atMost(Duration.ofMinutes(1));
       
     Assertions.assertEquals(41, history.getValues().size());

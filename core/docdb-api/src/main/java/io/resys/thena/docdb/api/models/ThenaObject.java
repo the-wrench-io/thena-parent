@@ -1,25 +1,5 @@
 package io.resys.thena.docdb.api.models;
 
-/*-
- * #%L
- * thena-docdb-api
- * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
@@ -30,24 +10,22 @@ import org.immutables.value.Value;
 
 import io.vertx.core.json.JsonObject;
 
-@Value.Immutable
-public interface Objects {
-  Map<String, Branch> getRefs();
-  Map<String, Tag> getTags();
-  Map<String, IsObject> getValues();
-  
+public interface ThenaObject {
+
   interface IsObject { String getId(); }
   interface IsName { String getName(); }
+
+  
   
   // branch with a name
   @Value.Immutable
-  interface Branch extends IsName {
+  interface Branch extends IsName, ThenaObject {
     // last commit in the branch
     String getCommit();
   }
 
   @Value.Immutable
-  interface Tag extends IsName {
+  interface Tag extends IsName, ThenaObject {
     // id of a commit
     String getCommit();
     LocalDateTime getDateTime();
@@ -57,14 +35,14 @@ public interface Objects {
   
   // World state 
   @Value.Immutable
-  interface Tree extends IsObject {
+  interface Tree extends IsObject, ThenaObject {
     // resource name - blob id
     Map<String, TreeValue> getValues();
   }
   
   // Resource name - blob id(content in blob)
   @Value.Immutable
-  interface TreeValue {
+  interface TreeValue extends ThenaObject {
     // Name of the resource
     String getName();
     // Id of the blob that holds content
@@ -72,7 +50,7 @@ public interface Objects {
   }
   
   @Value.Immutable
-  interface Commit extends IsObject {
+  interface Commit extends IsObject, ThenaObject {
     String getAuthor();
     LocalDateTime getDateTime();
     String getMessage();
@@ -88,13 +66,13 @@ public interface Objects {
   }
   
   @Value.Immutable
-  interface Blob extends IsObject {
+  interface Blob extends IsObject, ThenaObject {
     JsonObject getValue();
   }
   
   
   @Value.Immutable  
-  interface CommitTree {
+  interface CommitTree extends ThenaObject {
     String getCommitId();
     
     String getCommitAuthor();
@@ -103,7 +81,7 @@ public interface Objects {
     @Nullable String getCommitParent();
     @Nullable String getCommitMerge();
     
-    String getRefName();
+    String getBranchName();
     String getTreeId();
     Optional<TreeValue> getTreeValue();
     
@@ -112,9 +90,9 @@ public interface Objects {
   }
   
   @Value.Immutable  
-  interface CommitLock {
+  interface CommitLock extends ThenaObject {
     CommitLockStatus getStatus();
-    Optional<Branch> getRef();
+    Optional<Branch> getBranch();
     Optional<Commit> getCommit();
     Optional<Tree> getTree();
     Map<String, Blob> getBlobs();
@@ -126,9 +104,8 @@ public interface Objects {
   }
   
   
-
   @Value.Immutable
-  interface BlobHistory {
+  interface BlobHistory extends ThenaObject {
     String getTreeId();
     String getTreeValueName();
     String getCommit();

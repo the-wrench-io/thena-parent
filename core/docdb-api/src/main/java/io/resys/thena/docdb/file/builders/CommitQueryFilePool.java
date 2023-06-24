@@ -6,30 +6,9 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.models.ImmutableCommitLock;
-
-/*-
- * #%L
- * thena-docdb-pgsql
- * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.CommitLock;
-import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLock;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLockStatus;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
@@ -81,7 +60,7 @@ public class CommitQueryFilePool implements CommitQuery {
     return new RefQueryFilePool(client, mapper, builder, errorHandler).nameOrCommit(headName).onItem().transformToUni(ref -> {
       if(ref == null) {
         return Uni.createFrom().item((CommitLock) ImmutableCommitLock.builder()
-          .ref(Optional.empty())
+          .branch(Optional.empty())
           .commit(Optional.empty())
           .tree(Optional.empty())
           .message(Optional.empty())
@@ -95,7 +74,7 @@ public class CommitQueryFilePool implements CommitQuery {
         
         return Uni.combine().all().unis(treeUni, blobUni).asTuple().onItem().transform(tuple -> {
           return (CommitLock) ImmutableCommitLock.builder()
-          .ref(ref)
+          .branch(ref)
           .commit(commit)
           .tree(tuple.getItem1())
           .message(Optional.empty())

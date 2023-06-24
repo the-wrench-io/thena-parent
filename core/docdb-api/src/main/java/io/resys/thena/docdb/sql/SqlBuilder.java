@@ -28,15 +28,15 @@ import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.LockCriteria;
 import io.vertx.mutiny.sqlclient.Tuple;
 
@@ -65,9 +65,9 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
     SqlTuple insertOne(Blob blob);
     SqlTupleList insertAll(Collection<Blob> blobs);
     
-    SqlTuple find(@Nullable String name, boolean latestOnly, List<BlobCriteria> criteria);
-    SqlTuple findByTree(String treeId, List<BlobCriteria> criteria);
-    SqlTuple findByTree(String treeId, List<String> blobNames, List<BlobCriteria> criteria);
+    SqlTuple find(@Nullable String name, boolean latestOnly, List<MatchCriteria> criteria);
+    SqlTuple findByTree(String treeId, List<MatchCriteria> criteria);
+    SqlTuple findByTree(String treeId, List<String> blobNames, List<MatchCriteria> criteria);
     SqlTuple findByIds(Collection<String> blobId);
     Sql findAll();
   }

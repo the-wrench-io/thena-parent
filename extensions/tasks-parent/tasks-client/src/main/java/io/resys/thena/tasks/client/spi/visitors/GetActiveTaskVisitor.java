@@ -1,30 +1,30 @@
 package io.resys.thena.tasks.client.spi.visitors;
 
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
-import io.resys.thena.docdb.api.models.ObjectsResult;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.actions.PullActions.PullObjectsQuery;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObject;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocBlobVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocPullObjectVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class GetActiveTaskVisitor implements DocBlobVisitor<Task> {
+public class GetActiveTaskVisitor implements DocPullObjectVisitor<Task> {
   private final String id;
   
   @Override
-  public BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder) {
-    return builder.blobName(id);
+  public PullObjectsQuery start(DocumentConfig config, PullObjectsQuery query) {
+    return query.docId(id);
   }
 
   @Override
-  public BlobObject visit(DocumentConfig config, ObjectsResult<BlobObject> envelope) {
-    if(envelope.getStatus() != ObjectsStatus.OK) {
+  public PullObject visitEnvelope(DocumentConfig config, QueryEnvelope<PullObject> envelope) {
+    if(envelope.getStatus() != QueryEnvelopeStatus.OK) {
       throw DocumentStoreException.builder("GET_TASK_BY_ID_FAIL")
         .add(config, envelope)
         .add((callback) -> callback.addArgs(id))
@@ -41,7 +41,7 @@ public class GetActiveTaskVisitor implements DocBlobVisitor<Task> {
   }
 
   @Override
-  public Task end(DocumentConfig config, BlobObject blob) {
+  public Task end(DocumentConfig config, PullObject blob) {
     return blob.accept((JsonObject json) -> json.mapTo(ImmutableTask.class));
   }
 }

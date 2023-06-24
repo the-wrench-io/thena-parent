@@ -31,8 +31,7 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
 
   @Override
   public Uni<List<Task>> deleteAll(String userId, LocalDateTime targetDate) {
-    return ctx.getConfig().accept(new DeleteAllTasksVisitor(userId, targetDate))
-        .onItem().transformToUni((response) -> response.getDeleteCommand().onItem().transform(deleted -> response.getValues()));
+    return ctx.getConfig().accept(new DeleteAllTasksVisitor(userId, targetDate));
   }
   
   @Override

@@ -26,26 +26,26 @@ import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
 import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
 import io.smallrye.mutiny.Uni;
 
 public interface HistoryActions {
 
-  BlobHistoryBuilder blob();
+  BlobHistoryQuery blobQuery();
   
-  interface BlobHistoryBuilder {
-    BlobHistoryBuilder repo(String repo, String headName);
-    BlobHistoryBuilder criteria(BlobCriteria ... criteria);
-    BlobHistoryBuilder criteria(List<BlobCriteria> criteria);
+  interface BlobHistoryQuery {
+    BlobHistoryQuery head(String projectName, String branchName);
+    BlobHistoryQuery matchBy(MatchCriteria ... matchCriteria);
+    BlobHistoryQuery matchBy(List<MatchCriteria> matchCriteria);
 
-    BlobHistoryBuilder blobName(String blobName); // entity name
-    BlobHistoryBuilder latestOnly(); // search only from last known version
-    BlobHistoryBuilder latestOnly(boolean latest); // search only from last known version
-    Uni<BlobHistoryResult> build();
+    BlobHistoryQuery docId(String docId); // entity name
+    BlobHistoryQuery latestOnly(); // search only from last known version
+    BlobHistoryQuery latestOnly(boolean latest); // search only from last known version
+    Uni<BlobHistoryResult> get();
   }
   
   @Value.Immutable
@@ -53,7 +53,7 @@ public interface HistoryActions {
     List<BlobHistory> getValues();
     
     @Nullable Repo getRepo();    
-    ObjectsStatus getStatus();
+    QueryEnvelopeStatus getStatus();
     List<Message> getMessages();
   }
 

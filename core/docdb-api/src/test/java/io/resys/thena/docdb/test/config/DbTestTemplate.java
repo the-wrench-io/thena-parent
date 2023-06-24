@@ -82,7 +82,7 @@ public class DbTestTemplate {
         .client(pgPool)
         .errorHandler(new PgTestErrors())
         .build();
-    repo = this.client.repo().create().name("junit" + index.incrementAndGet()).build().await().atMost(Duration.ofSeconds(10)).getRepo();
+    repo = this.client.project().projectBuilder().name("junit" + index.incrementAndGet()).build().await().atMost(Duration.ofSeconds(10)).getRepo();
     if(callback != null) {
       callback.accept(client, repo);
     }

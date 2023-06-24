@@ -21,11 +21,11 @@ package io.resys.thena.docdb.sql.queries;
  */
 
 import io.resys.thena.docdb.api.models.ImmutableMessage;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableBatch;

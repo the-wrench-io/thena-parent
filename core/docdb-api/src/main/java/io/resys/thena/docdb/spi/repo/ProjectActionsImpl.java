@@ -1,4 +1,4 @@
-package io.resys.thena.docdb.spi.objects;
+package io.resys.thena.docdb.spi.repo;
 
 /*-
  * #%L
@@ -20,21 +20,27 @@ package io.resys.thena.docdb.spi.objects;
  * #L%
  */
 
-import io.resys.thena.docdb.api.actions.ObjectsActions;
+import io.resys.thena.docdb.api.actions.ProjectActions;
 import io.resys.thena.docdb.spi.ClientState;
 import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class ObjectsActionsDefault implements ObjectsActions {
+public class ProjectActionsImpl implements ProjectActions {
   private final ClientState state;
 
   @Override
-  public BranchStateBuilder branchState() {
-    return new BranchStateBuilderDefault(state);
+  public ProjectsQuery projectsQuery() {
+    return new RepoQueryBuilderImpl(state);
   }
+
   @Override
-  public BlobStateBuilder blobState() {
-    return new BlobStateBuilderDefault(state);
+  public ProjectBuilder projectBuilder() {
+    return new RepoCreateBuilderImpl(state);
+  }
+
+  @Override
+  public ProjectObjectsQuery projectQuery() {
+    return new RepoStateBuilderImpl(state);
   }
 }

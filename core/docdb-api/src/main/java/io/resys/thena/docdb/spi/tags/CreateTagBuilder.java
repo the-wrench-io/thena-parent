@@ -25,12 +25,12 @@ import java.time.LocalDateTime;
 import io.resys.thena.docdb.api.actions.ImmutableTagResult;
 import io.resys.thena.docdb.api.actions.TagActions.TagBuilder;
 import io.resys.thena.docdb.api.actions.TagActions.TagResult;
-import io.resys.thena.docdb.api.actions.TagActions.TagStatus;
+import io.resys.thena.docdb.api.actions.TagActions.TagResultStatus;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.ImmutableTag;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
@@ -53,7 +53,7 @@ public class CreateTagBuilder implements TagBuilder {
     return this;
   }
   @Override
-  public TagBuilder repo(String repoId, String commitIdOrHead) {
+  public TagBuilder head(String repoId, String commitIdOrHead) {
     this.repoId = repoId;
     this.commitIdOrHead = commitIdOrHead;
     return this;
@@ -76,11 +76,11 @@ public class CreateTagBuilder implements TagBuilder {
     RepoAssert.notEmpty(commitIdOrHead, () -> "commitIdOrHead can't be empty!");
     RepoAssert.notEmpty(tagName, () -> "tagName can't be empty!");
     
-    return state.repos().getByNameOrId(repoId).onItem()
+    return state.project().getByNameOrId(repoId).onItem()
         .transformToUni(repo -> {
           if(repo == null) {
             return Uni.createFrom().item(ImmutableTagResult.builder()
-                .status(TagStatus.ERROR)
+                .status(TagResultStatus.ERROR)
                 .addMessages(ImmutableMessage.builder()
                     .text(new StringBuilder()
                         .append("Can't create tag: '").append(tagName).append("'")
@@ -97,7 +97,7 @@ public class CreateTagBuilder implements TagBuilder {
               
               if(commit == null) {
                 return Uni.createFrom().item((TagResult) ImmutableTagResult.builder()
-                    .status(TagStatus.ERROR)
+                    .status(TagResultStatus.ERROR)
                     .addMessages(ImmutableMessage.builder()
                         .text(new StringBuilder()
                             .append("Can't create tag: '").append(tagName).append("'")
@@ -111,7 +111,7 @@ public class CreateTagBuilder implements TagBuilder {
                 .transformToUni(existingTag -> {
                   if(existingTag != null) {
                     return Uni.createFrom().item((TagResult) ImmutableTagResult.builder()
-                        .status(TagStatus.ERROR)
+                        .status(TagResultStatus.ERROR)
                         .addMessages(ImmutableMessage.builder()
                             .text(new StringBuilder()
                                 .append("Can't create tag: '").append(tagName).append("'")
@@ -151,7 +151,7 @@ public class CreateTagBuilder implements TagBuilder {
         .onItem().transform(inserted -> {
           if(inserted.getDuplicate()) {
             return (TagResult) ImmutableTagResult.builder()
-                .status(TagStatus.ERROR)
+                .status(TagResultStatus.ERROR)
                 .tag(tag)
                 .addMessages(ImmutableMessage.builder()
                     .text(new StringBuilder()
@@ -163,7 +163,7 @@ public class CreateTagBuilder implements TagBuilder {
                 .build();
           } 
           return (TagResult) ImmutableTagResult.builder()
-              .status(TagStatus.OK).tag(tag)
+              .status(TagResultStatus.OK).tag(tag)
               .build();
         });
   }

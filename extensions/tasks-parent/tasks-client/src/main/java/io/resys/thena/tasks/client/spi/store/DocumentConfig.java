@@ -27,12 +27,12 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.DocDB;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
-import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.actions.BranchActions.BranchObjectsQuery;
+import io.resys.thena.docdb.api.actions.PullActions.PullObjectsQuery;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObjects.BranchObjects;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObject;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.smallrye.mutiny.Uni;
 
@@ -40,57 +40,10 @@ import io.smallrye.mutiny.Uni;
 @Value.Immutable
 public interface DocumentConfig {
   DocDB getClient();
-  String getRepoName();
+  String getProjectName();
   String getHeadName();
   DocumentGidProvider getGid();
   DocumentAuthorProvider getAuthor();
-
-  default <T> Uni<T> accept(DocRefVisitor<T> visitor) {
-    final var builder = visitor.start(this, getClient()
-        .objects().branchState()
-        .repo(getRepoName())
-        .ref(getHeadName()));
-    
-    return builder.build()
-        .onItem().transform(envelope -> visitor.visit(this, envelope))
-        .onItem().transform(ref -> visitor.end(this, ref));
-  }
-  
-  default <T> Uni<T> accept(DocBlobVisitor<T> visitor) {
-    final BlobStateBuilder builder = visitor.start(this, getClient()
-        .objects().blobState()
-        .repo(getRepoName())
-        .ref(getHeadName()));
-    
-    return builder.get()
-        .onItem().transform(envelope -> visitor.visit(this, envelope))
-        .onItem().transform(ref -> visitor.end(this, ref));
-  }
-
-  
-  default <T> Uni<List<T>> accept(DocBlobsVisitor<T> visitor) {
-    final BlobStateBuilder builder = visitor.start(this, getClient()
-        .objects().blobState()
-        .repo(getRepoName())
-        .ref(getHeadName()));
-    
-    return builder.list()
-        .onItem().transform(envelope -> visitor.visit(this, envelope))
-        .onItem().transform(ref -> visitor.end(this, ref));
-  }
-
-  
-  default <T> Uni<List<T>> accept(DocCommitBlobsVisitor<T> visitor) {
-    final BlobStateBuilder builder = visitor.start(this, getClient()
-        .objects().blobState()
-        .repo(getRepoName())
-        .ref(getHeadName()));
-    
-    return builder.list()
-        .onItem().transform(envelope -> visitor.visit(this, envelope))
-        .onItem().transformToUni(ref -> visitor.end(this, ref));
-  }
-
   
   interface DocumentGidProvider {
     String getNextId(DocumentType entity);
@@ -102,28 +55,75 @@ public interface DocumentConfig {
     String get();
   }
   
-  interface DocRefVisitor<T> { 
-    BranchStateBuilder start(DocumentConfig config, BranchStateBuilder builder);
-    @Nullable BranchObjects visit(DocumentConfig config, ObjectsResult<BranchObjects> envelope);
+  interface DocBranchVisitor<T> { 
+    BranchObjectsQuery start(DocumentConfig config, BranchObjectsQuery builder);
+    @Nullable BranchObjects visitEnvelope(DocumentConfig config, QueryEnvelope<BranchObjects> envelope);
     T end(DocumentConfig config, @Nullable BranchObjects ref);
   }
   
-  interface DocBlobVisitor<T> { 
-    BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder);
-    @Nullable BlobObject visit(DocumentConfig config, ObjectsResult<BlobObject> envelope);
-    T end(DocumentConfig config, @Nullable BlobObject blob);
+  interface DocPullObjectVisitor<T> { 
+    PullObjectsQuery start(DocumentConfig config, PullObjectsQuery builder);
+    @Nullable PullObject visitEnvelope(DocumentConfig config, QueryEnvelope<PullObject> envelope);
+    T end(DocumentConfig config, @Nullable PullObject blob);
   }
   
-  interface DocBlobsVisitor<T> { 
-    BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder);
-    @Nullable BlobObjects visit(DocumentConfig config, ObjectsResult<BlobObjects> envelope);
-    List<T> end(DocumentConfig config, @Nullable BlobObjects blobs);
+  interface DocPullObjectsVisitor<T> { 
+    PullObjectsQuery start(DocumentConfig config, PullObjectsQuery builder);
+    @Nullable PullObjects visitEnvelope(DocumentConfig config, QueryEnvelope<PullObjects> envelope);
+    List<T> end(DocumentConfig config, @Nullable PullObjects blobs);
   }
   
-  interface DocCommitBlobsVisitor<T> { 
-    BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder);
-    @Nullable BlobObjects visit(DocumentConfig config, ObjectsResult<BlobObjects> envelope);
-    Uni<List<T>> end(DocumentConfig config, @Nullable BlobObjects blobs);
+  interface DocCommitVisitor<T> { 
+    PullObjectsQuery start(DocumentConfig config, PullObjectsQuery builder);
+    @Nullable PullObjects visitEnvelope(DocumentConfig config, QueryEnvelope<PullObjects> envelope);
+    Uni<List<T>> end(DocumentConfig config, @Nullable PullObjects blobs);
   }
   
+
+  default <T> Uni<T> accept(DocBranchVisitor<T> visitor) {
+    final var builder = visitor.start(this, getClient()
+        .branch().branchQuery()
+        .projectName(getProjectName())
+        .branchName(getHeadName()));
+    
+    return builder.get()
+        .onItem().transform(envelope -> visitor.visitEnvelope(this, envelope))
+        .onItem().transform(ref -> visitor.end(this, ref));
+  }
+  
+  default <T> Uni<T> accept(DocPullObjectVisitor<T> visitor) {
+    final PullObjectsQuery builder = visitor.start(this, getClient()
+        .pull().pullQuery()
+        .projectName(getProjectName())
+        .branchNameOrCommitOrTag(getHeadName()));
+    
+    return builder.get()
+        .onItem().transform(envelope -> visitor.visitEnvelope(this, envelope))
+        .onItem().transform(ref -> visitor.end(this, ref));
+  }
+
+  
+  default <T> Uni<List<T>> accept(DocPullObjectsVisitor<T> visitor) {
+    final PullObjectsQuery builder = visitor.start(this, getClient()
+        .pull().pullQuery()
+        .projectName(getProjectName())
+        .branchNameOrCommitOrTag(getHeadName()));
+    
+    return builder.findAll()
+        .onItem().transform(envelope -> visitor.visitEnvelope(this, envelope))
+        .onItem().transform(ref -> visitor.end(this, ref));
+  }
+
+  
+  default <T> Uni<List<T>> accept(DocCommitVisitor<T> visitor) {
+    final var prefilled = getClient()
+        .pull().pullQuery()
+        .projectName(getProjectName())
+        .branchNameOrCommitOrTag(getHeadName());
+    
+    final Uni<QueryEnvelope<PullObjects>> query = visitor.start(this, prefilled).findAll();
+    return query
+        .onItem().transform(envelope -> visitor.visitEnvelope(this, envelope))
+        .onItem().transformToUni(ref -> visitor.end(this, ref));
+  }
 }

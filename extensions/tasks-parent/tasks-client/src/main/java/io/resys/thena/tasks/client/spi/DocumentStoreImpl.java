@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.resys.thena.docdb.api.DocDB;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.OidUtils;
 import io.resys.thena.docdb.spi.pgsql.DocDBFactoryPgSql;
@@ -61,7 +61,7 @@ public class DocumentStoreImpl implements DocumentStore {
   @Override
   public Uni<Repo> getRepo() {
     final var client = config.getClient();
-    return client.repo().query().id(config.getRepoName()).get();
+    return client.project().projectsQuery().id(config.getProjectName()).get();
   }
   @Override public DocumentConfig getConfig() { return config; }
   @Override public DocumentRepositoryQuery query() {
@@ -78,7 +78,7 @@ public class DocumentStoreImpl implements DocumentStore {
   private Uni<DocumentStore> createRepoOrGetRepo(String repoName, String headName) {
     final var client = config.getClient();
     
-    return client.repo().query().id(repoName).get()
+    return client.project().projectsQuery().id(repoName).get()
         .onItem().transformToUni(repo -> {        
           if(repo == null) {
             return createRepo(repoName, headName); 
@@ -90,7 +90,7 @@ public class DocumentStoreImpl implements DocumentStore {
   private Uni<DocumentStore> createRepo(String repoName, String headName) {
     RepoAssert.notNull(repoName, () -> "repoName must be defined!");
     final var client = config.getClient();
-    final var newRepo = client.repo().create().name(repoName).build();
+    final var newRepo = client.project().projectBuilder().name(repoName).build();
     return newRepo.onItem().transform((repoResult) -> {
       if(repoResult.getStatus() != RepoStatus.OK) {
         throw new DocumentStoreException("REPO_CREATE_FAIL", 
@@ -109,7 +109,7 @@ public class DocumentStoreImpl implements DocumentStore {
     RepoAssert.notNull(repoName, () -> "repoName must be defined!");
     return new DocumentStoreImpl(ImmutableDocumentConfig.builder()
         .from(config)
-        .repoName(repoName)
+        .projectName(repoName)
         .headName(headName == null ? config.getHeadName() : headName)
         .build());
     
@@ -199,7 +199,7 @@ public class DocumentStoreImpl implements DocumentStore {
       }
       
       final DocumentConfig config = ImmutableDocumentConfig.builder()
-          .client(thena).repoName(repoName).headName(headName)
+          .client(thena).projectName(repoName).headName(headName)
           .gid(getGidProvider())
           .author(getAuthorProvider())
           .build();

@@ -28,14 +28,14 @@ import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
-import io.resys.thena.docdb.api.actions.CommitActions.CommitObjects;
 import io.resys.thena.docdb.api.models.Diff;
 import io.resys.thena.docdb.api.models.Diff.Divergence;
 import io.resys.thena.docdb.api.models.Diff.DivergenceType;
 import io.resys.thena.docdb.api.models.ImmutableDiff;
 import io.resys.thena.docdb.api.models.ImmutableDivergence;
 import io.resys.thena.docdb.api.models.ImmutableDivergenceRef;
-import io.resys.thena.docdb.api.models.Objects;
+import io.resys.thena.docdb.api.models.ThenaObjects.CommitObjects;
+import io.resys.thena.docdb.api.models.ThenaObjects.ProjectObjects;
 
 public class DiffVisitor {
 
@@ -45,7 +45,7 @@ public class DiffVisitor {
     CommitHistory getTarget();
   }
   
-  public Diff visit(Objects repo, CommitObjects start, List<CommitObjects> targets) { 
+  public Diff visit(ProjectObjects repo, CommitObjects start, List<CommitObjects> targets) { 
     List<DiffCommitMatch> result = visitHistories(repo, CommitHistory.builder().from(repo, start.getCommit().getId()), targets);
     
     List<Divergence> values = result.stream()
@@ -57,7 +57,7 @@ public class DiffVisitor {
         .build();
   }
   
-  private Divergence visitDivergence(Objects repo, DiffCommitMatch match) {
+  private Divergence visitDivergence(ProjectObjects repo, DiffCommitMatch match) {
     final var main = match.getSrc();
     final var head = match.getTarget();
     
@@ -66,7 +66,7 @@ public class DiffVisitor {
         .main(ImmutableDivergenceRef.builder()
             .commit(main.getCommit())
             .commits(main.getIndex())
-            .tags(repo.getRefs().values().stream()
+            .tags(repo.getBranches().values().stream()
                 .filter(t -> t.getCommit().equals(main.getCommit().getId()))
                 .map(t -> t.getName())
                 .collect(Collectors.toList()))
@@ -78,7 +78,7 @@ public class DiffVisitor {
         .head(ImmutableDivergenceRef.builder()
             .commit(head.getCommit())
             .commits(head.getIndex())
-            .tags(repo.getRefs().values().stream()
+            .tags(repo.getBranches().values().stream()
                 .filter(t -> t.getCommit().equals(head.getCommit().getId()))
                 .map(t -> t.getName())
                 .collect(Collectors.toList()))
@@ -92,7 +92,7 @@ public class DiffVisitor {
         .build();
   }
   
-  private List<DiffCommitMatch> visitHistories(Objects repo, CommitHistory start, List<CommitObjects> end) {
+  private List<DiffCommitMatch> visitHistories(ProjectObjects repo, CommitHistory start, List<CommitObjects> end) {
     List<DiffCommitMatch> result = new ArrayList<>(); 
     List<CommitHistory> toBeVisited = new ArrayList<>(end.stream()
         .map(e -> CommitHistory.builder().from(repo, e.getCommit().getId(), start.getCommit().getDateTime()))

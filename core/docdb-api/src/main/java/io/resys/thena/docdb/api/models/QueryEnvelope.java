@@ -28,14 +28,15 @@ import org.immutables.value.Value;
 
 
 @Value.Immutable
-public interface ObjectsResult<T> {
+public interface QueryEnvelope<T extends ThenaObjects> {
   @Nullable
   Repo getRepo();    
   @Nullable
   T getObjects();
-  ObjectsStatus getStatus();
+  
+  QueryEnvelopeStatus getStatus();
   List<Message> getMessages();
   
-  enum ObjectsStatus { OK, ERROR }
+  enum QueryEnvelopeStatus { OK, ERROR }
 
 }

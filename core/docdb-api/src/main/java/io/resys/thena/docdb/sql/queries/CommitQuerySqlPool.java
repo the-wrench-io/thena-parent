@@ -8,31 +8,10 @@ import io.resys.thena.docdb.api.models.ImmutableBranch;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableCommitLock;
 import io.resys.thena.docdb.api.models.ImmutableTree;
-
-/*-
- * #%L
- * thena-docdb-pgsql
- * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
-
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.CommitLock;
-import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
-import io.resys.thena.docdb.api.models.Objects.CommitTree;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLock;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLockStatus;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitTree;
 import io.resys.thena.docdb.spi.ClientQuery.CommitQuery;
 import io.resys.thena.docdb.spi.ClientQuery.LockCriteria;
 import io.resys.thena.docdb.spi.ErrorHandler;
@@ -122,9 +101,9 @@ public class CommitQuerySqlPool implements CommitQuery {
               tree = ImmutableTree.builder().id(commitTree.getTreeId());
               
               builder
-                .ref(ImmutableBranch.builder()
+                .branch(ImmutableBranch.builder()
                     .commit(commitTree.getCommitId())
-                    .name(commitTree.getRefName())
+                    .name(commitTree.getBranchName())
                     .build())
                 .commit(ImmutableCommit.builder()
                   .author(commitTree.getCommitAuthor())

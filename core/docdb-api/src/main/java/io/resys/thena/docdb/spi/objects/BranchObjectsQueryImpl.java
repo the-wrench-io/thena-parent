@@ -24,16 +24,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.actions.ImmutableBranchObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
+import io.resys.thena.docdb.api.actions.BranchActions.BranchObjectsQuery;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.exceptions.RepoException;
-import io.resys.thena.docdb.api.models.ImmutableObjectsResult;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.ObjectsResult;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.models.ImmutableBranchObjects;
+import io.resys.thena.docdb.api.models.ImmutableQueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
 import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObjects.BranchObjects;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
@@ -47,49 +47,49 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class BranchStateBuilderDefault implements BranchStateBuilder {
+public class BranchObjectsQueryImpl implements BranchObjectsQuery {
   private final ClientState state;
-  private final List<BlobCriteria> blobCriteria = new ArrayList<>();
-  private String repo; //repo name
-  private String ref;
-  private boolean blobs;
-  @Override public BranchStateBuilderDefault blobCriteria(List<BlobCriteria> blobCriteria) { this.blobCriteria.addAll(blobCriteria); return this; }
+  private final List<MatchCriteria> blobCriteria = new ArrayList<>();
+  private String projectName; //repo name
+  private String branchName;
+  private boolean docsIncluded;
+  @Override public BranchObjectsQueryImpl matchBy(List<MatchCriteria> blobCriteria) { this.blobCriteria.addAll(blobCriteria); return this; }
 
   @Override
-  public BranchStateBuilder blobs() {
-    this.blobs = true;
+  public BranchObjectsQuery docsIncluded() {
+    docsIncluded = true;
     return this;
   }
   @Override
-  public Uni<ObjectsResult<BranchObjects>> build() {
-    RepoAssert.notEmpty(repo, () -> "repoName is not defined!");
-    RepoAssert.notEmpty(ref, () -> "ref is not defined!");
+  public Uni<QueryEnvelope<BranchObjects>> get() {
+    RepoAssert.notEmpty(projectName, () -> "projectName is not defined!");
+    RepoAssert.notEmpty(branchName, () -> "branchName is not defined!");
     
-    return state.repos().getByNameOrId(repo).onItem()
+    return state.project().getByNameOrId(projectName).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
-        final var ex = RepoException.builder().notRepoWithName(repo);
+        final var ex = RepoException.builder().notRepoWithName(projectName);
         log.warn(ex.getText());
-        return Uni.createFrom().item(ImmutableObjectsResult
+        return Uni.createFrom().item(ImmutableQueryEnvelope
             .<BranchObjects>builder()
-            .status(ObjectsStatus.ERROR)
+            .status(QueryEnvelopeStatus.ERROR)
             .addMessages(ex)
             .build());
       }
-      return getRef(existing, ref, state.withRepo(existing));
+      return getRef(existing, branchName, state.withRepo(existing));
     });
   }
   
-  private Uni<ObjectsResult<BranchObjects>> getRef(Repo repo, String refName, ClientRepoState ctx) {
+  private Uni<QueryEnvelope<BranchObjects>> getRef(Repo repo, String refName, ClientRepoState ctx) {
 
     return ctx.query().refs().name(refName).onItem()
         .transformToUni(ref -> {
           if(ref == null) {
             return ctx.query().refs().findAll().collect().asList().onItem().transform(allRefs -> 
-              (ObjectsResult<BranchObjects>) ImmutableObjectsResult
+              (QueryEnvelope<BranchObjects>) ImmutableQueryEnvelope
               .<BranchObjects>builder()
               .repo(repo)
-              .status(ObjectsStatus.OK)
+              .status(QueryEnvelopeStatus.OK)
               .addMessages(RepoException.builder().noRepoRef(
                   repo.getName(), refName, 
                   allRefs.stream().map(e -> e.getName()).collect(Collectors.toList())))
@@ -100,13 +100,13 @@ public class BranchStateBuilderDefault implements BranchStateBuilder {
         });
   }
   
-  private Uni<ObjectsResult<BranchObjects>> getState(Repo repo, Branch ref, ClientRepoState ctx) {
+  private Uni<QueryEnvelope<BranchObjects>> getState(Repo repo, Branch ref, ClientRepoState ctx) {
     return ObjectsUtils.getCommit(ref.getCommit(), ctx).onItem()
         .transformToUni(commit -> ObjectsUtils.getTree(commit, ctx).onItem()
         .transformToUni(tree -> {
-          if(this.blobs) {
+          if(this.docsIncluded) {
             return ObjectsUtils.getBlobs(tree, blobCriteria, ctx)
-              .onItem().transform(blobs -> ImmutableObjectsResult.<BranchObjects>builder()
+              .onItem().transform(blobs -> ImmutableQueryEnvelope.<BranchObjects>builder()
                 .repo(repo)
                 .objects(ImmutableBranchObjects.builder()
                     .repo(repo)
@@ -116,11 +116,11 @@ public class BranchStateBuilderDefault implements BranchStateBuilder {
                     .commit(commit)
                     .build())
                 .repo(repo)
-                .status(ObjectsStatus.OK)
+                .status(QueryEnvelopeStatus.OK)
                 .build());
           }
           
-          return Uni.createFrom().item(ImmutableObjectsResult.<BranchObjects>builder()
+          return Uni.createFrom().item(ImmutableQueryEnvelope.<BranchObjects>builder()
             .repo(repo)
             .objects(ImmutableBranchObjects.builder()
                 .repo(repo)
@@ -128,7 +128,7 @@ public class BranchStateBuilderDefault implements BranchStateBuilder {
                 .tree(tree)
                 .commit(commit)
                 .build())
-            .status(ObjectsStatus.OK)
+            .status(QueryEnvelopeStatus.OK)
             .build());
         }));
   }

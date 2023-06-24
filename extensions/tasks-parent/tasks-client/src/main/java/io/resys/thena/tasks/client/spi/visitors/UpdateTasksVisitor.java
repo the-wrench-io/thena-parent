@@ -27,24 +27,23 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobVisitor;
-import io.resys.thena.docdb.api.models.ObjectsResult;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
+import io.resys.thena.docdb.api.actions.PullActions.PullObjectsQuery;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocCommitBlobsVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocCommitVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 
 
-public class UpdateTasksVisitor implements DocCommitBlobsVisitor<Task>, BlobVisitor<Task> {
+public class UpdateTasksVisitor implements DocCommitVisitor<Task> {
   private final List<String> taskIds;
   private final CommitBuilder commitBuilder;
   private final Map<String, List<TaskUpdateCommand>> commandsByTaskId; 
@@ -56,21 +55,21 @@ public class UpdateTasksVisitor implements DocCommitBlobsVisitor<Task>, BlobVisi
     this.commandsByTaskId = commands.stream()
         .collect(Collectors.groupingBy(TaskUpdateCommand::getTaskId));
     this.taskIds = new ArrayList<>(commandsByTaskId.keySet());
-    this.commitBuilder = config.getClient().commit().builder()
-        .head(config.getRepoName(), config.getHeadName())
+    this.commitBuilder = config.getClient().commit().commitBuilder()
+        .head(config.getProjectName(), config.getHeadName())
         .message("Update tasks: " + commandsByTaskId.size())
-        .parentIsLatest()
+        .latestCommit()
         .author(config.getAuthor().get());
   }
 
   @Override
-  public BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder) {
-    return builder.blobNames(taskIds);
+  public PullObjectsQuery start(DocumentConfig config, PullObjectsQuery builder) {
+    return builder.docId(taskIds);
   }
 
   @Override
-  public BlobObjects visit(DocumentConfig config, ObjectsResult<BlobObjects> envelope) {
-    if(envelope.getStatus() != ObjectsStatus.OK) {
+  public PullObjects visitEnvelope(DocumentConfig config, QueryEnvelope<PullObjects> envelope) {
+    if(envelope.getStatus() != QueryEnvelopeStatus.OK) {
       throw DocumentStoreException.builder("GET_TASKS_BY_IDS_FOR_UPDATE_FAIL")
         .add(config, envelope)
         .add((callback) -> callback.addArgs(taskIds.stream().collect(Collectors.joining(",", "{", "}"))))
@@ -90,24 +89,21 @@ public class UpdateTasksVisitor implements DocCommitBlobsVisitor<Task>, BlobVisi
   }
 
   @Override
-  public Uni<List<Task>> end(DocumentConfig config, BlobObjects blob) {
-    final var updatedTasks = blob.accept(this);
+  public Uni<List<Task>> end(DocumentConfig config, PullObjects blob) {
+    final var updatedTasks = blob.accept((JsonObject blobValue) -> {
+      final var start = blobValue.mapTo(ImmutableTask.class);
+      final var commands = commandsByTaskId.get(start.getId());
+      final var updated = new TaskCommandVisitor(start).visit(commands);
+      this.commitBuilder.append(updated.getId(), JsonObject.mapFrom(updated));
+      return updated;
+    });
     
     return commitBuilder.build().onItem().transform(commit -> {
-      if(commit.getStatus() != CommitStatus.OK) {
+      if(commit.getStatus() != CommitResultStatus.OK) {
         final var failedUpdates = taskIds.stream().collect(Collectors.joining(",", "{", "}"));
         throw new DocumentStoreException("TASKS_UPDATE_FAIL", JsonObject.of("failedUpdates", failedUpdates), DocumentStoreException.convertMessages(commit));
       }
       return updatedTasks;
     });
-  }
-
-  @Override
-  public Task visit(JsonObject blobValue) {
-    final var start = blobValue.mapTo(ImmutableTask.class);
-    final var commands = commandsByTaskId.get(start.getId());
-    final var updated = new TaskCommandVisitor(start).visit(commands);
-    this.commitBuilder.append(updated.getId(), JsonObject.mapFrom(updated));
-    return updated;
   }
 }

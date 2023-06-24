@@ -26,15 +26,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
 import io.resys.thena.docdb.api.models.ImmutableTree;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -76,7 +76,7 @@ public class BlobQueryFilePool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
   }
   @Override
-  public Multi<Blob> findAll(String treeId, List<String> blobNames, List<BlobCriteria> blobCriteria) {
+  public Multi<Blob> findAll(String treeId, List<String> blobNames, List<MatchCriteria> blobCriteria) {
     final var blobSql = builder.blobs().findByTreeId(treeId);
     final var treeSql = builder.trees().getById(treeId);
     
@@ -118,10 +118,10 @@ public class BlobQueryFilePool implements BlobQuery {
     .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
   }
   @Override
-  public Multi<Blob> findAll(String treeId, List<BlobCriteria> criteria) {
+  public Multi<Blob> findAll(String treeId, List<MatchCriteria> criteria) {
     return findAll(treeId, Collections.emptyList(), criteria);
   }
-  public static boolean isMatch(Blob item, List<BlobCriteria> blobCriteria) {
+  public static boolean isMatch(Blob item, List<MatchCriteria> blobCriteria) {
     var found = true;
     for(final var crit : blobCriteria) {
       final var field = crit.getKey();
@@ -133,8 +133,8 @@ public class BlobQueryFilePool implements BlobQuery {
       }
       
       final var jsonValue = item.getValue().getValue(field);
-      if(( crit.getType() == CriteriaType.EXACT ||
-           crit.getType() == CriteriaType.LIKE)
+      if(( crit.getType() == MatchCriteriaType.EQUALS ||
+           crit.getType() == MatchCriteriaType.LIKE)
               
           && jsonValue == null && crit.getValue() == null) {
         found = true;
@@ -144,10 +144,10 @@ public class BlobQueryFilePool implements BlobQuery {
         found = false;
         break;
       }
-      if(crit.getType() == CriteriaType.EXACT && jsonValue.toString().equals(crit.getValue())) {
+      if(crit.getType() == MatchCriteriaType.EQUALS && jsonValue.toString().equals(crit.getValue())) {
         continue;
       }
-      if(crit.getType() == CriteriaType.LIKE && jsonValue.toString().indexOf(crit.getValue()) > -1) {
+      if(crit.getType() == MatchCriteriaType.LIKE && jsonValue.toString().indexOf(crit.getValue()) > -1) {
         continue;
       }
       found = false;

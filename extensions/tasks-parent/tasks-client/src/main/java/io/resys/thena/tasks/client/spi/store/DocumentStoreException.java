@@ -31,9 +31,9 @@ import org.immutables.value.Value;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
-import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObject;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
 
@@ -80,14 +80,14 @@ public class DocumentStoreException extends RuntimeException {
         .build();
   }
 
-  public static DocumentExceptionMsg convertMessages1(ObjectsResult<BlobObject> state) {
+  public static DocumentExceptionMsg convertMessages1(QueryEnvelope<PullObject> state) {
     return ImmutableDocumentExceptionMsg.builder()
         .id("STATE_FAIL")
         .value("")
         .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
         .build();
   }
-  public static DocumentExceptionMsg convertMessages2(ObjectsResult<BlobObjects> state) {
+  public static DocumentExceptionMsg convertMessages2(QueryEnvelope<PullObjects> state) {
     return ImmutableDocumentExceptionMsg.builder()
         .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
         .build();
@@ -102,8 +102,8 @@ public class DocumentStoreException extends RuntimeException {
     private final String id;
     private final ImmutableDocumentExceptionMsg.Builder msg = ImmutableDocumentExceptionMsg.builder();
     
-    public Builder add(DocumentConfig config, ObjectsResult<?> envelope) {
-      msg.id(envelope.getRepo() == null ? config.getRepoName() : envelope.getRepo().getName())
+    public Builder add(DocumentConfig config, QueryEnvelope<?> envelope) {
+      msg.id(envelope.getRepo() == null ? config.getProjectName() : envelope.getRepo().getName())
       .value(envelope.getRepo() == null ? "no-repo" : envelope.getRepo().getId())
       .addAllArgs(envelope.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()));
       return this;

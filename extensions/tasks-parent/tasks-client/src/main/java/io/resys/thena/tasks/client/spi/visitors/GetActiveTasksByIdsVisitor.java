@@ -5,31 +5,31 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
-import io.resys.thena.docdb.api.models.ObjectsResult;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.actions.PullActions.PullObjectsQuery;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocBlobsVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocPullObjectsVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class GetActiveTasksByIdsVisitor implements DocBlobsVisitor<Task> {
+public class GetActiveTasksByIdsVisitor implements DocPullObjectsVisitor<Task> {
   private final Collection<String> taskIds;
   
   @Override
-  public BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder) {
-    return builder.blobNames(new ArrayList<>(taskIds));
+  public PullObjectsQuery start(DocumentConfig config, PullObjectsQuery builder) {
+    return builder.docId(new ArrayList<>(taskIds));
   }
 
   @Override
-  public BlobObjects visit(DocumentConfig config, ObjectsResult<BlobObjects> envelope) {
-    if(envelope.getStatus() != ObjectsStatus.OK) {
+  public PullObjects visitEnvelope(DocumentConfig config, QueryEnvelope<PullObjects> envelope) {
+    if(envelope.getStatus() != QueryEnvelopeStatus.OK) {
       throw DocumentStoreException.builder("GET_TASKS_BY_IDS_FAIL")
         .add(config, envelope)
         .add((callback) -> callback.addArgs(taskIds.stream().collect(Collectors.joining(",", "{", "}"))))
@@ -46,7 +46,7 @@ public class GetActiveTasksByIdsVisitor implements DocBlobsVisitor<Task> {
   }
 
   @Override
-  public List<Task> end(DocumentConfig config, BlobObjects blob) {
+  public List<Task> end(DocumentConfig config, PullObjects blob) {
     return blob.accept((JsonObject json) -> json.mapTo(ImmutableTask.class));
   }
 }

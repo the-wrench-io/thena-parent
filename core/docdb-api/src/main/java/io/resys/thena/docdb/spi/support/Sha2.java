@@ -30,9 +30,9 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.Hashing;
 
 import io.resys.thena.docdb.api.models.ImmutableBlob;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.vertx.core.json.JsonObject;
 
 public final class Sha2  {

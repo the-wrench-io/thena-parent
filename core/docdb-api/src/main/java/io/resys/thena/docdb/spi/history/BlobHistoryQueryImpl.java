@@ -24,13 +24,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import io.resys.thena.docdb.api.actions.HistoryActions.BlobHistoryBuilder;
+import io.resys.thena.docdb.api.actions.HistoryActions.BlobHistoryQuery;
 import io.resys.thena.docdb.api.actions.HistoryActions.BlobHistoryResult;
 import io.resys.thena.docdb.api.actions.ImmutableBlobHistoryResult;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.exceptions.RepoException;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
 import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -42,43 +42,43 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Data @Accessors(fluent = true)
 @RequiredArgsConstructor
-public class BlobHistoryBuilderDefault implements BlobHistoryBuilder {
+public class BlobHistoryQueryImpl implements BlobHistoryQuery {
   private final ClientState state;
-  private final List<BlobCriteria> criteria = new ArrayList<>();
-  private String repoName;
-  private String headName;
+  private final List<MatchCriteria> criteria = new ArrayList<>();
+  private String projectName;
+  private String branchName;
   private boolean latestOnly;
-  private String blobName;
+  private String docId;
 
-  @Override public BlobHistoryBuilder criteria(BlobCriteria ... criteria) { this.criteria.addAll(Arrays.asList(criteria)); return this; }
-  @Override public BlobHistoryBuilder criteria(List<BlobCriteria> criteria) { this.criteria.addAll(criteria); return this; }
-  @Override public BlobHistoryBuilder repo(String repoName, String headName) { this.repoName = repoName; this.headName = headName; return this; }
-  @Override public BlobHistoryBuilder latestOnly() { this.latestOnly = true; return this; }
+  @Override public BlobHistoryQuery matchBy(MatchCriteria ... criteria) { this.criteria.addAll(Arrays.asList(criteria)); return this; }
+  @Override public BlobHistoryQuery matchBy(List<MatchCriteria> criteria) { this.criteria.addAll(criteria); return this; }
+  @Override public BlobHistoryQuery head(String projectName, String branchName) { this.projectName = projectName; this.branchName = branchName; return this; }
+  @Override public BlobHistoryQuery latestOnly() { this.latestOnly = true; return this; }
   
   @Override
-  public Uni<BlobHistoryResult> build() {
-    RepoAssert.notEmpty(repoName, () -> "repoName is not defined!");
-    RepoAssert.notEmpty(headName, () -> "headName is not defined!");
+  public Uni<BlobHistoryResult> get() {
+    RepoAssert.notEmpty(projectName, () -> "projectName is not defined!");
+    RepoAssert.notEmpty(branchName, () -> "branchName is not defined!");
     
-    return state.repos().getByNameOrId(repoName).onItem()
+    return state.project().getByNameOrId(projectName).onItem()
     .transformToUni((Repo existing) -> {
       if(existing == null) {
-        final var ex = RepoException.builder().notRepoWithName(repoName);
+        final var ex = RepoException.builder().notRepoWithName(projectName);
         log.error(ex.getText());
         return Uni.createFrom().item(ImmutableBlobHistoryResult
             .builder()
-            .status(ObjectsStatus.ERROR)
+            .status(QueryEnvelopeStatus.ERROR)
             .addMessages(ex)
             .build());
       }
       final var ctx = state.withRepo(existing);
       return ctx.query().blobHistory()
         .latestOnly(latestOnly)
-        .blobName(blobName)
+        .blobName(docId)
         .criteria(criteria)
         .find().collect()
         .asList().onItem().transform(found -> ImmutableBlobHistoryResult
-            .builder().status(ObjectsStatus.OK).values(found)
+            .builder().status(QueryEnvelopeStatus.OK).values(found)
             .build());
     });
   }

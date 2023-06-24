@@ -32,15 +32,15 @@ import io.resys.thena.docdb.api.models.ImmutableRepo;
 import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Branch;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.CommitTree;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitTree;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.vertx.core.json.JsonObject;
@@ -148,7 +148,7 @@ public class SqlMapperImpl implements SqlMapper {
         .commitDateTime(LocalDateTime.parse(row.getString("datetime")))
         .commitMessage(row.getString("message"))
         .commitMerge(row.getString("merge"))
-        .refName(row.getString("ref_name"))
+        .branchName(row.getString("ref_name"))
         .treeValue(blob == null ? Optional.empty() : Optional.of(ImmutableTreeValue.builder()
             .blob(blob)
             .name(blobName)

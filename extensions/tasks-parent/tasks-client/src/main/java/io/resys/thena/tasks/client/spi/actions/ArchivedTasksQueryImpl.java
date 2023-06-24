@@ -6,10 +6,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.actions.HistoryActions.BlobHistoryResult;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
-import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
+import io.resys.thena.docdb.api.actions.ImmutableMatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
 import io.resys.thena.tasks.client.api.actions.TaskActions.ArchivedTasksQuery;
 import io.resys.thena.tasks.client.api.model.Document;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
@@ -91,30 +91,30 @@ public class ArchivedTasksQueryImpl implements ArchivedTasksQuery {
     final var config = ctx.getConfig();
     return config.getClient()
         .history()
-        .blob()
-        .repo(config.getRepoName(), config.getHeadName())
+        .blobQuery()
+        .head(config.getProjectName(), config.getHeadName())
         .latestOnly(true)
-        .criteria(Arrays.asList(
-            ImmutableBlobCriteria.builder()
+        .matchBy(Arrays.asList(
+            ImmutableMatchCriteria.builder()
               .key("documentType").value(Document.DocumentType.TASK.name())
-              .type(CriteriaType.EXACT)
+              .type(MatchCriteriaType.EQUALS)
               .build(),
-            ImmutableBlobCriteria.builder()
+            ImmutableMatchCriteria.builder()
               .key("archived")
-              .type(CriteriaType.NOT_NULL)
+              .type(MatchCriteriaType.NOT_NULL)
               .build()
             ))
-        .build()
+        .get()
         .onItem().transform(this::map)
         ;
   }
 
   
   private List<Task> map(BlobHistoryResult response) {
-    if(response.getStatus() != ObjectsStatus.OK) {
+    if(response.getStatus() != QueryEnvelopeStatus.OK) {
       final var config = ctx.getConfig();
       throw new DocumentStoreException("FIND_ARCHIVED_TASKS_FAIL", ImmutableDocumentExceptionMsg.builder()
-          .id(response.getRepo() == null ? config.getRepoName() : response.getRepo().getName())
+          .id(response.getRepo() == null ? config.getProjectName() : response.getRepo().getName())
           .value(response.getRepo() == null ? "no-repo" : response.getRepo().getId())
           .addAllArgs(response.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
           .build()); 

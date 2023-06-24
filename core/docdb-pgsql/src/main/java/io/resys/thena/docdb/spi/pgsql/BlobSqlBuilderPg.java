@@ -25,10 +25,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
 import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
 import io.resys.thena.docdb.sql.SqlBuilder.BlobSqlBuilder;
@@ -71,7 +71,7 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
   }
   
   @Override
-  protected WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
+  protected WhereSqlFragment createWhereCriteria(List<MatchCriteria> criteria) {
     final var props = new LinkedList<>();
     final var where = new SqlStatement();
     int paramIndex = 1;
@@ -81,20 +81,20 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
       }
       // TODO:: null value props
       props.add(entry.getKey());
-      if(entry.getType() == CriteriaType.EXACT) {
+      if(entry.getType() == MatchCriteriaType.EQUALS) {
         props.add(entry.getValue());
         where.append("blobs.value -> $")
           .append(String.valueOf(paramIndex++))
           .append(" = $")
           .append(String.valueOf(paramIndex++)).ln();
-      } else if(entry.getType() == CriteriaType.LIKE)  {
+      } else if(entry.getType() == MatchCriteriaType.LIKE)  {
         props.add("%"+ entry.getValue() + "%");
         where.append("blobs.value ->> $")
         .append(String.valueOf(paramIndex++))
         .append(" like $")
         .append(String.valueOf(paramIndex++)).ln();
         
-      } else if(entry.getType() == CriteriaType.NOT_NULL)  {
+      } else if(entry.getType() == MatchCriteriaType.NOT_NULL)  {
         where.append("blobs.value ->> $")
         .append(String.valueOf(paramIndex++))
         .append(" is not null").ln();
@@ -109,7 +109,7 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
     
   
   @Override
-  public SqlTuple find(String name, boolean latestOnly, List<BlobCriteria> criteria) {
+  public SqlTuple find(String name, boolean latestOnly, List<MatchCriteria> criteria) {
 
     final String sql;
     final var conditions = createWhereCriteria(criteria);

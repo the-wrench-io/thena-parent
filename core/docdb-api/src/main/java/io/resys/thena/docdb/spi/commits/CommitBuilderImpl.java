@@ -29,12 +29,12 @@ import java.util.Map;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
 import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
-import io.resys.thena.docdb.api.models.Objects.CommitLock;
-import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLock;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLockStatus;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
@@ -131,7 +131,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     return this;
   }
   @Override
-  public CommitBuilder parentIsLatest() {
+  public CommitBuilder latestCommit() {
     this.parentIsLatest = true;
     return this;
   }
@@ -176,7 +176,7 @@ public class CommitBuilderImpl implements CommitBuilder {
   
   private Uni<CommitResult> doInLock(CommitLock lock, ClientRepoState tx) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
-    final var init = CommitTreeState.builder().ref(lock.getRef()).refName(headName).gid(gid).repo(tx.getRepo());
+    final var init = CommitTreeState.builder().ref(lock.getBranch()).refName(headName).gid(gid).repo(tx.getRepo());
     
     if(lock.getStatus() == CommitLockStatus.NOT_FOUND) {
       // nothing to add
@@ -218,7 +218,7 @@ public class CommitBuilderImpl implements CommitBuilder {
                   .append(" Your trying to merge objects to non existent head!")
                   .toString())
               .build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
       
     }
@@ -236,7 +236,7 @@ public class CommitBuilderImpl implements CommitBuilder {
                   .append(" but remote has no head.").append("'!")
                   .toString())
               .build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
       
     }
@@ -254,7 +254,7 @@ public class CommitBuilderImpl implements CommitBuilder {
                   .append(" is: '").append(state.getCommit().get().getId()).append("'!")
                   .toString())
               .build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
     }
     
@@ -273,20 +273,20 @@ public class CommitBuilderImpl implements CommitBuilder {
       return ImmutableCommitResult.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder().text(text).build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
     }
 
     return null;
   }
   
-  private static CommitStatus visitStatus(BatchStatus src) {
+  private static CommitResultStatus visitStatus(BatchStatus src) {
     if(src == BatchStatus.OK) {
-      return CommitStatus.OK;
+      return CommitResultStatus.OK;
     } else if(src == BatchStatus.CONFLICT) {
-      return CommitStatus.CONFLICT;
+      return CommitResultStatus.CONFLICT;
     }
-    return CommitStatus.ERROR;
+    return CommitResultStatus.ERROR;
     
   }
 }

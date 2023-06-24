@@ -38,8 +38,8 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
 import io.resys.thena.docdb.test.config.DbTestTemplate;
 import io.resys.thena.docdb.test.config.PgProfile;
 import io.smallrye.mutiny.Multi;
@@ -66,7 +66,7 @@ public class ConcurrectModificationDBTest extends DbTestTemplate {
   @Test
   public void crateRepoWithOneCommit() {
     // create project
-    RepoResult repo = getClient().repo().create()
+    RepoResult repo = getClient().project().projectBuilder()
         .name("user-tasks")
         .build()
         .await().atMost(Duration.ofMinutes(1));
@@ -74,7 +74,7 @@ public class ConcurrectModificationDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    getClient().commit().builder()
+    getClient().commit().commitBuilder()
         .head(repo.getRepo().getName(), "main")
         .append("user-1", JsonObject.mapFrom(ImmutableUseTasks.builder().id("user-1").userName("sam vimes 1").addTasks(0).build()))
         .author("same vimes")
@@ -86,10 +86,10 @@ public class ConcurrectModificationDBTest extends DbTestTemplate {
     
     runInserts(repo, 100);
     
-    final var state = getClient().objects().branchState()
-      .repo(repo.getRepo().getName()).ref("main")
-      .blobs(true)
-      .build().await().atMost(Duration.ofMinutes(1));
+    final var state = getClient().branch().branchQuery()
+      .projectName(repo.getRepo().getName()).branchName("main")
+      .docsIncluded(true)
+      .get().await().atMost(Duration.ofMinutes(1));
     
     final var blobId = state.getObjects().getTree().getValues().get("user-1").getBlob();
     final var result = state.getObjects().getBlobs().get(blobId).getValue().mapTo(UseTasks.class);
@@ -108,9 +108,9 @@ public class ConcurrectModificationDBTest extends DbTestTemplate {
     final var commands = new ArrayList<Uni<CommitResult>>();
     for(int index = 0; index < total; index++) {
       // Create head and first commit
-      Uni<CommitResult> commit_0 = getClient().commit().builder()
+      Uni<CommitResult> commit_0 = getClient().commit().commitBuilder()
         .head(repo.getRepo().getName(), "main")
-        .parentIsLatest()
+        .latestCommit()
         .merge("user-1", (previous) -> {
           final var next = ImmutableUseTasks.builder().from(previous.mapTo(UseTasks.class)).addTasks(this.index.incrementAndGet()).build();
           return JsonObject.mapFrom(next);

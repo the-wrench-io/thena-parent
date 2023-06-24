@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.api;
 
+import io.resys.thena.docdb.api.actions.BranchActions;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -23,15 +25,16 @@ package io.resys.thena.docdb.api;
 import io.resys.thena.docdb.api.actions.CommitActions;
 import io.resys.thena.docdb.api.actions.DiffActions;
 import io.resys.thena.docdb.api.actions.HistoryActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.api.actions.RepoActions;
+import io.resys.thena.docdb.api.actions.PullActions;
+import io.resys.thena.docdb.api.actions.ProjectActions;
 import io.resys.thena.docdb.api.actions.TagActions;
 
 public interface DocDB {
-  RepoActions repo();
+  ProjectActions project();
   CommitActions commit();
   TagActions tag();
   DiffActions diff();
   HistoryActions history();
-  ObjectsActions objects();
+  PullActions pull();
+  BranchActions branch();
 }

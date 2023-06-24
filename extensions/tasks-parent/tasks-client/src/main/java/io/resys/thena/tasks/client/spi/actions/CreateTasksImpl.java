@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.tasks.client.api.actions.TaskActions.CreateTasks;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
@@ -50,14 +50,14 @@ public class CreateTasksImpl implements CreateTasks {
     final var entity = mapTask(command);
     final var json = JsonObject.mapFrom(entity);
     final var config = ctx.getConfig();
-    return config.getClient().commit().builder()
-      .head(config.getRepoName(), config.getHeadName())
+    return config.getClient().commit().commitBuilder()
+      .head(config.getProjectName(), config.getHeadName())
       .message("Creating task")
-      .parentIsLatest()
+      .latestCommit()
       .append(entity.getId(), json)
       .author(config.getAuthor().get())
       .build().onItem().transform(commit -> {
-        if(commit.getStatus() == CommitStatus.OK) {
+        if(commit.getStatus() == CommitResultStatus.OK) {
           return entity;
         }
         throw new DocumentStoreException("SAVE_FAIL", json, DocumentStoreException.convertMessages(commit));
@@ -67,7 +67,7 @@ public class CreateTasksImpl implements CreateTasks {
   @Override
   public Uni<List<Task>> createMany(List<CreateTask> commands) {
     final var config = ctx.getConfig();
-    final var client = config.getClient().commit().builder();
+    final var client = config.getClient().commit().commitBuilder();
     final var entities = new ArrayList<Task>();
     for(final var command : commands) {
       final var entity = mapTask(command);
@@ -76,12 +76,12 @@ public class CreateTasksImpl implements CreateTasks {
       entities.add(entity);
     }
     return client
-      .head(config.getRepoName(), config.getHeadName())
+      .head(config.getProjectName(), config.getHeadName())
       .message("Creating task")
-      .parentIsLatest()
+      .latestCommit()
       .author(config.getAuthor().get())
       .build().onItem().transform(commit -> {
-        if(commit.getStatus() == CommitStatus.OK) {
+        if(commit.getStatus() == CommitResultStatus.OK) {
           return entities;
         }
         throw new DocumentStoreException("SAVE_FAIL", DocumentStoreException.convertMessages(commit));

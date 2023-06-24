@@ -24,9 +24,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.resys.thena.docdb.api.LogConstants;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
 import io.resys.thena.docdb.spi.ClientQuery.BlobQuery;
+import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;
 import io.resys.thena.docdb.sql.SqlMapper;
@@ -85,7 +86,7 @@ public class BlobQuerySqlPool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB'!", e));
   }
   @Override
-  public Multi<Blob> findAll(String treeId, List<BlobCriteria> criteria) {
+  public Multi<Blob> findAll(String treeId, List<MatchCriteria> criteria) {
     final var sql = sqlBuilder.blobs().findByTree(treeId, criteria);
     if(log.isDebugEnabled()) {
       log.debug("Blob: {} findByTreeId query, with props: {} \r\n{}",
@@ -101,8 +102,10 @@ public class BlobQuerySqlPool implements BlobQuery {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'BLOB' by tree: " + treeId + "!", e));
   }
   @Override
-  public Multi<Blob> findAll(String treeId, List<String> blobNames, List<BlobCriteria> criteria) {
-    final var sql = sqlBuilder.blobs().findByTree(treeId, blobNames, criteria);
+  public Multi<Blob> findAll(String treeId, List<String> docIds, List<MatchCriteria> criteria) {
+    RepoAssert.isTrue(!docIds.isEmpty(), () -> "docIds is not defined!");
+    
+    final var sql = sqlBuilder.blobs().findByTree(treeId, docIds, criteria);
     if(log.isDebugEnabled()) {
       log.debug("Blob: {} findByTreeId query, with props: {} \r\n{}",
           BlobQuerySqlPool.class,

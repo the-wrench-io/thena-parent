@@ -1,45 +1,33 @@
 package io.resys.thena.tasks.client.spi.visitors;
 
 import java.time.LocalDateTime;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
-import io.resys.thena.docdb.api.models.ObjectsResult;
-import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
-import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.PullObjectsQuery;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
 import io.resys.thena.tasks.client.api.model.Document;
 import io.resys.thena.tasks.client.api.model.ImmutableArchiveTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskTransaction;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocRefVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocCommitVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
-import io.resys.thena.tasks.client.spi.visitors.DeleteAllTasksVisitor.DeleteAllTasksResult;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
-import lombok.Builder;
-import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult>{
+public class DeleteAllTasksVisitor implements DocCommitVisitor<Task>{
 
-  @Data @Builder
-  public static class DeleteAllTasksResult {
-    private List<Task> values;
-    private Uni<CommitResult> deleteCommand;
-  }
   private final String userId;
   private final LocalDateTime targetDate;
   
@@ -47,85 +35,66 @@ public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult
   private CommitBuilder removeCommand;
   
   @Override
-  public BranchStateBuilder start(DocumentConfig config, BranchStateBuilder builder) {
+  public PullObjectsQuery start(DocumentConfig config, PullObjectsQuery query) {
     // Create two commands: one for making changes by adding archive flag, the other for deleting task from commit tree
     this.archiveCommand = visitCommitCommand(config).message("Archive tasks");
     this.removeCommand = visitCommitCommand(config).message("Delete tasks");
     
     // Build the blob criteria for finding all documents of type task
-    return builder.blobs()
-      .blobCriteria(Arrays.asList(ImmutableBlobCriteria.builder()
-          .key("documentType").value(Document.DocumentType.TASK.name())
-          .type(CriteriaType.EXACT)
-          .build()));
+    return query.matchBy(
+          MatchCriteria.equalsTo("documentType", Document.DocumentType.TASK.name())
+    );
   }
 
   @Override
-  public BranchObjects visit(DocumentConfig config, ObjectsResult<BranchObjects> envelope) {
-    if(envelope.getStatus() != ObjectsStatus.OK) {
+  public PullObjects visitEnvelope(DocumentConfig config, QueryEnvelope<PullObjects> envelope) {
+    if(envelope.getStatus() != QueryEnvelopeStatus.OK) {
       throw DocumentStoreException.builder("FIND_ALL_TASKS_FAIL_FOR_DELETE").add(config, envelope).build();
     }
     return envelope.getObjects();
   }
   
   @Override
-  public DeleteAllTasksResult end(DocumentConfig config, BranchObjects ref) {
+  public Uni<List<Task>> end(DocumentConfig config, PullObjects ref) {
     if(ref == null) {
-      return DeleteAllTasksResult.builder()
-          .values(Collections.emptyList())
-          .deleteCommand(Uni.createFrom().nullItem())
-          .build();
+      return Uni.createFrom().item(Collections.emptyList());
     }
 
-    final var tasksRemoved = visitTree(ref, ref.getTree());    
-    final var deleteCommand = archiveCommand.build()
-      .onItem().transform(this::visitArchiveCommit)
+    final var tasksRemoved = visitTree(ref);    
+    return archiveCommand.build()
+      .onItem().transform((CommitResult commit) -> {
+        if(commit.getStatus() == CommitResultStatus.OK) {
+          return commit;
+        }
+        throw new DocumentStoreException("ARCHIVE_FAIL", DocumentStoreException.convertMessages(commit));
+      })
       .onItem().transformToUni(archived -> removeCommand.build())
-      .onItem().transform(this::visitRemoveCommit);
-
-    return DeleteAllTasksResult.builder()
-        .values(tasksRemoved)
-        .deleteCommand(deleteCommand)
-        .build();
+      .onItem().transform((CommitResult commit) -> {
+        if(commit.getStatus() == CommitResultStatus.OK) {
+          return commit;
+        }
+        throw new DocumentStoreException("REMOVE_FAIL", DocumentStoreException.convertMessages(commit));
+      })
+      .onItem().transform((commit) -> tasksRemoved);
   }
 
-  private CommitResult visitArchiveCommit(CommitResult commit) {
-    if(commit.getStatus() == CommitStatus.OK) {
-      return commit;
-    }
-    throw new DocumentStoreException("ARCHIVE_FAIL", DocumentStoreException.convertMessages(commit));
-  }
-  
-  private CommitResult visitRemoveCommit(CommitResult commit) {
-    if(commit.getStatus() == CommitStatus.OK) {
-      return commit;
-    }
-    throw new DocumentStoreException("REMOVE_FAIL", DocumentStoreException.convertMessages(commit));
-  }
   
   
   private CommitBuilder visitCommitCommand(DocumentConfig config) {
     final var client = config.getClient();
-    return client.commit().builder()
-      .head(config.getRepoName(), config.getHeadName())
-      .parentIsLatest()
+    return client.commit().commitBuilder()
+      .head(config.getProjectName(), config.getHeadName())
+      .latestCommit()
       .author(config.getAuthor().get());
   }
   
   
-  private List<Task> visitTree(BranchObjects state, Tree tree) {
-    return tree.getValues().values().stream()
-      .map(treeValue -> visitTreeValue(state, treeValue))
+  private List<Task> visitTree(PullObjects state) {
+    return state.getBlob().stream()
+      .map(blob -> blob.getValue().mapTo(ImmutableTask.class))
       .map(task -> visitTask(task))
       .collect(Collectors.toUnmodifiableList());
   }
-  
-  private Task visitTreeValue(BranchObjects state, TreeValue value) {
-    final var blobId = value.getBlob();
-    final var blob = state.getBlobs().get(blobId);
-    return blob.getValue().mapTo(ImmutableTask.class);
-  }
-  
   private Task visitTask(Task currentVersion) {
     final var taskId = currentVersion.getId();
     
