@@ -23,7 +23,7 @@ package io.resys.thena.docdb.sql;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -38,7 +38,7 @@ public interface SqlMapper extends DataMapper<Row>{
   Tree tree(Row row);
   TreeValue treeItem(Row row);
   Tag tag(Row row);
-  Ref ref(Row row);
+  Branch ref(Row row);
   Blob blob(Row row);
   BlobHistory blobHistory(Row row);
   JsonObject jsonObject(Row row, String columnName);

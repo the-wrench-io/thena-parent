@@ -4,9 +4,9 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import io.resys.thena.docdb.api.LogConstants;
+import io.resys.thena.docdb.api.models.ImmutableBranch;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableCommitLock;
-import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 
 /*-
@@ -122,7 +122,7 @@ public class CommitQuerySqlPool implements CommitQuery {
               tree = ImmutableTree.builder().id(commitTree.getTreeId());
               
               builder
-                .ref(ImmutableRef.builder()
+                .ref(ImmutableBranch.builder()
                     .commit(commitTree.getCommitId())
                     .name(commitTree.getRefName())
                     .build())

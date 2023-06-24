@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
@@ -20,7 +20,7 @@ import io.vertx.core.json.JsonObject;
 
 public class FindAllActiveTasksVisitor implements DocRefVisitor<List<Task>> {
   @Override
-  public RefStateBuilder start(DocumentConfig config, RefStateBuilder builder) {
+  public BranchStateBuilder start(DocumentConfig config, BranchStateBuilder builder) {
     return builder.blobs()
         .blobCriteria(Arrays.asList(ImmutableBlobCriteria.builder()
         .key("documentType").value(Document.DocumentType.TASK.name())
@@ -28,7 +28,7 @@ public class FindAllActiveTasksVisitor implements DocRefVisitor<List<Task>> {
         .build()));
   }
   @Override
-  public RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope) {
+  public BranchObjects visit(DocumentConfig config, ObjectsResult<BranchObjects> envelope) {
     if(envelope.getStatus() != ObjectsStatus.OK) {
       throw DocumentStoreException.builder("FIND_ALL_TASKS_FAIL").add(config, envelope).build();
     }
@@ -36,7 +36,7 @@ public class FindAllActiveTasksVisitor implements DocRefVisitor<List<Task>> {
   }
 
   @Override
-  public List<Task> end(DocumentConfig config, RefObjects ref) {
+  public List<Task> end(DocumentConfig config, BranchObjects ref) {
     if(ref == null) {
       return Collections.emptyList();
     }

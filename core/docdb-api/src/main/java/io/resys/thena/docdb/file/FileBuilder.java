@@ -24,7 +24,7 @@ import java.util.Collection;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -71,8 +71,8 @@ public interface FileBuilder extends ClientCollections.WithOptions<FileBuilder>{
     FileTuple getByNameOrCommit(String refNameOrCommit);
     FileStatement getFirst();
     FileStatement findAll();
-    FileTuple insertOne(Ref ref);
-    FileTuple updateOne(Ref ref, Commit commit);
+    FileTuple insertOne(Branch ref);
+    FileTuple updateOne(Branch ref, Commit commit);
   }
   
   interface TagFileBuilder {

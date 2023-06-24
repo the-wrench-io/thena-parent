@@ -24,12 +24,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.actions.ImmutableRefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.actions.ImmutableBranchObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
 import io.resys.thena.docdb.api.exceptions.RepoException;
 import io.resys.thena.docdb.api.models.ImmutableObjectsResult;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.api.models.Repo;
@@ -47,21 +47,21 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class RefStateBuilderDefault implements RefStateBuilder {
+public class BranchStateBuilderDefault implements BranchStateBuilder {
   private final ClientState state;
   private final List<BlobCriteria> blobCriteria = new ArrayList<>();
   private String repo; //repo name
   private String ref;
   private boolean blobs;
-  @Override public RefStateBuilderDefault blobCriteria(List<BlobCriteria> blobCriteria) { this.blobCriteria.addAll(blobCriteria); return this; }
+  @Override public BranchStateBuilderDefault blobCriteria(List<BlobCriteria> blobCriteria) { this.blobCriteria.addAll(blobCriteria); return this; }
 
   @Override
-  public RefStateBuilder blobs() {
+  public BranchStateBuilder blobs() {
     this.blobs = true;
     return this;
   }
   @Override
-  public Uni<ObjectsResult<RefObjects>> build() {
+  public Uni<ObjectsResult<BranchObjects>> build() {
     RepoAssert.notEmpty(repo, () -> "repoName is not defined!");
     RepoAssert.notEmpty(ref, () -> "ref is not defined!");
     
@@ -71,7 +71,7 @@ public class RefStateBuilderDefault implements RefStateBuilder {
         final var ex = RepoException.builder().notRepoWithName(repo);
         log.warn(ex.getText());
         return Uni.createFrom().item(ImmutableObjectsResult
-            .<RefObjects>builder()
+            .<BranchObjects>builder()
             .status(ObjectsStatus.ERROR)
             .addMessages(ex)
             .build());
@@ -80,14 +80,14 @@ public class RefStateBuilderDefault implements RefStateBuilder {
     });
   }
   
-  private Uni<ObjectsResult<RefObjects>> getRef(Repo repo, String refName, ClientRepoState ctx) {
+  private Uni<ObjectsResult<BranchObjects>> getRef(Repo repo, String refName, ClientRepoState ctx) {
 
     return ctx.query().refs().name(refName).onItem()
         .transformToUni(ref -> {
           if(ref == null) {
             return ctx.query().refs().findAll().collect().asList().onItem().transform(allRefs -> 
-              (ObjectsResult<RefObjects>) ImmutableObjectsResult
-              .<RefObjects>builder()
+              (ObjectsResult<BranchObjects>) ImmutableObjectsResult
+              .<BranchObjects>builder()
               .repo(repo)
               .status(ObjectsStatus.OK)
               .addMessages(RepoException.builder().noRepoRef(
@@ -100,15 +100,15 @@ public class RefStateBuilderDefault implements RefStateBuilder {
         });
   }
   
-  private Uni<ObjectsResult<RefObjects>> getState(Repo repo, Ref ref, ClientRepoState ctx) {
+  private Uni<ObjectsResult<BranchObjects>> getState(Repo repo, Branch ref, ClientRepoState ctx) {
     return ObjectsUtils.getCommit(ref.getCommit(), ctx).onItem()
         .transformToUni(commit -> ObjectsUtils.getTree(commit, ctx).onItem()
         .transformToUni(tree -> {
           if(this.blobs) {
             return ObjectsUtils.getBlobs(tree, blobCriteria, ctx)
-              .onItem().transform(blobs -> ImmutableObjectsResult.<RefObjects>builder()
+              .onItem().transform(blobs -> ImmutableObjectsResult.<BranchObjects>builder()
                 .repo(repo)
-                .objects(ImmutableRefObjects.builder()
+                .objects(ImmutableBranchObjects.builder()
                     .repo(repo)
                     .ref(ref)
                     .tree(tree)
@@ -120,9 +120,9 @@ public class RefStateBuilderDefault implements RefStateBuilder {
                 .build());
           }
           
-          return Uni.createFrom().item(ImmutableObjectsResult.<RefObjects>builder()
+          return Uni.createFrom().item(ImmutableObjectsResult.<BranchObjects>builder()
             .repo(repo)
-            .objects(ImmutableRefObjects.builder()
+            .objects(ImmutableBranchObjects.builder()
                 .repo(repo)
                 .ref(ref)
                 .tree(tree)

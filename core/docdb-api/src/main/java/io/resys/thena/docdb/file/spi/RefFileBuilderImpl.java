@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.file.FileBuilder.RefFileBuilder;
 import io.resys.thena.docdb.file.tables.ImmutableFileStatement;
 import io.resys.thena.docdb.file.tables.ImmutableFileTuple;
@@ -104,7 +104,7 @@ public class RefFileBuilderImpl implements RefFileBuilder {
   }
 
   @Override
-  public FileTuple insertOne(Ref ref) {
+  public FileTuple insertOne(Branch ref) {
     return ImmutableFileTuple.builder()
         .value("Insert new row into REF table")
         .command((root) -> {
@@ -124,7 +124,7 @@ public class RefFileBuilderImpl implements RefFileBuilder {
   }
 
   @Override
-  public FileTuple updateOne(Ref ref, Commit commit) {
+  public FileTuple updateOne(Branch ref, Commit commit) {
     return ImmutableFileTuple.builder()
         .value("Update row in REF table")
         .command((root) -> {

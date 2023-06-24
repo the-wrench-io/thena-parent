@@ -31,8 +31,8 @@ import java.util.List;
 import java.util.Map;
 
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobVisitor;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.ObjectsResult.ObjectsStatus;
 import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
@@ -62,7 +62,7 @@ public class ExportVisitor implements DocRefVisitor<Export>, BlobVisitor<List<Ex
   private final Map<String, Integer> ids = new HashMap<>();
   
   @Override
-  public RefStateBuilder start(DocumentConfig config, RefStateBuilder builder) {
+  public BranchStateBuilder start(DocumentConfig config, BranchStateBuilder builder) {
     return builder.blobs()
         .blobCriteria(Arrays.asList(ImmutableBlobCriteria.builder()
             .key("documentType").value(Document.DocumentType.TASK.name())
@@ -70,7 +70,7 @@ public class ExportVisitor implements DocRefVisitor<Export>, BlobVisitor<List<Ex
             .build()));
   }
   @Override
-  public RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope) {
+  public BranchObjects visit(DocumentConfig config, ObjectsResult<BranchObjects> envelope) {
     if(envelope.getStatus() != ObjectsStatus.OK) {
       throw DocumentStoreException.builder("FIND_ALL_TASKS_FOR_EXPORT_FAIL").add(config, envelope).build();
     }
@@ -78,7 +78,7 @@ public class ExportVisitor implements DocRefVisitor<Export>, BlobVisitor<List<Ex
   }
 
   @Override
-  public Export end(DocumentConfig config, RefObjects ref) {
+  public Export end(DocumentConfig config, BranchObjects ref) {
     if(ref == null) {
       return visitExport(Collections.emptyList());
     }

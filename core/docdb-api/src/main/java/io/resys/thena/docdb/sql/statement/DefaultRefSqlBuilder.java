@@ -21,7 +21,7 @@ package io.resys.thena.docdb.sql.statement;
  */
 
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
@@ -79,7 +79,7 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
   }
 
   @Override
-  public SqlTuple insertOne(Ref ref) {
+  public SqlTuple insertOne(Branch ref) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getRefs())
@@ -90,7 +90,7 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
   }
 
   @Override
-  public SqlTuple updateOne(Ref ref, Commit commit) {
+  public SqlTuple updateOne(Branch ref, Commit commit) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("UPDATE ").append(options.getRefs())

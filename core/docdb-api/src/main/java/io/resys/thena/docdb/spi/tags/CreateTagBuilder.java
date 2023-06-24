@@ -29,7 +29,7 @@ import io.resys.thena.docdb.api.actions.TagActions.TagStatus;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
@@ -130,7 +130,7 @@ public class CreateTagBuilder implements TagBuilder {
     return state.query().tags().name(tagName).getFirst();
   }
 
-  private Uni<Ref> findRef(ClientRepoState state, String refNameOrCommit) {
+  private Uni<Branch> findRef(ClientRepoState state, String refNameOrCommit) {
     return state.query().refs().nameOrCommit(refNameOrCommit);
   }
   

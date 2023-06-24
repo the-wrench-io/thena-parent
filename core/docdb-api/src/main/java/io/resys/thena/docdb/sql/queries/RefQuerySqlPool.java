@@ -22,7 +22,7 @@ import io.resys.thena.docdb.api.LogConstants;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.spi.ClientQuery.RefQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.support.RepoAssert;
@@ -46,7 +46,7 @@ public class RefQuerySqlPool implements RefQuery {
   private final ErrorHandler errorHandler;
 
   @Override
-  public Uni<Ref> nameOrCommit(String refNameOrCommit) {
+  public Uni<Branch> nameOrCommit(String refNameOrCommit) {
     RepoAssert.notEmpty(refNameOrCommit, () -> "refNameOrCommit must be defined!");
     final var sql = sqlBuilder.refs().getByNameOrCommit(refNameOrCommit);
     if(log.isDebugEnabled()) {
@@ -58,7 +58,7 @@ public class RefQuerySqlPool implements RefQuery {
       .mapping(row -> sqlMapper.ref(row))
       .execute(sql.getProps())
       .onItem()
-      .transform((RowSet<Ref> rowset) -> {
+      .transform((RowSet<Branch> rowset) -> {
         final var it = rowset.iterator();
         if(it.hasNext()) {
           return it.next();
@@ -68,7 +68,7 @@ public class RefQuerySqlPool implements RefQuery {
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF' by refNameOrCommit: '" + refNameOrCommit + "'!", e));
   }
   @Override
-  public Uni<Ref> get() {
+  public Uni<Branch> get() {
     final var sql = sqlBuilder.refs().getFirst();
     if(log.isDebugEnabled()) {
       log.debug("Ref get query, with props: {} \r\n{}", 
@@ -80,7 +80,7 @@ public class RefQuerySqlPool implements RefQuery {
       .mapping(row -> sqlMapper.ref(row))
       .execute()
       .onItem()
-      .transform((RowSet<Ref> rowset) -> {
+      .transform((RowSet<Branch> rowset) -> {
         final var it = rowset.iterator();
         if(it.hasNext()) {
           return it.next();
@@ -90,7 +90,7 @@ public class RefQuerySqlPool implements RefQuery {
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF'!", e));
   }
   @Override
-  public Multi<Ref> findAll() {
+  public Multi<Branch> findAll() {
     final var sql = sqlBuilder.refs().findAll();
     if(log.isDebugEnabled()) {
       log.debug("Ref findAll query, with props: {} \r\n{}", 
@@ -101,11 +101,11 @@ public class RefQuerySqlPool implements RefQuery {
       .mapping(row -> sqlMapper.ref(row))
       .execute()
       .onItem()
-      .transformToMulti((RowSet<Ref> rowset) -> Multi.createFrom().iterable(rowset))
+      .transformToMulti((RowSet<Branch> rowset) -> Multi.createFrom().iterable(rowset))
       .onFailure().invoke(e -> errorHandler.deadEnd("Can't find 'REF'!", e));
   }
   @Override
-  public Uni<Ref> name(String name) {
+  public Uni<Branch> name(String name) {
     RepoAssert.notEmpty(name, () -> "name must be defined!");
     final var sql = sqlBuilder.refs().getByName(name);
     
@@ -118,7 +118,7 @@ public class RefQuerySqlPool implements RefQuery {
       .mapping(row -> sqlMapper.ref(row))
       .execute(sql.getProps())
       .onItem()
-      .transform((RowSet<Ref> rowset) -> {
+      .transform((RowSet<Branch> rowset) -> {
         final var it = rowset.iterator();
         if(it.hasNext()) {
           return it.next();

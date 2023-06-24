@@ -77,7 +77,7 @@ public class ThenaParallelTaskMetricTest extends TaskTestCase {
     
     // Assert that there is no data loss from parallel processing
     final var config = getStore().getConfig();
-    final var blobState = config.getClient().objects().refState()
+    final var blobState = config.getClient().objects().branchState()
         .repo(repoName)
         .ref(MainBranch.HEAD_NAME)
         .blobs(true)

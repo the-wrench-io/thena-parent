@@ -30,7 +30,7 @@ import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -79,8 +79,8 @@ public interface SqlBuilder extends ClientCollections.WithOptions<SqlBuilder> {
     SqlTuple getByNameOrCommit(String refNameOrCommit);
     Sql getFirst();
     Sql findAll();
-    SqlTuple insertOne(Ref ref);
-    SqlTuple updateOne(Ref ref, Commit commit);
+    SqlTuple insertOne(Branch ref);
+    SqlTuple updateOne(Branch ref, Commit commit);
   }
   
   interface TagSqlBuilder {

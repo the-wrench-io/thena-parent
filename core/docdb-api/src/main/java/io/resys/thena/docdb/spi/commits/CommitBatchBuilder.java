@@ -31,7 +31,7 @@ import org.immutables.value.Value;
 import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
@@ -57,7 +57,7 @@ public interface CommitBatchBuilder {
     private final Repo repo;
     private final String refName;
     @Builder.Default private final Map<String, Blob> blobs = Collections.emptyMap();
-    @Builder.Default private final Optional<Ref> ref = Optional.empty();
+    @Builder.Default private final Optional<Branch> ref = Optional.empty();
     @Builder.Default private final Optional<Tree> tree = Optional.empty();
     @Builder.Default private final Optional<Commit> commit = Optional.empty();
   }

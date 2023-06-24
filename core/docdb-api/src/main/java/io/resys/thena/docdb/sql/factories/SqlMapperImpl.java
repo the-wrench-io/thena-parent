@@ -25,18 +25,18 @@ import java.util.Optional;
 
 import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.ImmutableBlobHistory;
+import io.resys.thena.docdb.api.models.ImmutableBranch;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableCommitTree;
-import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableRepo;
 import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.CommitTree;
-import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -95,8 +95,8 @@ public class SqlMapperImpl implements SqlMapper {
         .build();
   }
   @Override
-  public Ref ref(Row row) {
-    return ImmutableRef.builder()
+  public Branch ref(Row row) {
+    return ImmutableBranch.builder()
         .name(row.getString("name"))
         .commit(row.getString("commit"))
         .build();

@@ -32,7 +32,7 @@ import io.vertx.core.json.JsonObject;
 
 @Value.Immutable
 public interface Objects {
-  Map<String, Ref> getRefs();
+  Map<String, Branch> getRefs();
   Map<String, Tag> getTags();
   Map<String, IsObject> getValues();
   
@@ -41,7 +41,7 @@ public interface Objects {
   
   // branch with a name
   @Value.Immutable
-  interface Ref extends IsName {
+  interface Branch extends IsName {
     // last commit in the branch
     String getCommit();
   }
@@ -114,7 +114,7 @@ public interface Objects {
   @Value.Immutable  
   interface CommitLock {
     CommitLockStatus getStatus();
-    Optional<Ref> getRef();
+    Optional<Branch> getRef();
     Optional<Commit> getCommit();
     Optional<Tree> getTree();
     Map<String, Blob> getBlobs();

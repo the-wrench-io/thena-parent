@@ -30,8 +30,8 @@ public class ObjectsActionsDefault implements ObjectsActions {
   private final ClientState state;
 
   @Override
-  public RefStateBuilder refState() {
-    return new RefStateBuilderDefault(state);
+  public BranchStateBuilder branchState() {
+    return new BranchStateBuilderDefault(state);
   }
   @Override
   public BlobStateBuilder blobState() {

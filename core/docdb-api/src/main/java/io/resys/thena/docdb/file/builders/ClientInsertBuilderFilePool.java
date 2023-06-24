@@ -25,7 +25,7 @@ import java.util.List;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.file.FileBuilder;
@@ -98,7 +98,7 @@ public class ClientInsertBuilderFilePool implements ClientInsertBuilder {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'BLOB': '" + blobsInsert.getValue() + "'!", e));
   }
 
-  public Uni<UpsertResult> ref(Ref ref, Commit commit) {
+  public Uni<UpsertResult> ref(Branch ref, Commit commit) {
     final var findByName = sqlBuilder.refs().getByName(ref.getName());
     return client.preparedQuery(findByName)
         .mapping(r -> mapper.ref(r))
@@ -114,7 +114,7 @@ public class ClientInsertBuilderFilePool implements ClientInsertBuilder {
   
   
   
-  public Uni<UpsertResult> updateRef(Ref ref, Commit commit) {
+  public Uni<UpsertResult> updateRef(Branch ref, Commit commit) {
     final var refInsert = sqlBuilder.refs().updateOne(ref, commit);
     return client.preparedQuery(refInsert).execute()
         .onItem()
@@ -153,7 +153,7 @@ public class ClientInsertBuilderFilePool implements ClientInsertBuilder {
   }
   
   
-  private Uni<UpsertResult> createRef(Ref ref, Commit commit) {
+  private Uni<UpsertResult> createRef(Branch ref, Commit commit) {
     final var refsInsert = sqlBuilder.refs().insertOne(ref);
     return client.preparedQuery(refsInsert).execute()
         .onItem()

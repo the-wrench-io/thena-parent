@@ -28,9 +28,9 @@ import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
 import io.resys.thena.docdb.api.models.ImmutableBlob;
+import io.resys.thena.docdb.api.models.ImmutableBranch;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
-import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -83,7 +83,7 @@ public class CommitBatchBuilderImpl implements CommitBatchBuilder {
       .from(template)
       .id(Sha2.commitId(template))
       .build();
-    final var ref = ImmutableRef.builder()
+    final var ref = ImmutableBranch.builder()
         .commit(commit.getId())
         .name(this.commitTree.getRef().map(e -> e.getName()).orElse(this.commitTree.getRefName()))
         .build();

@@ -28,7 +28,7 @@ import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.docdb.api.models.Repo;
@@ -38,7 +38,7 @@ import io.vertx.core.json.JsonObject;
 
 public interface ObjectsActions {
 
-  RefStateBuilder refState();
+  BranchStateBuilder branchState();
   BlobStateBuilder blobState();
   
   interface BlobStateBuilder {
@@ -55,13 +55,13 @@ public interface ObjectsActions {
 
   
   // build REF world state, no blobs by default
-  interface RefStateBuilder {
-    RefStateBuilder repo(String repoName);
-    RefStateBuilder ref(String ref);
-    RefStateBuilder blobs();
-    RefStateBuilder blobs(boolean load);
-    RefStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
-    Uni<ObjectsResult<RefObjects>> build();
+  interface BranchStateBuilder {
+    BranchStateBuilder repo(String repoName);
+    BranchStateBuilder ref(String ref);
+    BranchStateBuilder blobs();
+    BranchStateBuilder blobs(boolean load);
+    BranchStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
+    Uni<ObjectsResult<BranchObjects>> build();
   }
 
   
@@ -101,9 +101,9 @@ public interface ObjectsActions {
   }
 
   @Value.Immutable
-  interface RefObjects extends BlobContainer {
+  interface BranchObjects extends BlobContainer {
     Repo getRepo();
-    Ref getRef();
+    Branch getRef();
     Commit getCommit();
     Tree getTree();
     Map<String, Blob> getBlobs(); //only if loaded

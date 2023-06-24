@@ -9,8 +9,8 @@ import java.util.stream.Collectors;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.ObjectsResult;
@@ -47,7 +47,7 @@ public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult
   private CommitBuilder removeCommand;
   
   @Override
-  public RefStateBuilder start(DocumentConfig config, RefStateBuilder builder) {
+  public BranchStateBuilder start(DocumentConfig config, BranchStateBuilder builder) {
     // Create two commands: one for making changes by adding archive flag, the other for deleting task from commit tree
     this.archiveCommand = visitCommitCommand(config).message("Archive tasks");
     this.removeCommand = visitCommitCommand(config).message("Delete tasks");
@@ -61,7 +61,7 @@ public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult
   }
 
   @Override
-  public RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope) {
+  public BranchObjects visit(DocumentConfig config, ObjectsResult<BranchObjects> envelope) {
     if(envelope.getStatus() != ObjectsStatus.OK) {
       throw DocumentStoreException.builder("FIND_ALL_TASKS_FAIL_FOR_DELETE").add(config, envelope).build();
     }
@@ -69,7 +69,7 @@ public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult
   }
   
   @Override
-  public DeleteAllTasksResult end(DocumentConfig config, RefObjects ref) {
+  public DeleteAllTasksResult end(DocumentConfig config, BranchObjects ref) {
     if(ref == null) {
       return DeleteAllTasksResult.builder()
           .values(Collections.emptyList())
@@ -113,14 +113,14 @@ public class DeleteAllTasksVisitor implements DocRefVisitor<DeleteAllTasksResult
   }
   
   
-  private List<Task> visitTree(RefObjects state, Tree tree) {
+  private List<Task> visitTree(BranchObjects state, Tree tree) {
     return tree.getValues().values().stream()
       .map(treeValue -> visitTreeValue(state, treeValue))
       .map(task -> visitTask(task))
       .collect(Collectors.toUnmodifiableList());
   }
   
-  private Task visitTreeValue(RefObjects state, TreeValue value) {
+  private Task visitTreeValue(BranchObjects state, TreeValue value) {
     final var blobId = value.getBlob();
     final var blob = state.getBlobs().get(blobId);
     return blob.getValue().mapTo(ImmutableTask.class);

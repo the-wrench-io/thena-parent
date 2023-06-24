@@ -86,7 +86,7 @@ public class ConcurrectModificationDBTest extends DbTestTemplate {
     
     runInserts(repo, 100);
     
-    final var state = getClient().objects().refState()
+    final var state = getClient().objects().branchState()
       .repo(repo.getRepo().getName()).ref("main")
       .blobs(true)
       .build().await().atMost(Duration.ofMinutes(1));

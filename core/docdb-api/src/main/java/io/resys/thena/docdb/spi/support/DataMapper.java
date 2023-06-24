@@ -24,7 +24,7 @@ import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.CommitTree;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -37,7 +37,7 @@ public interface DataMapper<T> {
   Tree tree(T row);
   TreeValue treeItem(T row);
   Tag tag(T row);
-  Ref ref(T row);
+  Branch ref(T row);
   Blob blob(T row);
   BlobHistory blobHistory(T row);
   CommitTree commitTree(T row);

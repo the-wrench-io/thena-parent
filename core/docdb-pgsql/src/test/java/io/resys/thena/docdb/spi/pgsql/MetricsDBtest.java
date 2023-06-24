@@ -70,7 +70,7 @@ public class MetricsDBtest extends PgDbTestTemplate {
     final var repoState = getClient().repo().query().id(repo.getRepo().getId()).get().await().atMost(Duration.ofMinutes(1));
     
     final var blobs = getClient().objects()
-            .refState()
+            .branchState()
             .repo(repo.getRepo().getName())
             .ref("main")
             .blobs()

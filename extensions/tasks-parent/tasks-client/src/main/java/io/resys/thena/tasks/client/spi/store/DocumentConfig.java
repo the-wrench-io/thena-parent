@@ -30,8 +30,8 @@ import io.resys.thena.docdb.api.DocDB;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
 import io.resys.thena.docdb.api.actions.ObjectsActions.BlobStateBuilder;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefObjects;
-import io.resys.thena.docdb.api.actions.ObjectsActions.RefStateBuilder;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchObjects;
+import io.resys.thena.docdb.api.actions.ObjectsActions.BranchStateBuilder;
 import io.resys.thena.docdb.api.models.ObjectsResult;
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.smallrye.mutiny.Uni;
@@ -47,7 +47,7 @@ public interface DocumentConfig {
 
   default <T> Uni<T> accept(DocRefVisitor<T> visitor) {
     final var builder = visitor.start(this, getClient()
-        .objects().refState()
+        .objects().branchState()
         .repo(getRepoName())
         .ref(getHeadName()));
     
@@ -103,9 +103,9 @@ public interface DocumentConfig {
   }
   
   interface DocRefVisitor<T> { 
-    RefStateBuilder start(DocumentConfig config, RefStateBuilder builder);
-    @Nullable RefObjects visit(DocumentConfig config, ObjectsResult<RefObjects> envelope);
-    T end(DocumentConfig config, @Nullable RefObjects ref);
+    BranchStateBuilder start(DocumentConfig config, BranchStateBuilder builder);
+    @Nullable BranchObjects visit(DocumentConfig config, ObjectsResult<BranchObjects> envelope);
+    T end(DocumentConfig config, @Nullable BranchObjects ref);
   }
   
   interface DocBlobVisitor<T> { 

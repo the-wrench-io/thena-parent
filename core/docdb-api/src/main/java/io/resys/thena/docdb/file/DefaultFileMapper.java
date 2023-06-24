@@ -24,17 +24,17 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 import io.resys.thena.docdb.api.models.ImmutableBlob;
+import io.resys.thena.docdb.api.models.ImmutableBranch;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
-import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableRepo;
 import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
 import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.CommitTree;
-import io.resys.thena.docdb.api.models.Objects.Ref;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Objects.TreeValue;
@@ -105,10 +105,10 @@ public class DefaultFileMapper implements FileMapper {
         .build();
   }
   @Override
-  public Ref ref(Row src) {
+  public Branch ref(Row src) {
     RefTableRow row = src.toType(RefTableRow.class);
     
-    return ImmutableRef.builder()
+    return ImmutableBranch.builder()
         .name(row.getName())
         .commit(row.getCommit())
         .build();

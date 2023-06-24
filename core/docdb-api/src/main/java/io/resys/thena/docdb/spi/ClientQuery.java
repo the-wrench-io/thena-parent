@@ -30,7 +30,7 @@ import io.resys.thena.docdb.api.models.Objects.Blob;
 import io.resys.thena.docdb.api.models.Objects.BlobHistory;
 import io.resys.thena.docdb.api.models.Objects.Commit;
 import io.resys.thena.docdb.api.models.Objects.CommitLock;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.Objects.Branch;
 import io.resys.thena.docdb.api.models.Objects.Tag;
 import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.smallrye.mutiny.Multi;
@@ -46,10 +46,10 @@ public interface ClientQuery {
   
   
   interface RefQuery {
-    Uni<Ref> name(String name);
-    Uni<Ref> nameOrCommit(String refNameOrCommit);
-    Uni<Ref> get();
-    Multi<Ref> findAll();
+    Uni<Branch> name(String name);
+    Uni<Branch> nameOrCommit(String refNameOrCommit);
+    Uni<Branch> get();
+    Multi<Branch> findAll();
   }
   
   interface BlobHistoryQuery {
