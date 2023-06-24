@@ -14,11 +14,11 @@ Commits
   - id: 6
     tree: 7, parent: 4, message: Creating task
   - id: 8
-    tree: 9, parent: 6, message: Update task
+    tree: 9, parent: 6, message: Update tasks: 1
   - id: 10
-    tree: 11, parent: 8, message: Update task
+    tree: 11, parent: 8, message: Update tasks: 1
   - id: 3
-    tree: 12, parent: 10, message: Update task
+    tree: 12, parent: 10, message: Update tasks: 1
 
 Trees
   - id: 5

@@ -1,6 +1,5 @@
 package io.resys.thena.tasks.client.spi.actions;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 
 /*-
@@ -24,29 +23,21 @@ import java.util.Arrays;
  */
 
 import java.util.List;
-import java.util.Map;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
 import io.resys.thena.docdb.spi.support.RepoAssert;
-import io.resys.thena.tasks.client.api.actions.TaskActions.ActiveTasksQuery;
 import io.resys.thena.tasks.client.api.actions.TaskActions.UpdateTasks;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
-import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
-import io.resys.thena.tasks.client.spi.visitors.UpdateTaskVisitor;
-import io.smallrye.mutiny.Multi;
+import io.resys.thena.tasks.client.spi.visitors.UpdateTasksVisitor;
 import io.smallrye.mutiny.Uni;
-import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class UpdateTasksImpl implements UpdateTasks {
 
   private final DocumentStore ctx;
-  private final Supplier<ActiveTasksQuery> query;
 
   @Override
   public Uni<Task> updateOne(TaskUpdateCommand command) {        
@@ -61,24 +52,8 @@ public class UpdateTasksImpl implements UpdateTasks {
     final var uniqueTaskIds = commands.stream().map(command -> command.getTaskId()).distinct().collect(Collectors.toList());
     RepoAssert.isTrue(uniqueTaskIds.size() == 1, () -> "Task id-s must be same, but got: %s!", uniqueTaskIds);
     
-    return this.query.get().get(uniqueTaskIds.get(0))
-        .onItem().transform(taskBeforeUpdate -> new UpdateTaskVisitor(taskBeforeUpdate).visit(commands).build())
-        .onItem().transformToUni(taskAfterUpdate -> {
-          final var json = JsonObject.mapFrom(taskAfterUpdate);
-          final var config = ctx.getConfig();
-          return config.getClient().commit().builder()
-              .head(config.getRepoName(), config.getHeadName())
-              .message("Update task")
-              .parentIsLatest()
-              .append(taskAfterUpdate.getId(), json)
-              .author(config.getAuthor().get())
-              .build().onItem().transform(commit -> {
-                if(commit.getStatus() == CommitStatus.OK) {
-                  return taskAfterUpdate;
-                }
-                throw new DocumentStoreException("TASK_UPDATE_FAIL", json, DocumentStoreException.convertMessages(commit));
-              });          
-        });
+    return ctx.getConfig().accept(new UpdateTasksVisitor(commands, ctx))
+        .onItem().transform(tasks -> tasks.get(0));
   }
 
   @Override
@@ -86,37 +61,7 @@ public class UpdateTasksImpl implements UpdateTasks {
     RepoAssert.notNull(commands, () -> "commands must be defined!");
     RepoAssert.isTrue(commands.size() > 0, () -> "No commands to apply!");
     
-    final Map<String, List<TaskUpdateCommand>> commandByTaskId = commands.stream()
-        .collect(Collectors.groupingBy(TaskUpdateCommand::getTaskId));
-
-    final Multi<Task> tasks = this.query.get()
-        .findByTaskIds(commandByTaskId.keySet())
-        .onItem().transformToMulti(items -> Multi.createFrom().items(items.stream()))
-        .onItem().transform((Task taskBeforeUpdate) -> new UpdateTaskVisitor(taskBeforeUpdate).visit(commands).build());
-    
-    return tasks.collect().asList()
-        .onItem().transformToUni(tasksAfterUpdate -> {
-          
-          final var config = ctx.getConfig();
-          final var commitBuilder = config.getClient().commit().builder()
-            .head(config.getRepoName(), config.getHeadName())
-            .message("Update tasks")
-            .parentIsLatest()
-            .author(config.getAuthor().get());
-          
-          final List<JsonObject> blobs = new ArrayList<>();
-          for(final Task taskAfterUpdate : tasksAfterUpdate) {
-            final var json = JsonObject.mapFrom(taskAfterUpdate);
-            commitBuilder.append(taskAfterUpdate.getId(), json);
-          }
-
-          return commitBuilder.build().onItem().transform(commit -> {
-                if(commit.getStatus() == CommitStatus.OK) {
-                  return tasksAfterUpdate;
-                }
-                throw new DocumentStoreException("TASKS_UPDATE_FAIL", JsonObject.of("failedUpdates", blobs), DocumentStoreException.convertMessages(commit));
-              });          
-        });
+    return ctx.getConfig().accept(new UpdateTasksVisitor(commands, ctx));
   }
 }
 

@@ -19,7 +19,7 @@ import lombok.RequiredArgsConstructor;
 
 
 @RequiredArgsConstructor
-public class GetActiveTasksVisitor implements DocBlobsVisitor<Task> {
+public class GetActiveTasksByIdsVisitor implements DocBlobsVisitor<Task> {
   private final Collection<String> taskIds;
   
   @Override

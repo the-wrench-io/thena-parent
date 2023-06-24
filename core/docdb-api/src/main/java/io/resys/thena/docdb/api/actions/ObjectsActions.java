@@ -90,7 +90,7 @@ public interface ObjectsActions {
   interface BlobObjects extends BlobContainer {
     Repo getRepo();
     Commit getCommit();
-    Tree getTree();
+    //Tree getTree();
     List<Blob> getBlob();
     
     default <T> List<T> accept(BlobVisitor<T> visitor) {

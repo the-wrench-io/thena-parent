@@ -10,7 +10,7 @@ import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.visitors.DeleteAllTasksVisitor;
 import io.resys.thena.tasks.client.spi.visitors.FindAllActiveTasksVisitor;
 import io.resys.thena.tasks.client.spi.visitors.GetActiveTaskVisitor;
-import io.resys.thena.tasks.client.spi.visitors.GetActiveTasksVisitor;
+import io.resys.thena.tasks.client.spi.visitors.GetActiveTasksByIdsVisitor;
 import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
@@ -37,7 +37,7 @@ public class ActiveTasksQueryImpl implements ActiveTasksQuery {
   
   @Override
   public Uni<List<Task>> findByTaskIds(Collection<String> taskIds) {
-    return ctx.getConfig().accept(new GetActiveTasksVisitor(taskIds));
+    return ctx.getConfig().accept(new GetActiveTasksByIdsVisitor(taskIds));
   }
   
 

@@ -33,17 +33,30 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStatus;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 
-public class UpdateTaskVisitor {
+public class TaskCommandVisitor {
   private final Task start;
   private final List<TaskCommand> visitedCommands = new ArrayList<>();
   private ImmutableTask current;
   
-  public UpdateTaskVisitor(Task start) {
+  public TaskCommandVisitor(Task start) {
     this.start = start;
     this.current = ImmutableTask.builder().from(start).build();
   }
   
-  public UpdateTaskVisitor visit(TaskUpdateCommand command) {    
+  public Task visit(List<TaskUpdateCommand> commands) {
+    commands.forEach(this::visitCommand);
+    
+    final var transactions = new ArrayList<>(start.getTransactions());
+    final var id = String.valueOf(transactions.size() +1);
+    transactions
+      .add(ImmutableTaskTransaction.builder()
+        .id(id)
+        .commands(visitedCommands)
+        .build());
+    return this.current.withVersion(id).withTransactions(transactions);
+  }
+  
+  private Task visitCommand(TaskUpdateCommand command) {    
     visitedCommands.add(command);  
     switch (command.getCommandType()) {
     case AssignTaskReporter: 
@@ -58,44 +71,29 @@ public class UpdateTaskVisitor {
     throw new UpdateTaskVisitorException(String.format("Unsupported command type: %s, body: %s", command.getClass().getSimpleName(), command.toString()));
   }
 
-  public UpdateTaskVisitor visit(List<TaskUpdateCommand> commands) {
-    commands.forEach(this::visit);
-    return this;
-  }
+
   
-  private UpdateTaskVisitor visitChangeTaskStatus(ChangeTaskStatus command) {
+  private Task visitChangeTaskStatus(ChangeTaskStatus command) {
     this.current = this.current
         .withStatus(command.getStatus())
         .withUpdated(command.getTargetDate());
-    return this;
+    return this.current;
   }
   
-  private UpdateTaskVisitor visitChangeTaskPriority(ChangeTaskPriority command) {
+  private Task visitChangeTaskPriority(ChangeTaskPriority command) {
     this.current = this.current
         .withPriority(command.getPriority())
         .withUpdated(command.getTargetDate());
-    return this;
+    return this.current;
   }
     
-  private UpdateTaskVisitor visitAssignTaskReporter(AssignTaskReporter command) {
+  private Task visitAssignTaskReporter(AssignTaskReporter command) {
     this.current = this.current
         .withReporterId(command.getReporterId())
         .withUpdated(command.getTargetDate());
-    return this;
+    return this.current;
   }
   
-
-
-  public Task build() {
-    final var transactions = new ArrayList<>(start.getTransactions());
-    final var id = String.valueOf(transactions.size() +1);
-    transactions
-      .add(ImmutableTaskTransaction.builder()
-        .id(id)
-        .commands(visitedCommands)
-        .build());
-    return this.current.withVersion(id).withTransactions(transactions);
-  }
   
   public static class UpdateTaskVisitorException extends RuntimeException {
 

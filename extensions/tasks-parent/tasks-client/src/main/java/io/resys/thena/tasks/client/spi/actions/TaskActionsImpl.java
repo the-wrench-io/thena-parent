@@ -36,7 +36,7 @@ public class TaskActionsImpl implements TaskActions {
 
   @Override
   public UpdateTasks updateTask() {
-    return new UpdateTasksImpl(ctx, () -> queryActiveTasks());
+    return new UpdateTasksImpl(ctx);
   }
 
   @Override

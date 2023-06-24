@@ -80,6 +80,18 @@ public interface DocumentConfig {
   }
 
   
+  default <T> Uni<List<T>> accept(DocCommitBlobsVisitor<T> visitor) {
+    final BlobStateBuilder builder = visitor.start(this, getClient()
+        .objects().blobState()
+        .repo(getRepoName())
+        .ref(getHeadName()));
+    
+    return builder.list()
+        .onItem().transform(envelope -> visitor.visit(this, envelope))
+        .onItem().transformToUni(ref -> visitor.end(this, ref));
+  }
+
+  
   interface DocumentGidProvider {
     String getNextId(DocumentType entity);
     String getNextVersion(DocumentType entity);
@@ -108,6 +120,10 @@ public interface DocumentConfig {
     List<T> end(DocumentConfig config, @Nullable BlobObjects blobs);
   }
   
-  
+  interface DocCommitBlobsVisitor<T> { 
+    BlobStateBuilder start(DocumentConfig config, BlobStateBuilder builder);
+    @Nullable BlobObjects visit(DocumentConfig config, ObjectsResult<BlobObjects> envelope);
+    Uni<List<T>> end(DocumentConfig config, @Nullable BlobObjects blobs);
+  }
   
 }
