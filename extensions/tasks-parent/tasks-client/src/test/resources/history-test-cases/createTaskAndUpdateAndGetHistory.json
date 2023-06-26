@@ -3,9 +3,10 @@
   "versions" : [ {
     "documentType" : "TASK",
     "id" : "1_TASK",
-    "version" : "2_TASK",
+    "version" : "1",
     "created" : [ 2023, 1, 1, 1, 1 ],
-    "updated" : null,
+    "updated" : [ 2023, 1, 1, 1, 1 ],
+    "archived" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -40,9 +41,10 @@
   }, {
     "documentType" : "TASK",
     "id" : "1_TASK",
-    "version" : "2_TASK",
+    "version" : "2",
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 2, 2, 1 ],
+    "archived" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -86,9 +88,10 @@
   }, {
     "documentType" : "TASK",
     "id" : "1_TASK",
-    "version" : "2_TASK",
+    "version" : "3",
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 2, 2, 1 ],
+    "archived" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -141,9 +144,10 @@
   }, {
     "documentType" : "TASK",
     "id" : "1_TASK",
-    "version" : "2_TASK",
+    "version" : "4",
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 2, 2, 1 ],
+    "archived" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
