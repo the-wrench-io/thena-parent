@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
 import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
@@ -63,7 +63,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().commitBuilder()
+    CommitResultEnvelope commit_0 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .author("same vimes")
@@ -77,7 +77,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().commitBuilder()
+    CommitResultEnvelope commit_1 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .remove("readme.md")
@@ -103,7 +103,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().commitBuilder()
+    CommitResultEnvelope commit_0 = getClient().commit().commitBuilder()
       .head("project-x", "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .append("file1.json", JsonObject.of("content", ""))
@@ -132,7 +132,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().commitBuilder()
+    CommitResultEnvelope commit_0 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .append("file1.json", JsonObject.of("content", ""))
@@ -148,7 +148,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().commitBuilder()
+    CommitResultEnvelope commit_1 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .append("readme.md", JsonObject.of("content", "readme content"))

@@ -25,6 +25,8 @@ public interface ErrorHandler {
   boolean duplicate(Throwable e);
   boolean isLocked(Throwable e);
   void deadEnd(String additionalMsg, Throwable e);
+  void deadEnd(String additionalMsg, Throwable e, Object ...args);
   void deadEnd(String additionalMsg);
+  
 
 }

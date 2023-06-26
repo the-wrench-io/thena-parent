@@ -122,9 +122,9 @@ public class SearchFileTest extends FileTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
     
     log.debug("Found type=person from history, body: {}", JsonArray.of(history).toString());
-    Assertions.assertEquals(1, history.getValues().size());
+    Assertions.assertEquals(1, history.getObjects().getValues().size());
     
-    final var first = history.getValues().get(0);
+    final var first = history.getObjects().getValues().get(0);
     Assertions.assertEquals("ID-1", first.getTreeValueName());
     Assertions.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode());
   }
@@ -142,9 +142,9 @@ public class SearchFileTest extends FileTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
     
     log.debug("Found type=person from history, body: {}", JsonArray.of(history).toString());
-    Assertions.assertEquals(1, history.getValues().size());
+    Assertions.assertEquals(1, history.getObjects().getValues().size());
     
-    final var first = history.getValues().get(0);
+    final var first = history.getObjects().getValues().get(0);
     Assertions.assertEquals("ID-1", first.getTreeValueName());
     Assertions.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode());
   }
@@ -163,7 +163,7 @@ public class SearchFileTest extends FileTestTemplate {
       .get()
       .await().atMost(Duration.ofMinutes(1));
     
-    Assertions.assertEquals(41, history.getValues().size());
+    Assertions.assertEquals(41, history.getObjects().getValues().size());
     
     history = getClient().history().blobQuery()
         .head(getRepo().getName(), "main")
@@ -172,6 +172,6 @@ public class SearchFileTest extends FileTestTemplate {
         .get()
         .await().atMost(Duration.ofMinutes(1));
       
-    Assertions.assertEquals(41, history.getValues().size());
+    Assertions.assertEquals(41, history.getObjects().getValues().size());
   }
 }

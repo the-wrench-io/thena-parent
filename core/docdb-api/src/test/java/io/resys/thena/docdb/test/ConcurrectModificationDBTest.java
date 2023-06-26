@@ -37,7 +37,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
 import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
 import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
 import io.resys.thena.docdb.test.config.DbTestTemplate;
@@ -105,10 +105,10 @@ public class ConcurrectModificationDBTest extends DbTestTemplate {
   
   
   private void runInserts(RepoResult repo, int total) {
-    final var commands = new ArrayList<Uni<CommitResult>>();
+    final var commands = new ArrayList<Uni<CommitResultEnvelope>>();
     for(int index = 0; index < total; index++) {
       // Create head and first commit
-      Uni<CommitResult> commit_0 = getClient().commit().commitBuilder()
+      Uni<CommitResultEnvelope> commit_0 = getClient().commit().commitBuilder()
         .head(repo.getRepo().getName(), "main")
         .latestCommit()
         .merge("user-1", (previous) -> {

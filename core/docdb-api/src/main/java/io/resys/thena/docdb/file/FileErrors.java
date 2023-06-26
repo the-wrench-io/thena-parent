@@ -1,5 +1,8 @@
 package io.resys.thena.docdb.file;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -21,31 +24,31 @@ package io.resys.thena.docdb.file;
  */
 
 import io.resys.thena.docdb.spi.ErrorHandler;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class FileErrors implements ErrorHandler {
 
   @Override
   public boolean notFound(Throwable e) {
-    // TODO Auto-generated method stub
+    log.error(e.getMessage(), e);
     return false;
   }
 
   @Override
   public boolean duplicate(Throwable e) {
-    // TODO Auto-generated method stub
+    log.error(e.getMessage(), e);
     return false;
   }
 
   @Override
   public void deadEnd(String additionalMsg, Throwable e) {
-    // TODO Auto-generated method stub
-    
+    log.error(additionalMsg, e);
   }
 
   @Override
   public void deadEnd(String additionalMsg) {
-    // TODO Auto-generated method stub
-    
+    log.error(additionalMsg);
   }
 
   @Override
@@ -53,4 +56,10 @@ public class FileErrors implements ErrorHandler {
     return false;
   }
 
+  @Override
+  public void deadEnd(String additionalMsg, Throwable e, Object... args) {
+    final var allArgs = new ArrayList<>(Arrays.asList(args));
+    allArgs.add(e);
+    log.error(additionalMsg + System.lineSeparator() + e.getMessage(), allArgs.toArray());     
+  }
 }

@@ -65,14 +65,7 @@ public interface TaskActions {
     ArchivedTasksQuery title(String likeTitle); // like == doesn't need to match exactly. If a title contains "bob", then it can be matched by bob
     ArchivedTasksQuery description(String likeDescription);
     ArchivedTasksQuery reporterId(String reporterId);
-    ArchivedTasksQuery fromCreatedOrUpdated(LocalDate fromCreatedOrUpdated);
-    ArchivedTasksQuery status(List<Task.Status> status);
-    ArchivedTasksQuery status(Task.Status ... status);
-    ArchivedTasksQuery assignees(List<String> assignees);
-    ArchivedTasksQuery assignees(String ... assignees);
-    ArchivedTasksQuery roles(List<String> roles);
-    ArchivedTasksQuery roles(String ... roles);
-    Uni<List<Task>> build();
+    Uni<List<Task>> build(LocalDate fromCreatedOrUpdated);
   }
   
   interface TaskHistoryQuery {

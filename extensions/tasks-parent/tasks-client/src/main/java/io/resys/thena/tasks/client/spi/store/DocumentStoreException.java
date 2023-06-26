@@ -30,7 +30,7 @@ import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
 import io.resys.thena.docdb.api.models.QueryEnvelope;
 import io.resys.thena.docdb.api.models.ThenaObjects.PullObject;
 import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
@@ -72,7 +72,7 @@ public class DocumentStoreException extends RuntimeException {
   public JsonObject getTarget() { return target; }  
   
  
-  public static DocumentExceptionMsg convertMessages(CommitResult commit) {
+  public static DocumentExceptionMsg convertMessages(CommitResultEnvelope commit) {
     return ImmutableDocumentExceptionMsg.builder()
         .id(commit.getGid())
         .value("") //TODO

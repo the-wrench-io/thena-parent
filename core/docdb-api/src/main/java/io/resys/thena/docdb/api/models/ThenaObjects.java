@@ -8,6 +8,7 @@ import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.BlobContainer.BlobVisitor;
 import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
 import io.resys.thena.docdb.api.models.ThenaObject.Branch;
 import io.resys.thena.docdb.api.models.ThenaObject.Commit;
 import io.resys.thena.docdb.api.models.ThenaObject.IsObject;
@@ -75,6 +76,18 @@ public interface ThenaObjects {
     default <T> List<T> accept(BlobVisitor<T> visitor) {
       return getTree().getValues().values().stream()
           .map(treeValue -> getBlobs().get(treeValue.getBlob()))
+          .map(blob -> visitor.visit(blob.getValue()))
+          .collect(Collectors.toUnmodifiableList());
+    }
+  }
+  
+  @Value.Immutable
+  interface HistoryObjects extends BlobContainer, ThenaObjects {
+    List<BlobHistory> getValues();
+    
+    default <T> List<T> accept(BlobVisitor<T> visitor) {
+      return getValues().stream()
+          .map(value -> value.getBlob())
           .map(blob -> visitor.visit(blob.getValue()))
           .collect(Collectors.toUnmodifiableList());
     }

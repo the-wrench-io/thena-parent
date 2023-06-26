@@ -28,7 +28,7 @@ import org.immutables.value.Value;
 
 
 @Value.Immutable
-public interface QueryEnvelope<T extends ThenaObjects> {
+public interface QueryEnvelope<T extends ThenaObjects> extends ThenaEnvelope {
   @Nullable
   Repo getRepo();    
   @Nullable

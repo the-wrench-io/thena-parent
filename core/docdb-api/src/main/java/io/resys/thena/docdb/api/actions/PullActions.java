@@ -1,5 +1,7 @@
 package io.resys.thena.docdb.api.actions;
 
+import java.time.LocalDateTime;
+
 /*-
  * #%L
  * thena-docdb-api
@@ -53,7 +55,14 @@ public interface PullActions {
     String getKey();
     
     @Nullable String getValue();
+    @Nullable LocalDateTime getTargetDate();
     
+    public static MatchCriteria like(String documentField, String valueToMatch) {
+      return ImmutableMatchCriteria.builder()
+      .key(documentField).value(valueToMatch)
+      .type(MatchCriteriaType.LIKE)
+      .build();
+    }
     
     public static MatchCriteria equalsTo(String documentField, String valueToMatch) {
       return ImmutableMatchCriteria.builder()
@@ -61,10 +70,27 @@ public interface PullActions {
       .type(MatchCriteriaType.EQUALS)
       .build();
     }
+    public static MatchCriteria notNull(String documentField) {
+      return ImmutableMatchCriteria.builder()
+      .key(documentField)
+      .type(MatchCriteriaType.NOT_NULL)
+      .build();
+    }
+    
+    public static MatchCriteria greaterThanOrEqualTo(String documentField, LocalDateTime valueToMatch) {
+      return ImmutableMatchCriteria.builder()
+      .key(documentField)
+      .type(MatchCriteriaType.GTE)
+      .targetDate(valueToMatch)
+      .build();
+    }
   }
   
   enum MatchCriteriaType {
-    EQUALS, LIKE, NOT_NULL;
+    EQUALS, LIKE, NOT_NULL, 
+    
+    //Greater Than or Equal to
+    GTE;
     
 
   }

@@ -28,10 +28,10 @@ import java.util.List;
 import java.util.Map;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
-import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
+import io.resys.thena.docdb.api.actions.ImmutableCommitResultEnvelope;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
 import io.resys.thena.docdb.api.models.ThenaObject.CommitLock;
 import io.resys.thena.docdb.api.models.ThenaObject.CommitLockStatus;
@@ -136,7 +136,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     return this;
   }
   @Override
-  public Uni<CommitResult> build() {
+  public Uni<CommitResultEnvelope> build() {
     RepoAssert.notEmpty(author, () -> "author can't be empty!");
     RepoAssert.notEmpty(message, () -> "message can't be empty!");
     RepoAssert.isTrue(!appendBlobs.isEmpty() || !deleteBlobs.isEmpty() || !mergeBlobs.isEmpty(), () -> "Nothing to commit, no content!");
@@ -174,7 +174,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     
   }
   
-  private Uni<CommitResult> doInLock(CommitLock lock, ClientRepoState tx) {
+  private Uni<CommitResultEnvelope> doInLock(CommitLock lock, ClientRepoState tx) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
     final var init = CommitTreeState.builder().ref(lock.getBranch()).refName(headName).gid(gid).repo(tx.getRepo());
     
@@ -195,7 +195,7 @@ public class CommitBuilderImpl implements CommitBuilder {
         .build();
     
     return tx.insert().batch(batch)
-        .onItem().transform(rsp -> ImmutableCommitResult.builder()
+        .onItem().transform(rsp -> ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .commit(rsp.getCommit())
           .addMessages(rsp.getLog())
@@ -204,12 +204,12 @@ public class CommitBuilderImpl implements CommitBuilder {
           .build());
   }
 
-  private CommitResult validateRepo(CommitLock state, String commitParent) {
+  private CommitResultEnvelope validateRepo(CommitLock state, String commitParent) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);
     
     // cant merge on first commit
     if(state.getCommit().isEmpty() && !mergeBlobs.isEmpty()) {
-      return (CommitResult) ImmutableCommitResult.builder()
+      return (CommitResultEnvelope) ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
@@ -226,7 +226,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     
     // Unknown parent
     if(state.getCommit().isEmpty() && commitParent != null) {
-      return (CommitResult) ImmutableCommitResult.builder()
+      return (CommitResultEnvelope) ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
@@ -244,7 +244,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     
     // No parent commit defined for existing head
     if(state.getCommit().isPresent() && commitParent == null && !Boolean.TRUE.equals(parentIsLatest)) {
-      return (CommitResult) ImmutableCommitResult.builder()
+      return (CommitResultEnvelope) ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
@@ -270,7 +270,7 @@ public class CommitBuilderImpl implements CommitBuilder {
         .append(" but remote is: '").append(state.getCommit().get().getId()).append("'!")
         .toString();
       
-      return ImmutableCommitResult.builder()
+      return ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder().text(text).build())
           .status(CommitResultStatus.ERROR)

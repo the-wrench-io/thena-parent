@@ -25,12 +25,14 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.resys.thena.docdb.api.actions.HistoryActions.BlobHistoryQuery;
-import io.resys.thena.docdb.api.actions.HistoryActions.BlobHistoryResult;
-import io.resys.thena.docdb.api.actions.ImmutableBlobHistoryResult;
 import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.exceptions.RepoException;
+import io.resys.thena.docdb.api.models.ImmutableHistoryObjects;
+import io.resys.thena.docdb.api.models.ImmutableQueryEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
 import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObjects.HistoryObjects;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Uni;
@@ -56,7 +58,7 @@ public class BlobHistoryQueryImpl implements BlobHistoryQuery {
   @Override public BlobHistoryQuery latestOnly() { this.latestOnly = true; return this; }
   
   @Override
-  public Uni<BlobHistoryResult> get() {
+  public Uni<QueryEnvelope<HistoryObjects>> get() {
     RepoAssert.notEmpty(projectName, () -> "projectName is not defined!");
     RepoAssert.notEmpty(branchName, () -> "branchName is not defined!");
     
@@ -65,8 +67,8 @@ public class BlobHistoryQueryImpl implements BlobHistoryQuery {
       if(existing == null) {
         final var ex = RepoException.builder().notRepoWithName(projectName);
         log.error(ex.getText());
-        return Uni.createFrom().item(ImmutableBlobHistoryResult
-            .builder()
+        return Uni.createFrom().item(ImmutableQueryEnvelope
+            .<HistoryObjects>builder()
             .status(QueryEnvelopeStatus.ERROR)
             .addMessages(ex)
             .build());
@@ -77,8 +79,10 @@ public class BlobHistoryQueryImpl implements BlobHistoryQuery {
         .blobName(docId)
         .criteria(criteria)
         .find().collect()
-        .asList().onItem().transform(found -> ImmutableBlobHistoryResult
-            .builder().status(QueryEnvelopeStatus.OK).values(found)
+        .asList().onItem().transform(found -> ImmutableQueryEnvelope
+            .<HistoryObjects>builder().status(QueryEnvelopeStatus.OK).objects(ImmutableHistoryObjects.builder()
+                .values(found)
+                .build())
             .build());
     });
   }

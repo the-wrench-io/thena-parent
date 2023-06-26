@@ -63,9 +63,10 @@ public class BlobHistoryQuerySqlPool implements BlobHistoryQuery {
     return (sql.getProps().size() > 0 ? stream.execute(sql.getProps()) : stream.execute())
         .onItem()
         .transformToMulti((RowSet<BlobHistory> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> context.getErrorHandler().deadEnd(
-          new StringBuilder("Can't find 'BLOB'-s by 'name': '").append(name).append("'!").toString() 
-          , e));
+        .onFailure().invoke(e -> 
+          context.getErrorHandler().deadEnd(new StringBuilder("Can't find 'BLOB'-s by 'name': '{}',\r\nsql props: {},\r\nsql: \r\n {}").toString(), e, name,  
+              sql.getProps().deepToString(), sql.getValue())
+        );
   }
   
 }

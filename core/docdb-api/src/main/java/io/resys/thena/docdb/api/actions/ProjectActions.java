@@ -29,6 +29,7 @@ import org.immutables.value.Value;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.QueryEnvelope;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
 import io.resys.thena.docdb.api.models.ThenaObjects.ProjectObjects;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -64,7 +65,7 @@ public interface ProjectActions {
   }
   
   @Value.Immutable
-  interface RepoResult {
+  interface RepoResult extends ThenaEnvelope {
     @Nullable
     Repo getRepo();
     RepoStatus getStatus();

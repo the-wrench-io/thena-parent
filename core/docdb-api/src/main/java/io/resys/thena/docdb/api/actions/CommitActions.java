@@ -29,6 +29,7 @@ import org.immutables.value.Value;
 import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
 import io.resys.thena.docdb.api.models.ThenaObject.Commit;
 import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.api.models.ThenaObjects.CommitObjects;
@@ -52,7 +53,7 @@ public interface CommitActions {
     CommitBuilder remove(List<String> docId);
     CommitBuilder author(String author);
     CommitBuilder message(String message);
-    Uni<CommitResult> build();
+    Uni<CommitResultEnvelope> build();
   }
   
   // build REF world state, no blobs by default
@@ -73,7 +74,7 @@ public interface CommitActions {
   enum CommitResultStatus { OK, ERROR, CONFLICT }
   
   @Value.Immutable
-  interface CommitResult {
+  interface CommitResultEnvelope extends ThenaEnvelope {
     String getGid(); // repo/head
     @Nullable
     Commit getCommit();

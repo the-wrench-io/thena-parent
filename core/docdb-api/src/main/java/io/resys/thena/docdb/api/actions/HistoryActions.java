@@ -22,15 +22,9 @@ package io.resys.thena.docdb.api.actions;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
-import org.immutables.value.Value;
-
 import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
-import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.QueryEnvelope.QueryEnvelopeStatus;
-import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObjects.HistoryObjects;
 import io.smallrye.mutiny.Uni;
 
 public interface HistoryActions {
@@ -45,16 +39,6 @@ public interface HistoryActions {
     BlobHistoryQuery docId(String docId); // entity name
     BlobHistoryQuery latestOnly(); // search only from last known version
     BlobHistoryQuery latestOnly(boolean latest); // search only from last known version
-    Uni<BlobHistoryResult> get();
+    Uni<QueryEnvelope<HistoryObjects>> get();
   }
-  
-  @Value.Immutable
-  interface BlobHistoryResult {
-    List<BlobHistory> getValues();
-    
-    @Nullable Repo getRepo();    
-    QueryEnvelopeStatus getStatus();
-    List<Message> getMessages();
-  }
-
 }

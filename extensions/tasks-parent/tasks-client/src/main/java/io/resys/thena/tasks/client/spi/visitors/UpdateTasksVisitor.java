@@ -36,14 +36,15 @@ import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocCommitVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocPullAndCommitVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 
 
-public class UpdateTasksVisitor implements DocCommitVisitor<Task> {
+public class UpdateTasksVisitor implements DocPullAndCommitVisitor<Task> {
+  private final DocumentStore ctx;
   private final List<String> taskIds;
   private final CommitBuilder commitBuilder;
   private final Map<String, List<TaskUpdateCommand>> commandsByTaskId; 
@@ -51,6 +52,7 @@ public class UpdateTasksVisitor implements DocCommitVisitor<Task> {
   
   public UpdateTasksVisitor(List<TaskUpdateCommand> commands, DocumentStore ctx) {
     super();
+    this.ctx = ctx;
     final var config = ctx.getConfig();
     this.commandsByTaskId = commands.stream()
         .collect(Collectors.groupingBy(TaskUpdateCommand::getTaskId));
@@ -93,7 +95,7 @@ public class UpdateTasksVisitor implements DocCommitVisitor<Task> {
     final var updatedTasks = blob.accept((JsonObject blobValue) -> {
       final var start = blobValue.mapTo(ImmutableTask.class);
       final var commands = commandsByTaskId.get(start.getId());
-      final var updated = new TaskCommandVisitor(start).visit(commands);
+      final var updated = new TaskCommandVisitor(start, ctx.getConfig()).visitTransaction(commands);
       this.commitBuilder.append(updated.getId(), JsonObject.mapFrom(updated));
       return updated;
     });

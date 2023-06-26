@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.actions.PullActions.PullObjectsQuery;
@@ -19,14 +19,14 @@ import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskTransaction;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocCommitVisitor;
+import io.resys.thena.tasks.client.spi.store.DocumentConfig.DocPullAndCommitVisitor;
 import io.resys.thena.tasks.client.spi.store.DocumentStoreException;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class DeleteAllTasksVisitor implements DocCommitVisitor<Task>{
+public class DeleteAllTasksVisitor implements DocPullAndCommitVisitor<Task>{
 
   private final String userId;
   private final LocalDateTime targetDate;
@@ -62,14 +62,14 @@ public class DeleteAllTasksVisitor implements DocCommitVisitor<Task>{
 
     final var tasksRemoved = visitTree(ref);    
     return archiveCommand.build()
-      .onItem().transform((CommitResult commit) -> {
+      .onItem().transform((CommitResultEnvelope commit) -> {
         if(commit.getStatus() == CommitResultStatus.OK) {
           return commit;
         }
         throw new DocumentStoreException("ARCHIVE_FAIL", DocumentStoreException.convertMessages(commit));
       })
       .onItem().transformToUni(archived -> removeCommand.build())
-      .onItem().transform((CommitResult commit) -> {
+      .onItem().transform((CommitResultEnvelope commit) -> {
         if(commit.getStatus() == CommitResultStatus.OK) {
           return commit;
         }

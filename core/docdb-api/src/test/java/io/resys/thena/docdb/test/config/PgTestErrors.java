@@ -1,5 +1,8 @@
 package io.resys.thena.docdb.test.config;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -25,9 +28,10 @@ import org.slf4j.LoggerFactory;
 
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.vertx.pgclient.PgException;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class PgTestErrors implements ErrorHandler {
-  private static final Logger LOGGER = LoggerFactory.getLogger(PgTestErrors.class);
   
   public boolean notFound(Throwable e) {
     if(e instanceof PgException) {
@@ -48,11 +52,11 @@ public class PgTestErrors implements ErrorHandler {
   }
   
   public void deadEnd(String additionalMsg, Throwable e) {
-    LOGGER.error(additionalMsg + System.lineSeparator() + e.getMessage(), e);
+    log.error(additionalMsg + System.lineSeparator() + e.getMessage(), e);
   }
   
   public void deadEnd(String additionalMsg) {
-    LOGGER.error(additionalMsg);
+    log.error(additionalMsg);
   }
 
   @Override
@@ -63,5 +67,12 @@ public class PgTestErrors implements ErrorHandler {
       return "55P03".equals(ogre.getCode());
     }
     return false;
+  }
+
+  @Override
+  public void deadEnd(String additionalMsg, Throwable e, Object... args) {
+    final var allArgs = new ArrayList<>(Arrays.asList(args));
+    allArgs.add(e);
+    log.error(additionalMsg + System.lineSeparator() + e.getMessage(), allArgs.toArray());     
   }
 }

@@ -27,7 +27,7 @@ import org.junit.jupiter.api.Assertions;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
 import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
 import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
@@ -99,7 +99,7 @@ public class MetricsDBtest extends PgDbTestTemplate {
     final var loopTime = end - start;
     
     start = System.currentTimeMillis();
-    CommitResult commit_0 = builder.build()
+    CommitResultEnvelope commit_0 = builder.build()
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
     Assertions.assertEquals(CommitResultStatus.OK, commit_0.getStatus());

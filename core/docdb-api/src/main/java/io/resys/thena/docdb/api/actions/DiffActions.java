@@ -29,6 +29,7 @@ import org.immutables.value.Value;
 import io.resys.thena.docdb.api.models.Diff;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
 import io.smallrye.mutiny.Uni;
 
 public interface DiffActions {
@@ -47,7 +48,7 @@ public interface DiffActions {
   }
   
   @Value.Immutable
-  interface DiffResult<T> {
+  interface DiffResult<T> extends ThenaEnvelope {
     @Nullable
     Repo getRepo();    
     @Nullable

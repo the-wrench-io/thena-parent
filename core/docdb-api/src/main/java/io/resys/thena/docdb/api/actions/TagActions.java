@@ -28,6 +28,7 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Message;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
 import io.resys.thena.docdb.api.models.ThenaObject.Tag;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -59,7 +60,7 @@ public interface TagActions {
   }
 
   @Value.Immutable
-  interface TagResult {
+  interface TagResult extends ThenaEnvelope {
     @Nullable
     Tag getTag();
     TagResultStatus getStatus();

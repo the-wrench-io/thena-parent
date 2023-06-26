@@ -30,6 +30,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -86,7 +87,7 @@ public class TaskTestCase {
       new VertexExtModule()
       };
     DatabindCodec.mapper().registerModules(modules);
-    DatabindCodec.prettyMapper().registerModules(modules);    
+    DatabindCodec.prettyMapper().registerModules(modules);
   }
 
   public void assertCommits(String repoName) {

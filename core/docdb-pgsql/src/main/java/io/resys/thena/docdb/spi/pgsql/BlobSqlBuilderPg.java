@@ -1,5 +1,9 @@
 package io.resys.thena.docdb.spi.pgsql;
 
+import java.io.Serializable;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeFormatterBuilder;
+
 /*-
  * #%L
  * thena-docdb-pgsql
@@ -29,6 +33,7 @@ import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
 import io.resys.thena.docdb.api.models.ThenaObject.Blob;
 import io.resys.thena.docdb.spi.ClientCollections;
+import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
 import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
 import io.resys.thena.docdb.sql.SqlBuilder.BlobSqlBuilder;
@@ -36,10 +41,20 @@ import io.resys.thena.docdb.sql.SqlBuilder.SqlTuple;
 import io.resys.thena.docdb.sql.SqlBuilder.SqlTupleList;
 import io.resys.thena.docdb.sql.statement.DefaultBlobSqlBuilder;
 import io.resys.thena.docdb.sql.support.SqlStatement;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import io.vertx.mutiny.sqlclient.Tuple;
 
 
 public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBuilder {
+  
+  private static final DateTimeFormatter ISO_LOCAL_DATE_TIME = new DateTimeFormatterBuilder()
+              .parseCaseInsensitive()
+              .append(DateTimeFormatter.ISO_LOCAL_DATE)
+              .appendLiteral(' ')
+              .append(DateTimeFormatter.ISO_LOCAL_TIME)
+              .toFormatter();
+  
   
   public BlobSqlBuilderPg(ClientCollections options) {
     super(options);
@@ -82,12 +97,20 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
       // TODO:: null value props
       props.add(entry.getKey());
       if(entry.getType() == MatchCriteriaType.EQUALS) {
-        props.add(entry.getValue());
-        where.append("blobs.value -> $")
-          .append(String.valueOf(paramIndex++))
+        props.add(getCriteriaValue(entry));
+        where.append("blobs.value -> ")
+          .append(getCriteriaField(entry, paramIndex++))
           .append(" = $")
           .append(String.valueOf(paramIndex++)).ln();
-      } else if(entry.getType() == MatchCriteriaType.LIKE)  {
+
+      } else if(entry.getType() == MatchCriteriaType.GTE && entry.getTargetDate() != null) {
+        props.add(getCriteriaValue(entry));
+        where.append("blobs.value ->> ")
+          .append(getCriteriaField(entry, paramIndex++))
+          .append(" <= $")
+          .append(String.valueOf(paramIndex++)).append("").ln();
+        
+      } else if(entry.getType() == MatchCriteriaType.LIKE && entry.getValue() != null)  {
         props.add("%"+ entry.getValue() + "%");
         where.append("blobs.value ->> $")
         .append(String.valueOf(paramIndex++))
@@ -100,13 +123,31 @@ public class BlobSqlBuilderPg extends DefaultBlobSqlBuilder implements BlobSqlBu
         .append(" is not null").ln();
         
       } else {
-        throw new RuntimeException("Criteria type: " + entry.getType() + " not defined");
+        throw new RuntimeException("Criteria type: " + JsonArray.of(criteria) + " not supported!");
       }
     }
   
     return new WhereSqlFragment(where.toString(), props);
   }
+  
+  
+  private static Serializable getCriteriaValue(MatchCriteria criteria) {
+    RepoAssert.isTrue(criteria.getValue() != null || criteria.getTargetDate() != null, () -> "Criteria must define value! But was: " + JsonObject.mapFrom(criteria));
     
+    if(criteria.getTargetDate() != null) {
+      return criteria.getTargetDate().format(ISO_LOCAL_DATE_TIME);
+    }
+    return criteria.getValue();
+  }
+  
+  private static String getCriteriaField(MatchCriteria criteria, int fieldIndex) {
+    RepoAssert.isTrue(criteria.getValue() != null || criteria.getTargetDate() != null, () -> "Criteria must define value! But was: " + JsonObject.mapFrom(criteria));
+    
+    if(criteria.getTargetDate() != null) {
+      return "$" + String.valueOf(fieldIndex) + "";
+    }
+    return "$" + String.valueOf(fieldIndex);
+  }
   
   @Override
   public SqlTuple find(String name, boolean latestOnly, List<MatchCriteria> criteria) {

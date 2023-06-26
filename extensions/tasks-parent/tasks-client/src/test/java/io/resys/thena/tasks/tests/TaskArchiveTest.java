@@ -45,6 +45,7 @@ public class TaskArchiveTest extends TaskTestCase {
     final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
     
     // first commit
+    @SuppressWarnings("unused")
     Task createdTask_1 = client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
         .title("very important title no: init")
@@ -56,6 +57,7 @@ public class TaskArchiveTest extends TaskTestCase {
         .build())
     .await().atMost(atMost);
 
+    @SuppressWarnings("unused")
     Task createdTask_2 = client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
         .title("very important title no: init")
@@ -74,6 +76,7 @@ public class TaskArchiveTest extends TaskTestCase {
     final var activeTasks = client.tasks().queryActiveTasks().findAll().await().atMost(atMost);
     Assertions.assertEquals(0, activeTasks.size());
     
+    @SuppressWarnings("unused")
     Task createdTask_3 = client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
         .title("very important title no: init")
@@ -87,7 +90,7 @@ public class TaskArchiveTest extends TaskTestCase {
     
     log.debug(super.printRepo(client));
 
-    final var archivedTasks = client.tasks().queryArchivedTasks().build().await().atMost(atMost);
+    final var archivedTasks = client.tasks().queryArchivedTasks().build(super.getTargetDate().toLocalDate()).await().atMost(atMost);
     Assertions.assertEquals(2, archivedTasks.size());
   }
 }
