@@ -90,6 +90,7 @@ public interface TaskCommand extends Serializable {
     List<TaskExtension> getExtensions();
     List<TaskComment> getComments();
     
+    @Value.Default
     @Override default TaskCommandType getCommandType() { return TaskCommandType.CreateTask; }
   }
   
@@ -119,12 +120,14 @@ public interface TaskCommand extends Serializable {
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskReporter.class) @JsonDeserialize(as = ImmutableAssignTaskReporter.class)
   interface AssignTaskReporter extends TaskUpdateCommand {
     String getReporterId();
+    @Value.Default
     @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTaskReporter; }
 
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableArchiveTask.class) @JsonDeserialize(as = ImmutableArchiveTask.class)
   interface ArchiveTask extends TaskUpdateCommand {
+    @Value.Default
     @Override default TaskCommandType getCommandType() { return TaskCommandType.ArchiveTask; }
   }
 

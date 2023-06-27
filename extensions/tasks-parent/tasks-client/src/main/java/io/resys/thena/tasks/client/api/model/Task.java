@@ -59,6 +59,11 @@ public interface Task extends Document {
 
   List<TaskComment> getComments();
   
+  @Value.Default
+  default DocumentType getDocumentType() {
+    return DocumentType.TASK;
+  }
+  
   enum Status { CREATED, IN_PROGRESS, COMPLETED, REJECTED }
   enum Priority { LOW, MEDIUM, HIGH }  
   

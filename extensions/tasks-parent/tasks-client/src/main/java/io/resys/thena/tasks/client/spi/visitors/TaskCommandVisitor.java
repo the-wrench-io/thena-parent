@@ -38,7 +38,6 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskPriority;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStatus;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
 import io.resys.thena.tasks.client.spi.store.DocumentConfig;
-import io.resys.thena.tasks.client.spi.store.DocumentStore;
 
 public class TaskCommandVisitor {
   private final DocumentConfig ctx;
@@ -94,7 +93,6 @@ public class TaskCommandVisitor {
     this.current = ImmutableTask.builder()
         .id(gen.getNextId(DocumentType.TASK))
         .version(gen.getNextVersion(DocumentType.TASK))
-        .documentType(DocumentType.TASK)
         .addAllAssigneeIds(command.getAssigneeIds().stream().distinct().toList())
         .addAllRoles(command.getRoles().stream().distinct().toList())
         .reporterId(command.getReporterId())
