@@ -9,6 +9,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.restassured.RestAssured;
+import io.resys.thena.tasks.client.api.model.ImmutableArchiveTask;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskStatus;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Project;
@@ -126,4 +127,32 @@ public class RestApiTest {
       Assertions.assertEquals("task1", response.getId());
   }
   
+  @Test
+  public void findArchivedTasks() throws JsonProcessingException {
+
+      final Task[] response = RestAssured.given().when()
+          .get("/q/tasks/api/projects/1/archive/2022-11-09/tasks").then()
+        .statusCode(200).contentType("application/json")
+        .extract().as(Task[].class);
+    
+      Assertions.assertEquals(2, response.length);
+  }
+  
+  @Test
+  public void deleteOneTask() throws JsonProcessingException {
+    final var command = ImmutableArchiveTask.builder()
+        .taskId("task1")
+        .userId("user1")
+        .targetDate(TaskTestCase.getTargetDate())
+        .build();
+        
+    
+      final Task response = RestAssured.given()
+          .body(command).accept("application/json").contentType("application/json")
+          .when().delete("/q/tasks/api/projects/1/tasks/1").then()
+        .statusCode(200).contentType("application/json")
+        .extract().as(Task.class);
+    
+      Assertions.assertEquals("task1", response.getId());
+  }  
 }

@@ -1,8 +1,10 @@
 package io.resys.thena.tasks.client.rest;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
@@ -17,14 +19,13 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
 import io.resys.thena.tasks.client.api.model.TaskCommand.TaskUpdateCommand;
 import io.smallrye.mutiny.Uni;
 
+
 @Path("q/tasks/api/projects/")
 public interface TasksRestApi {
   
   @GET @Path("") @Produces(MediaType.APPLICATION_JSON)
   Uni<List<Project>> findProjects();
   
-  
-  // get all tasks
   @GET @Path("{projectId}/tasks") @Produces(MediaType.APPLICATION_JSON)
   Uni<List<Task>> findTasks(@PathParam("projectId") String projectId);
  
@@ -37,6 +38,12 @@ public interface TasksRestApi {
   @PUT @Path("{projectId}/tasks/{taskId}") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
   Uni<Task> updateTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, List<TaskUpdateCommand> commands);
 
-
+  @GET @Path("{projectId}/archive/{fromCreatedOrUpdated}/tasks") @Produces(MediaType.APPLICATION_JSON)
+  Uni<List<Task>> findArchivedTasks(
+      @PathParam("projectId") String projectId, 
+      @PathParam("fromCreatedOrUpdated") LocalDate fromCreatedOrUpdated);
+  
+  @DELETE @Path("{projectId}/tasks/{taskId}") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
+  Uni<Task> deleteOneTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, TaskUpdateCommand commands);
 
 }
