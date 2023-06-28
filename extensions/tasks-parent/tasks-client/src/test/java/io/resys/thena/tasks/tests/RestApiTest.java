@@ -15,6 +15,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Project;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.Task.Priority;
+import io.resys.thena.tasks.client.api.model.TaskCommand.TaskCommandType;
 import io.resys.thena.tasks.tests.config.TaskTestCase;
 
 
@@ -154,5 +155,23 @@ public class RestApiTest {
         .extract().as(Task.class);
     
       Assertions.assertEquals("task1", response.getId());
+  }  
+  
+  @Test
+  public void deleteTasks() throws JsonProcessingException {
+    final var command = ImmutableArchiveTask.builder()
+        .taskId("task1")
+        .userId("user1")
+        .targetDate(TaskTestCase.getTargetDate())
+        .build();
+        
+    
+      final Task[] response = RestAssured.given()
+          .body(Arrays.asList(command, command)).accept("application/json").contentType("application/json")
+          .when().delete("/q/tasks/api/projects/1/tasks").then()
+        .statusCode(200).contentType("application/json")
+        .extract().as(Task[].class);
+    
+      Assertions.assertEquals(2, response.length);
   }  
 }

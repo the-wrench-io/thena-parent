@@ -35,6 +35,9 @@ public interface TasksRestApi {
   @PUT @Path("{projectId}/tasks") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
   Uni<List<Task>> updateTasks(@PathParam("projectId") String projectId,  List<TaskUpdateCommand> commands);
   
+  @DELETE @Path("{projectId}/tasks") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
+  Uni<List<Task>> deleteTasks(@PathParam("projectId") String projectId, List<TaskUpdateCommand> commands);
+
   @PUT @Path("{projectId}/tasks/{taskId}") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
   Uni<Task> updateTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, List<TaskUpdateCommand> commands);
 
@@ -44,6 +47,6 @@ public interface TasksRestApi {
       @PathParam("fromCreatedOrUpdated") LocalDate fromCreatedOrUpdated);
   
   @DELETE @Path("{projectId}/tasks/{taskId}") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
-  Uni<Task> deleteOneTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, TaskUpdateCommand commands);
-
+  Uni<Task> deleteOneTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, TaskUpdateCommand command);
+  
 }

@@ -60,4 +60,9 @@ public class TestResource implements TasksRestApi {
     return Uni.createFrom().item(mockTask);
   }
 
+  @Override
+  public Uni<List<Task>> deleteTasks(String projectId, List<TaskUpdateCommand> commands) {
+    return Uni.createFrom().item(Arrays.asList(mockTask, mockTask));
+  }
+
 }
