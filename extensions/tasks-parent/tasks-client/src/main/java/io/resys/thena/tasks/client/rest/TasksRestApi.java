@@ -47,6 +47,6 @@ public interface TasksRestApi {
       @PathParam("fromCreatedOrUpdated") LocalDate fromCreatedOrUpdated);
   
   @DELETE @Path("{projectId}/tasks/{taskId}") @Produces(MediaType.APPLICATION_JSON) @Consumes(MediaType.APPLICATION_JSON)
-  Uni<Task> deleteOneTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, TaskUpdateCommand command);
+  Uni<Task> deleteOneTask(@PathParam("projectId") String projectId, @PathParam("taskId") String taskId, List<TaskUpdateCommand> command);
   
 }

@@ -56,7 +56,7 @@ public class TestResource implements TasksRestApi {
   }
 
   @Override
-  public Uni<Task> deleteOneTask(String projectId, String taskId, TaskUpdateCommand command) {
+  public Uni<Task> deleteOneTask(String projectId, String taskId, List<TaskUpdateCommand> command) {
     return Uni.createFrom().item(mockTask);
   }
 

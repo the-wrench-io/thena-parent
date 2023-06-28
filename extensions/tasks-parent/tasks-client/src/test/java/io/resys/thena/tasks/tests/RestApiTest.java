@@ -149,7 +149,7 @@ public class RestApiTest {
         
     
       final Task response = RestAssured.given()
-          .body(command).accept("application/json").contentType("application/json")
+          .body(Arrays.asList(command)).accept("application/json").contentType("application/json")
           .when().delete("/q/tasks/api/projects/1/tasks/1").then()
         .statusCode(200).contentType("application/json")
         .extract().as(Task.class);
