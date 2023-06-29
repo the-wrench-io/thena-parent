@@ -1,5 +1,5 @@
 # Thena - JSON storage framework
-
+  
 Thena is a JSON storage framework with GIT-like features on top of a relational database.
 * **Project Scope**: 
 Multiple projects in the same installation with a separate set of tables for each project.
