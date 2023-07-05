@@ -1,7 +1,6 @@
 {
   "id" : "not implemented yet",
   "versions" : [ {
-    "documentType" : "TASK",
     "id" : "1_TASK",
     "version" : "1",
     "created" : [ 2023, 1, 1, 1, 1 ],
@@ -37,9 +36,9 @@
     "status" : "CREATED",
     "labels" : [ ],
     "extensions" : [ ],
-    "comments" : [ ]
+    "comments" : [ ],
+    "documentType" : "TASK"
   }, {
-    "documentType" : "TASK",
     "id" : "1_TASK",
     "version" : "2",
     "created" : [ 2023, 1, 1, 1, 1 ],
@@ -84,9 +83,9 @@
     "status" : "IN_PROGRESS",
     "labels" : [ ],
     "extensions" : [ ],
-    "comments" : [ ]
+    "comments" : [ ],
+    "documentType" : "TASK"
   }, {
-    "documentType" : "TASK",
     "id" : "1_TASK",
     "version" : "3",
     "created" : [ 2023, 1, 1, 1, 1 ],
@@ -140,9 +139,9 @@
     "status" : "IN_PROGRESS",
     "labels" : [ ],
     "extensions" : [ ],
-    "comments" : [ ]
+    "comments" : [ ],
+    "documentType" : "TASK"
   }, {
-    "documentType" : "TASK",
     "id" : "1_TASK",
     "version" : "4",
     "created" : [ 2023, 1, 1, 1, 1 ],
@@ -205,6 +204,7 @@
     "status" : "IN_PROGRESS",
     "labels" : [ ],
     "extensions" : [ ],
-    "comments" : [ ]
+    "comments" : [ ],
+    "documentType" : "TASK"
   } ]
 }
