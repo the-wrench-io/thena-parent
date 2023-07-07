@@ -1,4 +1,4 @@
-import { Task, TaskExtension, TaskPriority, TaskStatus } from './client-types';
+import { Task, TaskExtension, TaskPriority, TaskStatus } from './task-types';
 import {
   PalleteType, TasksState, TasksMutatorBuilder, TaskDescriptor, FilterBy, Group, GroupBy,
   RoleUnassigned, OwnerUnassigned, TasksStatePallette,
@@ -98,7 +98,7 @@ class TasksStateBuilder implements TasksMutatorBuilder {
           roles.push(role)
         }
       });
-      task.owners.forEach(owner => {
+      task.assigneeIds.forEach(owner => {
         if (!owners.includes(owner)) {
           owners.push(owner)
         }
@@ -110,7 +110,7 @@ class TasksStateBuilder implements TasksMutatorBuilder {
         
       });
       
-      if(task.owners.length === 0) {
+      if(task.assigneeIds.length === 0) {
         if(!tasksByOwner[_nobody_]) {
           tasksByOwner[_nobody_] = [];
         }
@@ -386,9 +386,9 @@ class TaskDescriptorImpl implements TaskDescriptor {
   get status() { return this._entry.status }
   get priority() { return this._entry.priority }
   get roles() { return this._entry.roles }
-  get owners() { return this._entry.owners }
+  get owners() { return this._entry.assigneeIds }
   get labels() { return this._entry.labels }
-  get subject() { return this._entry.subject }
+  get subject() { return this._entry.title }
   get description() { return this._entry.description }
   get uploads() { return this._uploads }
 }

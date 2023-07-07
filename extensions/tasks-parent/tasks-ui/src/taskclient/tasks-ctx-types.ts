@@ -1,4 +1,4 @@
-import { Task, TaskPriority, TaskStatus, TaskExtension } from './client-types';
+import { Task, TaskPriority, TaskStatus, TaskExtension } from './task-types';
 
 export interface TaskDescriptor {
   entry: Task;

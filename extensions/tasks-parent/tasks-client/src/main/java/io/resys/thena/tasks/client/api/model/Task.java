@@ -39,24 +39,21 @@ public interface Task extends Document {
   LocalDateTime getCreated();
   LocalDateTime getUpdated();
   @Nullable LocalDateTime getArchived();  
+  @Nullable LocalDate getDueDate();
   
   @Nullable String getParentId(); //for task linking/grouping 
-
   List<TaskTransaction> getTransactions(); 
-  
   List<String> getRoles();
   List<String> getAssigneeIds();
   String getReporterId();
   
-  @Nullable LocalDate getDueDate();
+ 
   String getTitle();
   String getDescription();
   Priority getPriority();
   Status getStatus();
-  
   List<String> getLabels();
   List<TaskExtension> getExtensions();
-
   List<TaskComment> getComments();
   
   @Value.Default

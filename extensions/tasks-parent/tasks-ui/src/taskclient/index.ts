@@ -17,8 +17,13 @@ import {
 import {
   HeadState,
   ClientError, CreateBuilder, Client, StoreConfig, Store,
-  TaskId, Task, TaskPriority, TaskStatus, ProgramMessage, Org, User
+  ProgramMessage, Org, User
 } from './client-types';
+
+import {
+  TaskId, Task, TaskPriority, TaskStatus,
+} from './task-types';
+
 
 import {
   DocumentId, Document, DocumentUpdate,

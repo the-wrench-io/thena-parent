@@ -1,13 +1,14 @@
 import Burger from '@the-wrench-io/react-burger';
 
 import * as Client from './client-types';
+import type { Task } from './task-types';
 
 
 export type DocumentId = string; 
 
 export type Document = 
  { kind: 'HEAD', id: string, delegate: Client.HeadState } | 
- { kind: 'TASK', id: string, delegate: Client.Task };
+ { kind: 'TASK', id: string, delegate: Task };
 
 export type DocumentUpdate = {};
 

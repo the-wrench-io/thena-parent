@@ -1,48 +1,8 @@
-export type TaskId = string;
-
+import { Task, TaskId } from './task-types';
 
 export interface ProgramMessage {
   id: string, msg: string
 }
-
-export interface Task {
-  version: string;
-  created: string;
-  updated: string | undefined;
-  type: 'TASK';
-  id: TaskId;
-  status: TaskStatus;
-  priority: TaskPriority;
-  dueDate: string;
-  roles: string[];
-  owners: string[];
-  labels: string[];
-  subject: string;
-  description: string;
-  extensions: TaskExtension[];
-  externalComments: TaskComment[];
-  internalComments: TaskComment[];
-}
-
-
-export interface TaskExtension {
-  id: string;
-  type: 'dialob' | 'upload' | string;
-  body: string;
-  name: string;
-}
-
-export interface TaskComment {
-  id: string;
-  created: Date;
-  replyToId?: string;
-  commentText: string;
-  username: string;
-}
-
-export type TaskStatus = 'CREATED' | 'IN_PROGRESS' |'COMPLETED' | 'REJECTED';
-export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
-
 
 export interface Org {
   owners: string[];
@@ -78,7 +38,7 @@ export interface Client {
   create(): CreateBuilder;
   head(): Promise<HeadState>
   active(): Promise<TaskPagination>
-  org(): Promise<{org: Org, user: User}>;
+  org(): Promise<{ org: Org, user: User }>;
   task(id: TaskId): Promise<Task>
 }
 export interface StoreConfig {
