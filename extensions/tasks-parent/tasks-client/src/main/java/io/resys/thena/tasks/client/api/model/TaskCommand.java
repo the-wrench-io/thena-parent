@@ -161,13 +161,13 @@ public interface TaskCommand extends Serializable {
   
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTaskRoles.class) @JsonDeserialize(as = ImmutableAssignTaskRoles.class)
   interface AssignTaskRoles extends TaskUpdateCommand {
-    String getRoles();
+    List<String> getRoles();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTaskRoles; }
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableAssignTask.class) @JsonDeserialize(as = ImmutableAssignTask.class)
   interface AssignTask extends TaskUpdateCommand {
-    String getAssigneeIds();
+    List<String> getAssigneeIds();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTask; }
   }
   
@@ -180,7 +180,7 @@ public interface TaskCommand extends Serializable {
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskInfo.class) @JsonDeserialize(as = ImmutableChangeTaskInfo.class)
   interface ChangeTaskInfo extends TaskUpdateCommand {
-    String getSubject();
+    String getTitle();
     String getDescription();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskInfo; }
   }
@@ -188,6 +188,7 @@ public interface TaskCommand extends Serializable {
   interface ChangeTaskExtension extends TaskUpdateCommand {
     @Nullable String getId(); // create | update
     String getType();
+    String getName();
     String getBody();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskExtension; }
   }
