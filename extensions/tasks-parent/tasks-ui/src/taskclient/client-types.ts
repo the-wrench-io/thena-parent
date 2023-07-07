@@ -1,5 +1,5 @@
 import { ProfileStore } from './profile-types';
-import { Task, TaskId } from './task-types';
+import { TaskStore } from './task-types';
 
 export interface ProgramMessage {
   id: string, msg: string
@@ -26,11 +26,11 @@ export interface ClientError {
 export interface Client {
   config: StoreConfig;
   profile: ProfileStore;
+  task: TaskStore;
 
-  active(): Promise<TaskPagination>
   org(): Promise<{ org: Org, user: User }>;
-  task(id: TaskId): Promise<Task>
 }
+
 export interface StoreConfig {
   url: string;
   oidc?: string;
@@ -42,9 +42,4 @@ export interface Store {
   fetch<T>(path: string, init?: RequestInit & { notFound?: () => T }): Promise<T>;
 }
 
-export interface TaskPagination {
-  page: number; //starts from 1
-  total: { pages: number, records: number };
-  records: Task[];
-}
 

@@ -137,4 +137,14 @@ export interface ChangeTaskExtension extends TaskUpdateCommand<'ChangeTaskExtens
   body: string;
 }
 
+export interface TaskPagination {
+  page: number; //starts from 1
+  total: { pages: number, records: number };
+  records: Task[];
+}
+
+export interface TaskStore {
+  getActiveTasks(): Promise<TaskPagination>
+  getActiveTask(id: TaskId): Promise<Task>
+}
 

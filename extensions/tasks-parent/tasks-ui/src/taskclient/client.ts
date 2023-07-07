@@ -1,5 +1,5 @@
-import { Client, Store, TaskPagination, Org, User } from './client-types';
-import type { TaskId, Task, } from './task-types';
+import { Client, Store, Org, User } from './client-types';
+import type { TaskId, Task, TaskPagination, TaskStore } from './task-types';
 import type { Profile, ProfileStore } from './profile-types';
 import { } from './client-store';
 
@@ -14,17 +14,14 @@ export class ServiceImpl implements Client {
     this._store = store;
   }
 
-  get config() {
-    return this._store.config;
-  }
-  
+  get config() { return this._store.config; }
+
   get profile(): ProfileStore {
     return {
       getProfile: () => this.getProfile(),
       createProfile: () => this.createProfile()
     }
   }
-  
   async getProfile(): Promise<Profile> {
     try {
       const init = await this._store.fetch<BackendInit>("init", { notFound: () => null });
@@ -38,12 +35,27 @@ export class ServiceImpl implements Client {
       return { name: "", contentType: "NO_CONNECTION" };
     }
   }
-  
+
   createProfile(): Promise<Profile> {
     return this._store.fetch<Profile>("head", { method: "POST", body: JSON.stringify({}) });
   }
-  
-  task(id: TaskId): Promise<Task> {
+
+  get task(): TaskStore {
+    return {
+      getActiveTasks: () => this.getActiveTasks(),
+      getActiveTask: (id: TaskId) => this.getActiveTask(id)
+    };
+  }
+
+  async getActiveTasks(): Promise<TaskPagination> {
+    const tasks = await this._store.fetch<object[]>(`active/tasks`);
+    return {
+      page: 1,
+      total: { pages: 1, records: tasks.length },
+      records: tasks as any
+    }
+  }
+  getActiveTask(id: TaskId): Promise<Task> {
     return this._store.fetch<Task>(`tasks/${id}`);
   }
   async org(): Promise<{ org: Org, user: User }> {
@@ -72,12 +84,5 @@ export class ServiceImpl implements Client {
     };
   }
 
-  async active(): Promise<TaskPagination> {
-    const tasks = await this._store.fetch<object[]>(`active/tasks`);
-    return {
-      page: 1,
-      total: { pages: 1, records: tasks.length },
-      records: tasks as any
-    }
-  }
+
 }

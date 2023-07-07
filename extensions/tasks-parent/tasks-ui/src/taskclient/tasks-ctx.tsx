@@ -38,12 +38,12 @@ const TasksProvider: React.FC<{ children: React.ReactNode, backend: Client }> = 
     if(!loading) {
       return;
     }
-    backend.active().then(data => {
+    backend.task.getActiveTasks().then(data => {
       setLoading(false);
       setState(prev => prev.withTasks(data.records))
     });
     
-  }, [loading, setLoading]);
+  }, [loading, setLoading, backend]);
   
 
   return (<TasksContext.Provider value={contextValue}>{children}</TasksContext.Provider>);
