@@ -1,7 +1,7 @@
 quarkus:
 
   log:
-    level: DEBUG
+    level: INFO
     category: 
       io.resys:
         level: DEBUG
@@ -24,6 +24,8 @@ quarkus:
     keep-alive-time: PT10.000S
     
 tasks:
+  project:
+    id: "myTasksProject"
   db:
     pg: 
       repositoryName: "tasks-repo"

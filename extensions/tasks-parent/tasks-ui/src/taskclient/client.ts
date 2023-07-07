@@ -31,7 +31,7 @@ export class ServiceImpl implements Client {
 
       return { name: "", contentType: "OK" };
     } catch (error) {
-      console.error(error);
+      console.error("PROFILE, failed to fetch", error);
       return { name: "", contentType: "NO_CONNECTION" };
     }
   }

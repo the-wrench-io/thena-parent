@@ -83,6 +83,9 @@ const Secondary: React.FC<{}> = () => {
   function handleReporting() { actions.handleTabAdd({ id: 'reporting', label: <FormattedMessage id="activities.reporting.title" /> }) }
 
   function handleDashboard() { actions.handleTabAdd({ id: 'activities', label: <FormattedMessage id="activities.title" /> }) }
+  
+  
+  function handleDev() { actions.handleTabAdd({ id: 'dev', label: <FormattedMessage id="activities.dev.title" /> }) }
 
   return (<Box sx={{ backgroundColor: "explorer.main", height: '100%', width: '100%' }}>
     <StyledBox>
@@ -97,7 +100,7 @@ const Secondary: React.FC<{}> = () => {
         <StyledExplorerTab value='explorer.mytasks' icon={<PersonIcon />} label={<FormattedMessage id="activities.mytasks.title" />} onClick={handleMyTasks} />
         <StyledExplorerTab value='explorer.myhistory' icon={<HistoryIcon />} label={<FormattedMessage id="activities.myhistory.title" />} onClick={handleMyHistory} />
         <StyledExplorerTab value='explorer.reporting' icon={<PieChartIcon />} label={<FormattedMessage id="activities.reporting.title" />} onClick={handleReporting} />
-
+        <StyledExplorerTab value='explorer.dev' icon={<PieChartIcon />} label={<FormattedMessage id="activities.dev.title" />} onClick={handleDev} />
       </StyledTabs>
     </Box>
   </Box>)

@@ -42,6 +42,8 @@ import io.vertx.core.json.jackson.VertxModule;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Dependent
 @RegisterForReflection(targets = {
@@ -69,7 +71,19 @@ public class BeanFactory {
   @ConfigProperty(name = "tasks.db.pg.pgPass")
   String pgPass;
 
-
+  @ConfigProperty(name = "tasks.project.id")
+  String projectId;
+  
+  @Data @RequiredArgsConstructor
+  public static class CurrentProject {
+    private final String projectId;
+    private final String head = "main";
+  }
+  
+  @Produces 
+  public CurrentProject currentProject() {
+    return new CurrentProject(projectId);
+  }
   
   
   @Produces
@@ -93,7 +107,7 @@ public class BeanFactory {
     final var pgPool = io.vertx.mutiny.pgclient.PgPool.pool(vertx, connectOptions, poolOptions);
       
     final var store = DocumentStoreImpl.builder()
-        .repoName(repositoryName)
+        .repoName(projectId)
         .pgPool(pgPool)
         .pgDb(pgDb)
         .pgPoolSize(pgPoolSize)

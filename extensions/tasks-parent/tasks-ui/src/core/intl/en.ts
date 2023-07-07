@@ -34,6 +34,8 @@ const en = {
   'activities.reporting.title': 'Reporting',
   'activities.reporting.desc': 'Generate json report of data. Allows grouping and filtering.',
   
+  'activities.dev.title': 'Development',
+  
   'mywork.button.review': 'Review Form',
 
   'project.dialog.requireProject.createdMessage': 'Project successfully created',

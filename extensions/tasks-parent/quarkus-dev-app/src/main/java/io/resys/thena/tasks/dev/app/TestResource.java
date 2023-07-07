@@ -36,6 +36,7 @@ import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
+import io.resys.thena.tasks.dev.app.BeanFactory.CurrentProject;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import lombok.Builder;
@@ -48,7 +49,8 @@ import lombok.extern.slf4j.Slf4j;
 public class TestResource {
   @Inject Vertx vertx;
   @Inject TaskClient client;
-
+  @Inject CurrentProject currentProject;
+  
   //http://localhost:8080/portal/active/tasks
   @Jacksonized @Data @Builder
   public static class HeadState {
@@ -83,7 +85,7 @@ public class TestResource {
       bulk.add(newTask);
     }
     
-    return client.repo().query().createIfNot()
+    return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
         .onItem().transformToUni(created -> {
           return Uni.createFrom().item(HeadState.builder().created(true).build());
         });
@@ -93,7 +95,7 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("demo/clear")
   public Uni<HeadState> clear() {
-    return client.repo().query().createIfNot()
+    return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
         .onItem().transformToUni(created -> {
           
             return client.tasks().queryActiveTasks().deleteAll("", LocalDateTime.now())
@@ -107,7 +109,7 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("init")
   public Uni<HeadState> init() {
-    return client.repo().query().createIfNot()
+    return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
         .onItem().transform(created -> HeadState.builder().created(true).build());
   }
   
