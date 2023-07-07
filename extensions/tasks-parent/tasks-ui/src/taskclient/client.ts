@@ -1,5 +1,6 @@
-import { Client, Store, HeadState, CreateBuilder, TaskPagination, Org, User } from './client-types';
+import { Client, Store, TaskPagination, Org, User } from './client-types';
 import type { TaskId, Task, } from './task-types';
+import type { Profile, ProfileStore } from './profile-types';
 import { } from './client-store';
 
 
@@ -16,7 +17,15 @@ export class ServiceImpl implements Client {
   get config() {
     return this._store.config;
   }
-  async head(): Promise<HeadState> {
+  
+  get profile(): ProfileStore {
+    return {
+      getProfile: () => this.getProfile(),
+      createProfile: () => this.createProfile()
+    }
+  }
+  
+  async getProfile(): Promise<Profile> {
     try {
       const init = await this._store.fetch<BackendInit>("init", { notFound: () => null });
       if (init === null) {
@@ -29,11 +38,11 @@ export class ServiceImpl implements Client {
       return { name: "", contentType: "NO_CONNECTION" };
     }
   }
-  create(): CreateBuilder {
-    const head = () => this._store.fetch<HeadState>("head", { method: "POST", body: JSON.stringify({}) });
-    const migrate: (init: object) => Promise<HeadState> = (init) => this._store.fetch<HeadState>("migrate", { method: "POST", body: JSON.stringify(init) })
-    return { head, migrate };
+  
+  createProfile(): Promise<Profile> {
+    return this._store.fetch<Profile>("head", { method: "POST", body: JSON.stringify({}) });
   }
+  
   task(id: TaskId): Promise<Task> {
     return this._store.fetch<Task>(`tasks/${id}`);
   }

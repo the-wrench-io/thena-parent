@@ -2,13 +2,14 @@ import React from 'react';
 
 import { initSession, SessionData } from './session';
 import ActionsImpl from './actions';
-import { Client, HeadState } from './client-types';
+import { Client } from './client-types';
+import { Profile } from './profile-types';
 import { ClientContext, ComposerContext } from './client-ctx';
 import RequireProject from './Components/RequireProject';
 import { TasksProvider } from './tasks-ctx';
 import { OrgProvider } from './org-ctx';
 
-const Provider: React.FC<{ children: React.ReactNode, service: Client, head?: HeadState }> = ({ children, service, head }) => {
+const Provider: React.FC<{ children: React.ReactNode, service: Client, profile: Profile | undefined }> = ({ children, service, profile }) => {
   const [session, dispatch] = React.useState<SessionData>(initSession);
 
   const actions = React.useMemo(() => {
@@ -23,19 +24,19 @@ const Provider: React.FC<{ children: React.ReactNode, service: Client, head?: He
 
   React.useLayoutEffect(() => {
     console.log("init ide data");
-    if (head) {
-      actions.handleLoadHead(head);
+    if (profile) {
+      actions.handleLoadProfile(profile);
     } else {
       actions.handleLoad();
     }
-  }, [actions, head]);
+  }, [actions, profile]);
 
   return (
     <ClientContext.Provider value={service}>
       <ComposerContext.Provider value={contextValue}>
         <TasksProvider backend={service}>
           <OrgProvider backend={service}>
-            {session.head.contentType === 'NOT_CREATED' ? <RequireProject /> : undefined}
+            {session.profile.contentType === 'NOT_CREATED' ? <RequireProject /> : undefined}
             {children}
           </OrgProvider>
         </TasksProvider>

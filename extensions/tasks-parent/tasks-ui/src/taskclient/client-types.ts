@@ -1,3 +1,4 @@
+import { ProfileStore } from './profile-types';
 import { Task, TaskId } from './task-types';
 
 export interface ProgramMessage {
@@ -15,28 +16,17 @@ export interface User {
   displayName: string;
 }
 
-
-export interface HeadState {
-  name: string,
-  commit?: string,
-  contentType: "OK" | "NOT_CREATED" | "EMPTY" | "ERRORS" | "NO_CONNECTION" | "BACKEND_NOT_FOUND",
-}
-
 export interface ClientError {
   text: string;
   status: number;
   errors: { id: string; value: string; }[];
 }
 
-export interface CreateBuilder {
-  head(): Promise<HeadState>;
-  migrate(init: object): Promise<{}>;
-}
 
 export interface Client {
   config: StoreConfig;
-  create(): CreateBuilder;
-  head(): Promise<HeadState>
+  profile: ProfileStore;
+
   active(): Promise<TaskPagination>
   org(): Promise<{ org: Org, user: User }>;
   task(id: TaskId): Promise<Task>

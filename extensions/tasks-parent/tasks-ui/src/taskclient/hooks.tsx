@@ -63,7 +63,7 @@ export const useBackend = () => {
 }
 export const useSite = () => {
   const result: ComposerContextType = React.useContext(ComposerContext);
-  return result.session.head;
+  return result.session.profile;
 }
 export const useUnsaved = (entity: Document) => {
   const ide: ComposerContextType = React.useContext(ComposerContext);
@@ -76,7 +76,7 @@ export const useComposer = () => {
   return {
     session: result.session,
     actions: result.actions,
-    site: result.session.head,
+    site: result.session.profile,
     isDocumentSaved: isSaved,
     client
   };

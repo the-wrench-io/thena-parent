@@ -1,9 +1,9 @@
 import { DocumentId, Document, DocumentUpdate, Session, PageUpdate, TabBody, TabEntity } from './composer-types';
-import { HeadState } from './client-types';
+import type { Profile } from './profile-types';
 
 class SiteCache {
-  private _site: HeadState;
-  constructor(site: HeadState) {
+  private _site: Profile;
+  constructor(site: Profile) {
     this._site = site;
   }
 
@@ -18,21 +18,21 @@ class SiteCache {
 }
 
 class SessionData implements Session {
-  private _head: HeadState;
+  private _profile: Profile;
   private _pages: Record<DocumentId, PageUpdate>;
   private _cache: SiteCache;
 
   constructor(props: {
-    head?: HeadState;
+    profile?: Profile;
     pages?: Record<DocumentId, PageUpdate>;
     cache?: SiteCache;
   }) {
-    this._head = props.head ? props.head : { name: "", contentType: "OK"};
+    this._profile = props.profile ? props.profile : { name: "", contentType: "OK"};
     this._pages = props.pages ? props.pages : {};
-    this._cache = props.cache ? props.cache : new SiteCache(this._head);
+    this._cache = props.cache ? props.cache : new SiteCache(this._profile);
   }
-  get head() {
-    return this._head;
+  get profile() {
+    return this._profile;
   }
   get pages() {
     return this._pages;
@@ -40,12 +40,12 @@ class SessionData implements Session {
   getEntity(entityId: DocumentId): Document | undefined {
     return this._cache.getEntity(entityId);
   }
-  withHead(head: HeadState) {
-    if (!head) {
-      console.error("Head not defined error", head);
+  withProfile(profile: Profile) {
+    if (!profile) {
+      console.error("Head not defined error", profile);
       return this;
     }
-    return new SessionData({ head, pages: this._pages });
+    return new SessionData({ profile, pages: this._pages });
   }
   withoutPages(pageIds: DocumentId[]): SessionData {
     const pages: Record<DocumentId, PageUpdate> = {};
@@ -55,7 +55,7 @@ class SessionData implements Session {
       }
       pages[page.origin.id] = page;
     }
-    return new SessionData({ head: this._head, pages, cache: this._cache });
+    return new SessionData({ profile: this._profile, pages, cache: this._cache });
   }
   withPage(page: DocumentId): SessionData {
     if (this._pages[page]) {
@@ -70,7 +70,7 @@ class SessionData implements Session {
     }
 
     pages[page] = new ImmutablePageUpdate({ origin, saved: true, value: [] });
-    return new SessionData({ head: this._head, pages, cache: this._cache });
+    return new SessionData({ profile: this._profile, pages, cache: this._cache });
   }
   withPageValue(page: DocumentId, value: DocumentUpdate[]): SessionData {
     const session = this.withPage(page);
@@ -79,7 +79,7 @@ class SessionData implements Session {
     const pages = Object.assign({}, session.pages);
     pages[page] = pageUpdate.withValue(value);
 
-    return new SessionData({ head: session.head, pages, cache: this._cache });
+    return new SessionData({ profile: session.profile, pages, cache: this._cache });
   }
 }
 

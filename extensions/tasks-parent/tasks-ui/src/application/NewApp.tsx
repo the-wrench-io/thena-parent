@@ -39,7 +39,7 @@ const store: TaskClient.Store = new TaskClient.DefaultStore({
 });
 const backend = new TaskClient.ServiceImpl(store);
 
-const Apps: React.FC<{ services: TaskClient.HeadState }> = ({ services }) => {
+const Apps: React.FC<{ services: TaskClient.Profile }> = ({ services }) => {
   // eslint-disable-next-line 
   const serviceComposer: Burger.App<TaskClient.ComposerContextType> = React.useMemo(() => ({
     id: "service-composer",
@@ -50,13 +50,13 @@ const Apps: React.FC<{ services: TaskClient.HeadState }> = ({ services }) => {
     ]
   }), [AppCore]);
 
-  return (<TaskClient.Provider service={backend} head={services}>
+  return (<TaskClient.Provider service={backend} profile={services}>
     <Burger.Provider children={[serviceComposer]} secondary="toolbar.activities" drawerOpen />
   </TaskClient.Provider>)
 }
 
 const LoadApps = React.lazy(async () => {
-  const head = await backend.head();
+  const head = await backend.profile.getProfile();
   if (head.contentType === 'NO_CONNECTION') {
     const Result: React.FC<{}> = () => <Connection.Down client={backend} />;
     return ({ default: Result })

@@ -15,14 +15,17 @@ import {
 //export type { DescriptorTableStateBuilder, DescriptorTableContextType, DescriptorTableState };
 
 import {
-  HeadState,
-  ClientError, CreateBuilder, Client, StoreConfig, Store,
+  ClientError, Client, StoreConfig, Store,
   ProgramMessage, Org, User
 } from './client-types';
 
 import {
   TaskId, Task, TaskPriority, TaskStatus,
 } from './task-types';
+
+import {
+  Profile
+} from './profile-types';
 
 
 import {
@@ -61,8 +64,9 @@ declare namespace TaskClient {
   export type { TablePagination };
   export type { ClientContextType, ComposerContextType };
   export type {
-    TaskId, Task, TaskPriority, TaskStatus, HeadState,
-    ClientError, CreateBuilder, Client, StoreConfig, Store,
+    Profile,
+    TaskId, Task, TaskPriority, TaskStatus,
+    ClientError, Client, StoreConfig, Store,
     Org, User,
     ProgramMessage
   }

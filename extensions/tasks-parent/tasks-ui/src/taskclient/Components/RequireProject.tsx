@@ -23,9 +23,9 @@ const RequireProject: React.FC<{ }> = ({ }) => {
     setErrors(undefined);
     setApply(true);
 
-    client.create().head()
+    client.profile.createProfile()
       .then(async data => {
-        await actions.handleLoadHead(data);
+        await actions.handleLoadProfile(data);
         setApply(false);
         setOpen(false);
         enqueueSnackbar(<FormattedMessage id="project.dialog.requireProject.createdMessage" />);
