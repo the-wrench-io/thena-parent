@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Button, Typography, Stack } from '@mui/material';
+import { Box, Typography, Stack } from '@mui/material';
 import Burger from '@the-wrench-io/react-burger';
 
 
