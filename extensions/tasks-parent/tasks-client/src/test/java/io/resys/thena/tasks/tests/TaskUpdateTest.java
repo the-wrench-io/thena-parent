@@ -30,6 +30,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskParent;
 import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskReporter;
 import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskRoles;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskDueDate;
+import io.resys.thena.tasks.client.api.model.ImmutableCreateTaskExtension;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskExtension;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskInfo;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskPriority;
@@ -238,12 +239,12 @@ public class TaskUpdateTest extends TaskTestCase {
   }
 
   @org.junit.jupiter.api.Test
-  public void updateTaskExtension() {
-    final var repoName = TaskUpdateTest.class.getSimpleName() + "UpdateTaskExtension";
+  public void createTaskExtension() {
+    final var repoName = TaskUpdateTest.class.getSimpleName() + "CreateTaskExtension";
     final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
     final var task = createTaskForUpdating(client);
 
-    client.tasks().updateTask().updateOne(ImmutableChangeTaskExtension.builder()
+    client.tasks().updateTask().updateOne(ImmutableCreateTaskExtension.builder()
             .userId("tester-bob")
             .taskId(task.getId())
             .targetDate(getTargetDate().plusDays(1).plusHours(1))
@@ -253,7 +254,24 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
+    assertRepo(client, "update-test-cases/createTaskExtension.txt");
+  }
+
+  @org.junit.jupiter.api.Test
+  public void updateTaskExtension() {
+    final var repoName = TaskUpdateTest.class.getSimpleName() + "UpdateTaskExtension";
+    final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
+    final var task = createTaskForUpdating(client);
+
+    client.tasks().updateTask().updateOne(ImmutableCreateTaskExtension.builder()
+            .userId("tester-bob")
+            .taskId(task.getId())
+            .targetDate(getTargetDate().plusDays(1).plusHours(1))
+            .type("attachment")
+            .name("attachment-1")
+            .body("attachment-body")
+            .build())
+        .await().atMost(atMost);
 
     client.tasks().updateTask().updateOne(ImmutableChangeTaskExtension.builder()
             .userId("tester-bob")

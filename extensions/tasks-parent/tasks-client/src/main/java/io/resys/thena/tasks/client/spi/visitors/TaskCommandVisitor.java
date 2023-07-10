@@ -38,6 +38,7 @@ import io.resys.thena.tasks.client.api.model.Task.Status;
 import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskParent;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskExtension;
+import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTaskExtension;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskInfo;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskDueDate;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTask;
@@ -87,6 +88,8 @@ public class TaskCommandVisitor {
     switch (command.getCommandType()) {
       case AssignTaskParent:
         return visitAssignTaskParent((AssignTaskParent) command);
+      case CreateTaskExtension:
+        return visitCreateTaskExtension((CreateTaskExtension) command);
       case ChangeTaskExtension:
         return visitChangeTaskExtension((ChangeTaskExtension) command);
       case ChangeTaskInfo:
@@ -211,37 +214,44 @@ public class TaskCommandVisitor {
     return this.current;
   }
 
-  private Task visitChangeTaskExtension(ChangeTaskExtension command) {
+  private Task visitCreateTaskExtension(CreateTaskExtension command) {
     final var extensions = new ArrayList<>(current.getExtensions());
-
-    if (command.getId() != null) {
-      Task.TaskExtension oldExtension = extensions.stream()
-          .filter(e -> e.getId().equals(command.getId()))
-          .findAny()
-          .orElseThrow(() -> new UpdateTaskVisitorException(String.format("Extension with id %s not found", command.getId())));
-
-      extensions.remove(oldExtension);
-      extensions.add(ImmutableTaskExtension.builder()
-          .id(command.getId())
-          .name(command.getName())
-          .type(command.getType())
-          .body(command.getBody())
-          .build());
-      this.current = this.current
-          .withExtensions(extensions.stream().toList())
-          .withUpdated(handleTargetDate(command.getTargetDate()));
-      return this.current;
-    }
-
     final var id = ctx.getGid().getNextId(DocumentType.TASK);
     extensions.add(ImmutableTaskExtension.builder()
         .id(id)
-        .type(command.getType())
         .name(command.getName())
+        .type(command.getType())
         .body(command.getBody())
         .build());
     this.current = this.current
         .withExtensions(extensions.stream().toList())
+        .withUpdated(handleTargetDate(command.getTargetDate()));
+    return this.current;
+  }
+
+  private Task visitChangeTaskExtension(ChangeTaskExtension command) {
+    final var id = Optional.ofNullable(command.getId()).orElseThrow(() -> new UpdateTaskVisitorException("Extension id not found"));
+    final var oldExtension = current.getExtensions().stream()
+        .filter(e -> e.getId().equals(command.getId()))
+        .findAny()
+        .orElseThrow(() -> new UpdateTaskVisitorException(String.format("Extension with id %s not found", command.getId())));
+
+    final var newExtensions = new ArrayList<Task.TaskExtension>();
+    for (final var currentExtension : current.getExtensions()) {
+      if (currentExtension.getId().equals(id)) {
+        newExtensions.add(ImmutableTaskExtension.builder()
+            .id(id)
+            .name(command.getName())
+            .type(command.getType())
+            .body(command.getBody())
+            .build());
+      } else {
+        newExtensions.add(currentExtension);
+      }
+    }
+
+    this.current = this.current
+        .withExtensions(newExtensions.stream().toList())
         .withUpdated(handleTargetDate(command.getTargetDate()));
     return this.current;
   }
@@ -257,7 +267,7 @@ public class TaskCommandVisitor {
     try {
       return Objects.requireNonNull(targetDate);
     } catch (NullPointerException e) {
-      throw new UpdateTaskVisitorException("Target date should not be null");
+      throw new UpdateTaskVisitorException("Target date not found");
     }
   }
   

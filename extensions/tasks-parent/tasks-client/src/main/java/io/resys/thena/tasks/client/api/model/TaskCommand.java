@@ -59,6 +59,7 @@ import io.resys.thena.tasks.client.api.model.Task.TaskExtension;
   
   @Type(value = ImmutableChangeTaskDueDate.class, name = "ChangeTaskDueDate"),
   @Type(value = ImmutableChangeTaskInfo.class, name = "ChangeTaskInfo"),
+    @Type(value = ImmutableCreateTaskExtension.class, name = "CreateTaskExtension"),
   @Type(value = ImmutableChangeTaskExtension.class, name = "ChangeTaskExtension"),
   @Type(value = ImmutableAssignTaskParent.class, name = "AssignTaskParent"),
 
@@ -71,7 +72,7 @@ public interface TaskCommand extends Serializable {
   enum TaskCommandType {
     CreateTask, ChangeTaskStatus, ChangeTaskPriority, AssignTaskReporter, 
     ArchiveTask, CommentOnTask, AssignTaskRoles, AssignTask, 
-    ChangeTaskDueDate, ChangeTaskInfo, ChangeTaskExtension, AssignTaskParent
+    ChangeTaskDueDate, ChangeTaskInfo, CreateTaskExtension, ChangeTaskExtension, AssignTaskParent
   }
 
   @Value.Immutable @JsonSerialize(as = ImmutableCreateTask.class) @JsonDeserialize(as = ImmutableCreateTask.class)
@@ -184,9 +185,18 @@ public interface TaskCommand extends Serializable {
     String getDescription();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskInfo; }
   }
+
+  @Value.Immutable @JsonSerialize(as = ImmutableCreateTaskExtension.class) @JsonDeserialize(as = ImmutableCreateTaskExtension.class)
+  interface CreateTaskExtension extends TaskUpdateCommand {
+    String getType();
+    String getName();
+    String getBody();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.CreateTaskExtension; }
+  }
+
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskExtension.class) @JsonDeserialize(as = ImmutableChangeTaskExtension.class)
   interface ChangeTaskExtension extends TaskUpdateCommand {
-    @Nullable String getId(); // create | update
+    @Nullable String getId();
     String getType();
     String getName();
     String getBody();
