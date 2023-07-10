@@ -85,6 +85,7 @@ const theme: Theme = {
   }
 };
 const locale = 'en';
+console.log("theme ", theme);
 
 const NewApp: React.FC<{}> = () => (
   <IntlProvider locale={locale} messages={AppCore.messages[locale]}>

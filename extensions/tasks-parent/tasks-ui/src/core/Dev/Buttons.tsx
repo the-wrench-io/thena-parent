@@ -1,19 +1,28 @@
 import React from 'react';
-import { Box, Typography, Stack } from '@mui/material';
+import { Typography, Stack } from '@mui/material';
+import Help from './Help';
 import Burger from '@the-wrench-io/react-burger';
 
 
-const Buttons: React.FC<{}> = () => {
+const Buttons: React.FC = () => {
 
   return (
 
-    <Box>
+    <>
       <Typography sx={{ mb: 1 }}>Burger buttons</Typography>
       <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
-        <Burger.PrimaryButton label='PRIMARY' onClick={() => { }} />
-        <Burger.SecondaryButton label='SECONDARY' onClick={() => { }} />
+        <Burger.SecondaryButton label='buttons.cancel' onClick={() => { }} />
+        <Burger.PrimaryButton label='buttons.apply' onClick={() => { }} />
       </Stack>
-    </Box>)
+
+      <Typography sx={{ mb: 1 }}>Burger buttons with help</Typography>
+      <Stack direction="row" spacing={2} sx={{ mb: 1 }}>
+        <Help children={<Burger.SecondaryButton label='buttons.cancel' onClick={() => { }} />} />
+        <Help children={<Burger.PrimaryButton label='buttons.apply' onClick={() => { }} />} />
+      </Stack>
+
+
+    </>)
 }
 
 
