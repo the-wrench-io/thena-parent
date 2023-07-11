@@ -72,19 +72,20 @@ public interface Task extends Document {
     String getId();
     List<TaskCommand> getCommands(); 
   }
+
+  interface TaskItem {
+    String getId();
+  }
   
   @Value.Immutable @JsonSerialize(as = ImmutableTaskExtension.class) @JsonDeserialize(as = ImmutableTaskExtension.class)
-  interface TaskExtension extends Serializable {
-    String getId();
+  interface TaskExtension extends Serializable, TaskItem {
     String getType(); //attachment, dialob, etc.
     String getName();
     String getBody();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableTaskComment.class) @JsonDeserialize(as = ImmutableTaskComment.class)
-  interface TaskComment {
-    String getId();
-    
+  interface TaskComment extends TaskItem {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime getCreated();
     @Nullable String getReplyToId();

@@ -60,7 +60,7 @@ import io.resys.thena.tasks.client.api.model.Task.TaskExtension;
   
   @Type(value = ImmutableChangeTaskDueDate.class, name = "ChangeTaskDueDate"),
   @Type(value = ImmutableChangeTaskInfo.class, name = "ChangeTaskInfo"),
-    @Type(value = ImmutableCreateTaskExtension.class, name = "CreateTaskExtension"),
+  @Type(value = ImmutableCreateTaskExtension.class, name = "CreateTaskExtension"),
   @Type(value = ImmutableChangeTaskExtension.class, name = "ChangeTaskExtension"),
   @Type(value = ImmutableAssignTaskParent.class, name = "AssignTaskParent"),
 

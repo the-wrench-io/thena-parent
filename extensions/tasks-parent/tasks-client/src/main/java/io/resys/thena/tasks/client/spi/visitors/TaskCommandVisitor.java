@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Function;
 
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
@@ -189,30 +190,19 @@ public class TaskCommandVisitor {
 
   private Task visitChangeTaskComment(ChangeTaskComment command) {
     final var id = command.getCommentId();
-    boolean found = false;
 
-    final var newComments = new ArrayList<Task.TaskComment>();
-    for (final var currentComment : current.getComments()) {
-      if (currentComment.getId().equals(id)) {
-        newComments.add(ImmutableTaskComment.builder()
-            .id(id)
-            .commentText(command.getCommentText())
-            .replyToId(command.getReplyToCommentId())
-            .username(command.getUserId())
-            .created(handleTargetDate(command.getTargetDate()))
-            .build());
-        found = true;
-      } else {
-        newComments.add(currentComment);
-      }
-    }
+    final var newComment = ImmutableTaskComment.builder()
+        .id(id)
+        .commentText(command.getCommentText())
+        .replyToId(command.getReplyToCommentId())
+        .username(command.getUserId())
+        .created(handleTargetDate(command.getTargetDate()))
+        .build();
 
-    if (!found) {
-      throw new UpdateTaskVisitorException(String.format("Comment with id %s not found", command.getCommentId()));
-    }
+    final var newCommentList = visitList(current.getComments(), newComment, id, Task.TaskComment::getId, "Comment");
 
     this.current = this.current
-        .withComments(newComments.stream().sorted(Comparator.comparing(Task.TaskComment::getId)).toList());
+        .withComments(newCommentList.stream().sorted(Comparator.comparing(Task.TaskComment::getId)).toList());
     return this.current;
   }
 
@@ -262,31 +252,37 @@ public class TaskCommandVisitor {
 
   private Task visitChangeTaskExtension(ChangeTaskExtension command) {
     final var id = command.getId();
-    boolean found = false;
 
-    final var newExtensions = new ArrayList<Task.TaskExtension>();
-    for (final var currentExtension : current.getExtensions()) {
-      if (currentExtension.getId().equals(id)) {
-        newExtensions.add(ImmutableTaskExtension.builder()
-            .id(id)
-            .name(command.getName())
-            .type(command.getType())
-            .body(command.getBody())
-            .build());
-        found = true;
-      } else {
-        newExtensions.add(currentExtension);
-      }
-    }
+    final var newExtension = ImmutableTaskExtension.builder()
+        .id(id)
+        .name(command.getName())
+        .type(command.getType())
+        .body(command.getBody())
+        .build();
 
-    if (!found) {
-      throw new UpdateTaskVisitorException(String.format("Extension with id %s not found", command.getId()));
-    }
+    final var newExtensionList = visitList(current.getExtensions(), newExtension, id, Task.TaskExtension::getId, "Extension");
 
     this.current = this.current
-        .withExtensions(newExtensions.stream().sorted(Comparator.comparing(Task.TaskExtension::getId)).toList())
+        .withExtensions(newExtensionList.stream().sorted(Comparator.comparing(Task.TaskExtension::getId)).toList())
         .withUpdated(handleTargetDate(command.getTargetDate()));
     return this.current;
+  }
+
+  private <T, P> List<P> visitList(final List<P> currentItems, final P newItem, String currentId,  final Function<P, T> getter, String name) {
+    final var newItems = new ArrayList<P>();
+    boolean found = false;
+    for (final var item : currentItems) {
+      if (getter.apply(item).equals(currentId)) {
+        newItems.add(newItem);
+        found = true;
+      } else {
+        newItems.add(item);
+      }
+    }
+    if (!found) {
+      throw new UpdateTaskVisitorException(String.format(name + " with id %s not found", currentId));
+    }
+    return newItems.stream().toList();
   }
 
   private Task visitAssignTaskParent(AssignTaskParent command) {
