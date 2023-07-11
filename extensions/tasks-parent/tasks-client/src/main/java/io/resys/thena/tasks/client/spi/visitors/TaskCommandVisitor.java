@@ -24,9 +24,9 @@ import java.util.Collections;
  * #L%
  */
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
@@ -44,6 +44,7 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskDueDate;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTask;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskRoles;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CommentOnTask;
+import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskComment;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ArchiveTask;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskReporter;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskPriority;
@@ -88,10 +89,10 @@ public class TaskCommandVisitor {
     switch (command.getCommandType()) {
       case AssignTaskParent:
         return visitAssignTaskParent((AssignTaskParent) command);
-      case CreateTaskExtension:
-        return visitCreateTaskExtension((CreateTaskExtension) command);
       case ChangeTaskExtension:
         return visitChangeTaskExtension((ChangeTaskExtension) command);
+      case CreateTaskExtension:
+        return visitCreateTaskExtension((CreateTaskExtension) command);
       case ChangeTaskInfo:
         return visitChangeTaskInfo((ChangeTaskInfo) command);
       case ChangeTaskDueDate:
@@ -100,6 +101,8 @@ public class TaskCommandVisitor {
         return visitAssignTask((AssignTask) command);
       case AssignTaskRoles:
         return visitAssignTaskRoles((AssignTaskRoles) command);
+      case ChangeTaskComment:
+        return visitChangeTaskComment((ChangeTaskComment) command);
       case CommentOnTask:
         return visitCommentOnTask((CommentOnTask) command);
       case ArchiveTask:
@@ -170,9 +173,8 @@ public class TaskCommandVisitor {
   }
 
   private Task visitCommentOnTask(CommentOnTask command) {
-    final var gen = ctx.getGid();
     final var comments = new ArrayList<>(current.getComments());
-    final var id = Optional.ofNullable(command.getCommentId()).orElseGet(() -> gen.getNextId(DocumentType.TASK));
+    final var id = ctx.getGid().getNextId(DocumentType.TASK);
     comments.add(ImmutableTaskComment.builder()
         .id(id)
         .commentText(command.getCommentText())
@@ -185,16 +187,45 @@ public class TaskCommandVisitor {
     return this.current;
   }
 
+  private Task visitChangeTaskComment(ChangeTaskComment command) {
+    final var id = command.getCommentId();
+    boolean found = false;
+
+    final var newComments = new ArrayList<Task.TaskComment>();
+    for (final var currentComment : current.getComments()) {
+      if (currentComment.getId().equals(id)) {
+        newComments.add(ImmutableTaskComment.builder()
+            .id(id)
+            .commentText(command.getCommentText())
+            .replyToId(command.getReplyToCommentId())
+            .username(command.getUserId())
+            .created(handleTargetDate(command.getTargetDate()))
+            .build());
+        found = true;
+      } else {
+        newComments.add(currentComment);
+      }
+    }
+
+    if (!found) {
+      throw new UpdateTaskVisitorException(String.format("Comment with id %s not found", command.getCommentId()));
+    }
+
+    this.current = this.current
+        .withComments(newComments.stream().sorted(Comparator.comparing(Task.TaskComment::getId)).toList());
+    return this.current;
+  }
+
   private Task visitAssignTaskRoles(AssignTaskRoles command) {
     this.current = this.current
-        .withRoles(command.getRoles().stream().distinct().toList())
+        .withRoles(command.getRoles().stream().distinct().sorted().toList())
         .withUpdated(handleTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitAssignTask(AssignTask command) {
     this.current = this.current
-        .withAssigneeIds(command.getAssigneeIds().stream().distinct().toList())
+        .withAssigneeIds(command.getAssigneeIds().stream().distinct().sorted().toList())
         .withUpdated(handleTargetDate(command.getTargetDate()));
     return this.current;
   }
@@ -230,11 +261,8 @@ public class TaskCommandVisitor {
   }
 
   private Task visitChangeTaskExtension(ChangeTaskExtension command) {
-    final var id = Optional.ofNullable(command.getId()).orElseThrow(() -> new UpdateTaskVisitorException("Extension id not found"));
-    final var oldExtension = current.getExtensions().stream()
-        .filter(e -> e.getId().equals(command.getId()))
-        .findAny()
-        .orElseThrow(() -> new UpdateTaskVisitorException(String.format("Extension with id %s not found", command.getId())));
+    final var id = command.getId();
+    boolean found = false;
 
     final var newExtensions = new ArrayList<Task.TaskExtension>();
     for (final var currentExtension : current.getExtensions()) {
@@ -245,13 +273,18 @@ public class TaskCommandVisitor {
             .type(command.getType())
             .body(command.getBody())
             .build());
+        found = true;
       } else {
         newExtensions.add(currentExtension);
       }
     }
 
+    if (!found) {
+      throw new UpdateTaskVisitorException(String.format("Extension with id %s not found", command.getId()));
+    }
+
     this.current = this.current
-        .withExtensions(newExtensions.stream().toList())
+        .withExtensions(newExtensions.stream().sorted(Comparator.comparing(Task.TaskExtension::getId)).toList())
         .withUpdated(handleTargetDate(command.getTargetDate()));
     return this.current;
   }

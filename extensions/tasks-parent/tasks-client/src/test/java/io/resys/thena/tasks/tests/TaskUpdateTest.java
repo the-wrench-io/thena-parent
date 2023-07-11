@@ -29,6 +29,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableAssignTask;
 import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskParent;
 import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskReporter;
 import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskRoles;
+import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskComment;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskDueDate;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTaskExtension;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskExtension;
@@ -137,8 +138,8 @@ public class TaskUpdateTest extends TaskTestCase {
   }
 
   @org.junit.jupiter.api.Test
-  public void updateComments() {
-    final var repoName = TaskUpdateTest.class.getSimpleName() + "UpdateComments";
+  public void addComments() {
+    final var repoName = TaskUpdateTest.class.getSimpleName() + "AddComments";
     final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
     final var task = createTaskForUpdating(client);
 
@@ -146,7 +147,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .userId("tester-bob")
             .taskId(task.getId())
             .targetDate(getTargetDate().plusDays(1).plusHours(1))
-            .commentId("comment-1")
             .commentText("comment-1-text")
             .build())
         .await().atMost(atMost);
@@ -155,14 +155,40 @@ public class TaskUpdateTest extends TaskTestCase {
             .userId("tester-bob")
             .taskId(task.getId())
             .targetDate(getTargetDate().plusDays(1).plusHours(1))
-            .commentId("comment-2")
             .commentText("comment-2-text")
-            .replyToCommentId("comment-1")
+            .replyToCommentId("3_TASK")
             .build())
         .await().atMost(atMost);
 
     log.debug(super.printRepo(client));
-    assertRepo(client, "update-test-cases/updateComments.txt");
+    assertRepo(client, "update-test-cases/addComments.txt");
+  }
+
+  @org.junit.jupiter.api.Test
+  public void updateComment() {
+    final var repoName = TaskUpdateTest.class.getSimpleName() + "UpdateComment";
+    final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
+    final var task = createTaskForUpdating(client);
+
+    client.tasks().updateTask().updateOne(ImmutableCommentOnTask.builder()
+            .userId("tester-bob")
+            .taskId(task.getId())
+            .targetDate(getTargetDate().plusDays(1).plusHours(1))
+            .commentText("comment-1-text")
+            .build())
+        .await().atMost(atMost);
+
+    client.tasks().updateTask().updateOne(ImmutableChangeTaskComment.builder()
+            .userId("tester-bob")
+            .taskId(task.getId())
+            .targetDate(getTargetDate().plusDays(1).plusHours(1))
+            .commentId("3_TASK")
+            .commentText("new-comment-text")
+            .build())
+        .await().atMost(atMost);
+
+    log.debug(super.printRepo(client));
+    assertRepo(client, "update-test-cases/updateComment.txt");
   }
 
   @org.junit.jupiter.api.Test
