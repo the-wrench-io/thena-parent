@@ -9,19 +9,6 @@ const en = {
   'buttons.download': "Download",
   '_nobody_': 'Unassigned',
 
-  'button.cancel': 'Cancel', // delete when Burger StyledDialog is updated
-  'fields.dueDate': 'Due date',
-  'fields.dueDate.desc': 'Enter the task due date',
-  
-  'fields.textField': 'Text field',
-  'fields.textField.desc': 'Enter your desired text',
-  
-  'tasks.createNew': 'Create new task',
-  'tasks.createNew.helperText': 'New task title must be at least 3 characters long',
-  'tasks.title': 'Task title',
-  'tasks.dueDate': 'Due date',
-  'tasks.dueDate.desc': 'Due date can be in the past or in the future',
-
   'init.loaded': 'Loaded repo: {name}',
 
   'activities.title': 'Activities',

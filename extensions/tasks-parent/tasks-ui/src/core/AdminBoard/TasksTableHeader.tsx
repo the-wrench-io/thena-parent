@@ -2,7 +2,7 @@ import React from 'react';
 import { Button, TableHead, TableCell, TableRow } from '@mui/material';
 
 import { FormattedMessage, useIntl } from 'react-intl';
-
+import Styles from '@styles';
 import client from '@taskclient';
 
 interface HeadCell {
@@ -61,7 +61,7 @@ const DescriptorTableHeader: React.FC<{
         <TableCell align='left' padding='none'>
           <StyledSpotLight value={def} />
         </TableCell>
-        {headCells.map((headCell) => (<client.Styles.TableHeaderSortable key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
+        {headCells.map((headCell) => (<Styles.TaskTable.TableHeaderSortable key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
       </TableRow>
     </TableHead>
   );

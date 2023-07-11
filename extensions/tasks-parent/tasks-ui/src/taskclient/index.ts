@@ -2,7 +2,7 @@ import { ServiceImpl as ServiceImplAs } from './client';
 import { DefaultStore as DefaultStoreAs } from './client-store';
 
 import { TablePagination, TablePagination as TablePaginationAs } from './table-pagination';
-import * as Styled from './Styled';
+
 
 import { 
   DescriptorTableStateBuilder, DescriptorTableContextType, DescriptorTableState, 
@@ -109,16 +109,7 @@ namespace TaskClient {
   export const useSession = Hooks.useSession;
   export const useNav = Hooks.useNav;
   export const _nobody_ = taskCtxImpl._nobody_;
-  export const Styles = {
-    Table: CustomTable,
-    TableCell: Styled.StyledTableCell,
-    TableBody: Styled.StyledTableBody,
-    TableRowEmpty: Styled.StyledEmptyTableRow,
-    TableHeaderSortable: Styled.StyledSortableHeader,
-    lineHeight: Styled.lineHeight,
-    lineHeightLarge: Styled.lineHeightLarge,
-    
-  }; 
+  export const Table = CustomTable; 
 }
 
 export default TaskClient;

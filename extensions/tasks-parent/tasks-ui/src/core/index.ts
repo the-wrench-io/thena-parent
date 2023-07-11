@@ -1,10 +1,8 @@
-import messages from './intl';
-
-import { Main } from './Main';
-import { Secondary } from './Secondary';
-import Toolbar from './Toolbar';
+import Tasks from './AdminBoard';
+import MyWork from './MyWork';
+import Dev from './Dev';
 
 
-const result = { messages, Main, Secondary, Toolbar };
+const result = { Tasks, MyWork, Dev };
 
 export default result;

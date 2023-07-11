@@ -1,8 +1,7 @@
 import { TableCell, TableBody, TableCellProps, styled, TableRow, LinearProgress, Box, TableSortLabel } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
-import { FormattedMessage, useIntl } from 'react-intl';
-import { TaskDescriptor } from './tasks-ctx-types';
-import { TablePagination } from './table-pagination';
+import { FormattedMessage } from 'react-intl';
+import Client from '@taskclient';
 
 const lineHeight = 28;
 const lineHeightLarge = 60;
@@ -69,14 +68,14 @@ const StyledLinearProgress: React.FC<{  }> = ({  }) => {
 
 
 const StyledSortableHeader: React.FC<{
-  id: keyof TaskDescriptor,
-  content: TablePagination<TaskDescriptor>,
-  setContent: React.Dispatch<React.SetStateAction<TablePagination<TaskDescriptor>>>
+  id: keyof Client.TaskDescriptor,
+  content: Client.TablePagination<Client.TaskDescriptor>,
+  setContent: React.Dispatch<React.SetStateAction<Client.TablePagination<Client.TaskDescriptor>>>
 }> = ({ id, content, setContent }) => {
 
   const { order, orderBy } = content;
 
-  const createSortHandler = (property: keyof TaskDescriptor) =>
+  const createSortHandler = (property: keyof Client.TaskDescriptor) =>
     (_event: React.MouseEvent<unknown>) => setContent(prev => prev.withOrderBy(property))
 
   return (

@@ -5,10 +5,8 @@ import { SxProps } from '@mui/system';
 import Burger from '@the-wrench-io/react-burger';
 import TaskClient from '@taskclient';
 
-import Activities from './Activities';
-import Tasks from './Tasks';
-import MyWork from './MyWork';
-import Dev from './Dev';
+import Core from '../../core';
+import Activities from '../Activities';
 
 const root: SxProps = { height: `100%`, backgroundColor: "mainContent.main" };
 
@@ -30,16 +28,19 @@ const Main: React.FC<{}> = () => {
     if (!active) {
       return null;
     }
+    
+    
     if (active.id === 'activities') {
       return (<Box sx={root}><Activities /></Box>);
-    } 
-    if (active.id === 'tasks') {
-      return (<Box sx={root}><Tasks /></Box>);  
+    } else if (active.id === 'tasks') {
+      return (<Box sx={root}><Core.Tasks /></Box>);  
     } else if (active.id === 'mytasks') {
-      return (<Box sx={root}><MyWork /></Box>);  
+      return (<Box sx={root}><Core.MyWork /></Box>);  
     } else if (active.id === 'dev') {
-      return (<Box sx={root}><Dev /></Box>);  
+      return (<Box sx={root}><Core.Dev /></Box>);  
     }
+    
+    
     if (entity) {
       return <Box sx={root}>entity editor: {JSON.stringify(active)}</Box>
     }

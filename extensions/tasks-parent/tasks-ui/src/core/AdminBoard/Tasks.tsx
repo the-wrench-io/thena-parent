@@ -2,7 +2,8 @@ import React from 'react';
 import { Box } from '@mui/material';
 
 import client from '@taskclient';
-import Tools from '../Tools';
+import Tools from '../TaskTools';
+
 
 
 import TableHeader from './TasksTableHeader';
@@ -13,7 +14,7 @@ const TasksTable: React.FC<{ def: client.Group, loading: boolean }> = (props) =>
   const { loading } = props;
 
   return (
-    <client.Styles.Table<client.TaskDescriptor, { def: client.Group }>
+    <client.Table<client.TaskDescriptor, { def: client.Group }>
       data={{ loading, records: props.def.records, defaultOrderBy: 'created' }}
       render={{
         ext: props,

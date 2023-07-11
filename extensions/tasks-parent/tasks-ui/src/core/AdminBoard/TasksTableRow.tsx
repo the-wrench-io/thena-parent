@@ -2,7 +2,7 @@ import React from 'react';
 import { TableRow, SxProps } from '@mui/material';
 
 import client from '@taskclient';
-
+import Styles from '@styles';
 import * as Cells from './TasksTableCells';
 
 
@@ -52,12 +52,12 @@ const DescriptorTableRow: React.FC<{
 }> = ({ row, def }) => {
 
   return (<TableRow hover tabIndex={-1} key={row.id}>
-    <client.Styles.TableCell width="300px"><Cells.Subject maxWidth="300px" row={row} def={def}/></client.Styles.TableCell>
-    <client.Styles.TableCell width="150px" sx={getPriority(def)}><Cells.Priority row={row} def={def}/></client.Styles.TableCell>
-    <client.Styles.TableCell width="200px" sx={getStatus(def)}><Cells.Status row={row} def={def}/></client.Styles.TableCell>
-    <client.Styles.TableCell width="150px" sx={getOwners(def)}><Cells.Owners row={row} def={def}/></client.Styles.TableCell>
-    <client.Styles.TableCell sx={getRoles(def)}><Cells.Roles row={row} def={def}/></client.Styles.TableCell>
-    <client.Styles.TableCell><Cells.DueDate row={row} def={def}/></client.Styles.TableCell>
+    <Styles.TaskTable.TableCell width="300px"><Cells.Subject maxWidth="300px" row={row} def={def}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="150px" sx={getPriority(def)}><Cells.Priority row={row} def={def}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="200px" sx={getStatus(def)}><Cells.Status row={row} def={def}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="150px" sx={getOwners(def)}><Cells.Owners row={row} def={def}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell sx={getRoles(def)}><Cells.Roles row={row} def={def}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell><Cells.DueDate row={row} def={def}/></Styles.TaskTable.TableCell>
   </TableRow>);
 }
 
@@ -67,10 +67,10 @@ const Rows: React.FC<{
   loading: boolean
 }> = ({ content, def, loading }) => {
   return (
-    <client.Styles.TableBody>
+    <Styles.TaskTable.TableBody>
       {content.entries.map((row, rowId) => (<DescriptorTableRow key={row.id} rowId={rowId} row={row} def={def} />))}
-      <client.Styles.TableRowEmpty content={content} loading={loading} plusColSpan={5} />
-    </client.Styles.TableBody>)
+      <Styles.TaskTable.TableRowEmpty content={content} loading={loading} plusColSpan={5} />
+    </Styles.TaskTable.TableBody>)
 }
 
 export default Rows;
