@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.Function;
 
 import io.resys.thena.tasks.client.api.model.Document.DocumentType;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
@@ -35,6 +34,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableTaskComment;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskExtension;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskTransaction;
 import io.resys.thena.tasks.client.api.model.Task;
+import io.resys.thena.tasks.client.api.model.Task.TaskItem;
 import io.resys.thena.tasks.client.api.model.Task.Status;
 import io.resys.thena.tasks.client.api.model.TaskCommand;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskParent;
@@ -122,7 +122,7 @@ public class TaskCommandVisitor {
   
   private Task visitCreateTask(CreateTask command) {
     final var gen = ctx.getGid();
-    final var targetDate = handleTargetDate(command.getTargetDate());
+    final var targetDate = requireTargetDate(command.getTargetDate());
     this.current = ImmutableTask.builder()
         .id(gen.getNextId(DocumentType.TASK))
         .version(gen.getNextVersion(DocumentType.TASK))
@@ -147,26 +147,26 @@ public class TaskCommandVisitor {
   private Task visitChangeTaskStatus(ChangeTaskStatus command) {
     this.current = this.current
         .withStatus(command.getStatus())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
   
   private Task visitChangeTaskPriority(ChangeTaskPriority command) {
     this.current = this.current
         .withPriority(command.getPriority())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
     
   private Task visitAssignTaskReporter(AssignTaskReporter command) {
     this.current = this.current
         .withReporterId(command.getReporterId())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitArchiveTask(ArchiveTask command) {
-    final var targetDate = handleTargetDate(command.getTargetDate());
+    final var targetDate = requireTargetDate(command.getTargetDate());
     this.current = this.current
         .withArchived(targetDate)
         .withUpdated(targetDate);
@@ -181,49 +181,48 @@ public class TaskCommandVisitor {
         .commentText(command.getCommentText())
         .replyToId(command.getReplyToCommentId())
         .username(command.getUserId())
-        .created(handleTargetDate(command.getTargetDate()))
+        .created(requireTargetDate(command.getTargetDate()))
         .build());
     this.current = this.current
-        .withComments(comments.stream().toList());
+        .withComments(comments)
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitChangeTaskComment(ChangeTaskComment command) {
     final var id = command.getCommentId();
-
     final var newComment = ImmutableTaskComment.builder()
         .id(id)
         .commentText(command.getCommentText())
         .replyToId(command.getReplyToCommentId())
         .username(command.getUserId())
-        .created(handleTargetDate(command.getTargetDate()))
+        .created(requireTargetDate(command.getTargetDate()))
         .build();
-
-    final var newCommentList = visitList(current.getComments(), newComment, id, Task.TaskComment::getId, "Comment");
-
+    final var newCommentList = replaceItemInList(current.getComments(), newComment);
     this.current = this.current
-        .withComments(newCommentList.stream().sorted(Comparator.comparing(Task.TaskComment::getId)).toList());
+        .withComments(newCommentList)
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitAssignTaskRoles(AssignTaskRoles command) {
     this.current = this.current
         .withRoles(command.getRoles().stream().distinct().sorted().toList())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitAssignTask(AssignTask command) {
     this.current = this.current
         .withAssigneeIds(command.getAssigneeIds().stream().distinct().sorted().toList())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitChangeTaskDueDate(ChangeTaskDueDate command) {
     this.current = this.current
         .withDueDate(command.getDueDate().orElse(null))
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
@@ -231,7 +230,7 @@ public class TaskCommandVisitor {
     this.current = this.current
         .withTitle(command.getTitle())
         .withDescription(command.getDescription())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
@@ -245,34 +244,31 @@ public class TaskCommandVisitor {
         .body(command.getBody())
         .build());
     this.current = this.current
-        .withExtensions(extensions.stream().toList())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withExtensions(extensions)
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
   private Task visitChangeTaskExtension(ChangeTaskExtension command) {
     final var id = command.getId();
-
     final var newExtension = ImmutableTaskExtension.builder()
         .id(id)
         .name(command.getName())
         .type(command.getType())
         .body(command.getBody())
         .build();
-
-    final var newExtensionList = visitList(current.getExtensions(), newExtension, id, Task.TaskExtension::getId, "Extension");
-
+    final var newExtensionList = replaceItemInList(current.getExtensions(), newExtension);
     this.current = this.current
-        .withExtensions(newExtensionList.stream().sorted(Comparator.comparing(Task.TaskExtension::getId)).toList())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withExtensions(newExtensionList)
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
-  private <T, P> List<P> visitList(final List<P> currentItems, final P newItem, String currentId,  final Function<P, T> getter, String name) {
-    final var newItems = new ArrayList<P>();
+  private <T extends TaskItem> List<T> replaceItemInList(final List<T> currentItems, final T newItem) {
+    final var newItems = new ArrayList<T>();
     boolean found = false;
     for (final var item : currentItems) {
-      if (getter.apply(item).equals(currentId)) {
+      if (item.getId().equals(newItem.getId())) {
         newItems.add(newItem);
         found = true;
       } else {
@@ -280,24 +276,24 @@ public class TaskCommandVisitor {
       }
     }
     if (!found) {
-      throw new UpdateTaskVisitorException(String.format(name + " with id %s not found", currentId));
+      final var msg = String.format("%s with id %s not found", newItem.getClass(), newItem.getId());
+      throw new UpdateTaskVisitorException(msg);
     }
-    return newItems.stream().toList();
+    return newItems;
   }
 
   private Task visitAssignTaskParent(AssignTaskParent command) {
     this.current = this.current
         .withParentId(command.getParentId())
-        .withUpdated(handleTargetDate(command.getTargetDate()));
+        .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
 
-  private LocalDateTime handleTargetDate(LocalDateTime targetDate) {
-    try {
-      return Objects.requireNonNull(targetDate);
-    } catch (NullPointerException e) {
-      throw new UpdateTaskVisitorException("Target date not found");
+  private LocalDateTime requireTargetDate(LocalDateTime targetDate) {
+    if (targetDate == null) {
+      throw new UpdateTaskVisitorException("targetDate not found");
     }
+    return targetDate;
   }
   
   public static class UpdateTaskVisitorException extends RuntimeException {
