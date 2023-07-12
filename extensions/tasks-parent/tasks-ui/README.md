@@ -1,6 +1,6 @@
 # Tasks UI
 
-## Development guidelines
+## Development guidelines TODO
 
 ### Dev "space"
 
@@ -32,7 +32,65 @@ const Dev: React.FC = () => {
 ```
 
 ### Naming conventions
+
+To ensure consistency, there are certain naming conventions that must be followed.
+
+#### Styled components
+
+All components in the `styles/` folder have the prefix `Styled...`.
+
+Example:  `StyledButton`, `StyledLink` 
+
+
+#### Other components
+
+* Names should be as concise as possible
+* Names should clearly describe what a component does, or what it is for
+
+Good example (Folder name/component name):
+
+`TaskHistory/TaskHistoryTable` 
+
+Bad example: **too long**
+
+`TaskHistory/ViewTaskHistoryTable`
+
+Bad example: **unclear**
+
+`TaskHistory/TaskView`
+
+
+#### Translation naming
+
+* Translations have a prefix
+* The prefix is a path to where the translation is used
+* The path starts with the Module (top level folder -- `application` or `core` or `styles`, etc.), and continues with Module sub-folder -- `AdminBoard` or `Reporting` or `SearchBoard`, etc. 
+
+
+Example prefix (path):
+
+`Module/Folder/...`  
+`core/AdminBoard/...`
+
+translation:
+
+`'core.adminBoard.xxx'`
+
+The rest of the translation is open for interpretation, but as always, it should be short, clear, and to the point.
+
+#### Global translations
+
+Some translations are global and must always be declared in the same way:
+
+Button translations
+
+* `buttons.xxx`
+* `buttons.cancel`
+
+Activities
+
+* `activities.xxx`
+
 TODO
 
-### Styled components
-TODO
+
