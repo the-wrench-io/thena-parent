@@ -6,6 +6,7 @@
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 1, 1, 1 ],
     "archived" : null,
+    "dueDate" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -29,7 +30,6 @@
     "roles" : [ "admin-users", "view-only-users" ],
     "assigneeIds" : [ ],
     "reporterId" : "reporter-1",
-    "dueDate" : null,
     "title" : "very important title no: init",
     "description" : "first task ever no: init",
     "priority" : "LOW",
@@ -44,6 +44,7 @@
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 2, 2, 1 ],
     "archived" : null,
+    "dueDate" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -76,7 +77,6 @@
     "roles" : [ "admin-users", "view-only-users" ],
     "assigneeIds" : [ ],
     "reporterId" : "reporter-1",
-    "dueDate" : null,
     "title" : "very important title no: init",
     "description" : "first task ever no: init",
     "priority" : "LOW",
@@ -91,6 +91,7 @@
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 2, 2, 1 ],
     "archived" : null,
+    "dueDate" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -132,7 +133,6 @@
     "roles" : [ "admin-users", "view-only-users" ],
     "assigneeIds" : [ ],
     "reporterId" : "reporter-1",
-    "dueDate" : null,
     "title" : "very important title no: init",
     "description" : "first task ever no: init",
     "priority" : "HIGH",
@@ -147,6 +147,7 @@
     "created" : [ 2023, 1, 1, 1, 1 ],
     "updated" : [ 2023, 1, 2, 2, 1 ],
     "archived" : null,
+    "dueDate" : null,
     "parentId" : null,
     "transactions" : [ {
       "id" : "1",
@@ -197,7 +198,6 @@
     "roles" : [ "admin-users", "view-only-users" ],
     "assigneeIds" : [ ],
     "reporterId" : "citizen jane",
-    "dueDate" : null,
     "title" : "very important title no: init",
     "description" : "first task ever no: init",
     "priority" : "HIGH",
