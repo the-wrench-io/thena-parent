@@ -36,17 +36,15 @@ export interface TaskTransaction {
   commands: TaskCommand[];
 }
 
-export interface TaskItem {
+export interface TaskExtension {
   id: string;
-}
-
-export interface TaskExtension extends TaskItem {
   type: 'dialob' | 'upload' | string;
   name: string;
   body: string;
 }
 
-export interface TaskComment extends TaskItem {
+export interface TaskComment {
+  id: string;
   created: Date;
   replyToId: string | undefined;
   commentText: string;
