@@ -1,7 +1,6 @@
 export type TaskId = string;
 
 
-
 export interface Task {
   readonly created: string;
   readonly updated: string;
@@ -27,9 +26,6 @@ export interface Task {
   readonly documentType: 'TASK';
 }
 
-export interface TaskVersion {
-  task: Task[];
-}
 
 export type TaskStatus = 'CREATED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED';
 export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH';
@@ -57,7 +53,7 @@ export interface TaskComment {
 
 export interface TaskHistory {
   id: string;
-  versions: TaskVersion[];
+  versions: Task[];
 }
 
 export interface TaskCommand {
@@ -68,8 +64,8 @@ export interface TaskCommand {
 
 export type TaskCommandType =
   'CreateTask' | 'ChangeTaskStatus' | 'ChangeTaskPriority' | 'AssignTaskReporter' | 'ArchiveTask' |
-  'CommentOnTask' | 'AssignTaskRoles' | 'AssignTask' | 'ChangeTaskDueDate' | 'AssignTaskParent' |
-  'ChangeTaskInfo' | 'ChangeTaskExtension';
+  'CommentOnTask' | 'ChangeTaskComment' | 'AssignTaskRoles' | 'AssignTask' | 'ChangeTaskDueDate' | 'AssignTaskParent' |
+  'ChangeTaskInfo' | 'CreateTaskExtension' | 'ChangeTaskExtension';
 
 export interface TaskUpdateCommand<T extends TaskCommandType> extends TaskCommand {
   taskId: TaskId;
@@ -83,6 +79,8 @@ export interface CreateTask extends TaskCommand {
   reporterId: string;
   status: TaskStatus | undefined;
   dueDate: string | undefined;
+  title: string;
+  description: string;
   priority: TaskPriority;
   labels: string[];
   extensions: TaskExtension[];
@@ -109,7 +107,12 @@ export interface AssignTaskParent extends TaskUpdateCommand<'AssignTaskParent'> 
 }
 
 export interface CommentOnTask extends TaskUpdateCommand<'CommentOnTask'> {
-  commentId: string | undefined;
+  replyToCommentId: string | undefined;
+  commentText: string;
+}
+
+export interface ChangeTaskComment extends TaskUpdateCommand<'ChangeTaskComment'> {
+  commentId: string;
   replyToCommentId: string | undefined;
   commentText: string;
 }
@@ -131,9 +134,16 @@ export interface ChangeTaskInfo extends TaskUpdateCommand<'ChangeTaskInfo'> {
   description: string
 }
 
-export interface ChangeTaskExtension extends TaskUpdateCommand<'ChangeTaskExtension'> {
-  id: TaskId | undefined;
+export interface CreateTaskExtension extends TaskUpdateCommand<'CreateTaskExtension'> {
   type: string;
+  name: string;
+  body: string;
+}
+
+export interface ChangeTaskExtension extends TaskUpdateCommand<'ChangeTaskExtension'> {
+  id: TaskId;
+  type: string;
+  name: string;
   body: string;
 }
 
