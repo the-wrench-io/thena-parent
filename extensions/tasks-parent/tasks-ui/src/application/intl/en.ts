@@ -7,6 +7,9 @@ const en = {
   'buttons.edit': "Edit",
   'buttons.view': "View",
   'buttons.download': "Download",
+  
+  'customDialog.title.tasks.createNew': 'Create new task',
+  
   '_nobody_': 'Unassigned',
 
   'init.loaded': 'Loaded repo: {name}',
