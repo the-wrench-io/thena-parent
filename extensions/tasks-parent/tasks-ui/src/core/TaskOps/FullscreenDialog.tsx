@@ -1,19 +1,17 @@
 import React from 'react';
 import { styled } from "@mui/material/styles";
-import { Dialog, DialogTitle, DialogContent, DialogActions, Box, alpha, useTheme } from '@mui/material';
-import { FormattedMessage } from 'react-intl';
+import { Dialog, DialogTitle, DialogContent, DialogActions, Box, Grid } from '@mui/material';
 import Burger from '@the-wrench-io/react-burger';
-
+import Styles from '@styles';
 
 const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
-  color: theme.palette.secondary.contrastText,
   fontWeight: 'bold',
-  borderBottom: '1px solid gray'
+  borderBottom: `1px solid ${theme.palette.uiElements.main}`
 }));
 
 
 interface StyledDialogProps {
-  title: string;
+  headerToolbar: React.ReactNode;
   titleArgs?: {};
   onClose: () => void;
   submit?: {
@@ -23,28 +21,45 @@ interface StyledDialogProps {
   };
   actions?: React.ReactElement;
   open: boolean;
-  backgroundColor: string;
   children: React.ReactElement;
 }
 
-const FullscreenDialog: React.FC<StyledDialogProps> = (props) => {
-  const theme = useTheme();
-  const colors = props.backgroundColor.split(".")
-  
-  //@ts-ignore
-  const color = theme.palette[colors[0]][colors[1]];
 
+const Left: React.FC<{}> = () => {
 
   return (
-    <Dialog open={props.open} onClose={props.onClose} fullScreen sx={{m: 2}}>
-      <StyledDialogTitle sx={{ mb: 2, backgroundColor: alpha(color, 0.9) }}>
-        <FormattedMessage id={props.title} values={props.titleArgs} /></StyledDialogTitle>
-      <DialogContent sx={{ color: "mainContent.dark", fontWeight: '400' }}>{props.children}</DialogContent>
+    <Grid item md={6} lg={6} xl={6} sx={{ height: '100vh' }}>
+      <Burger.TextField label='task title' onChange={() => { }} value='' required />
+      <Burger.TextField label='task description' onChange={() => { }} value='' required />
+      <Styles.Checklist />
+    </Grid>
+  )
+}
+
+const Right: React.FC<{}> = () => {
+  return (
+    <Grid item md={6} lg={6} xl={6} sx={{ height: '100vh' }}>
+      RIGHT
+    </Grid>
+  )
+}
+
+const FullscreenDialog: React.FC<StyledDialogProps> = (props) => {
+
+  return (
+    <Dialog open={props.open} onClose={props.onClose} fullScreen sx={{ m: 2 }}>
+      <StyledDialogTitle>{props.headerToolbar}</StyledDialogTitle>
+      <DialogContent>
+        <Grid container spacing={1}>
+          <Left />
+          <Right />
+        </Grid>
+      </DialogContent>
       <DialogActions>
         <Box display="inline-flex">
           {props.actions}
           <Burger.SecondaryButton sx={{ mr: 1 }} onClick={props.onClose} label="buttons.cancel" />
-          {props.submit ? <Burger.PrimaryButton onClick={props.submit.onClick} disabled={props.submit.disabled} label={props.submit.title} /> : undefined }
+          {props.submit ? <Burger.PrimaryButton onClick={props.submit.onClick} disabled={props.submit.disabled} label={props.submit.title} /> : undefined}
         </Box>
       </DialogActions>
     </Dialog>

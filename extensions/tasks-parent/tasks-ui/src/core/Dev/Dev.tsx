@@ -5,7 +5,7 @@ import TaskOps from '../TaskOps';
 
 const Dev: React.FC = () => {
 
-const [open, setOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(false);
 
   return (
     <Box sx={{ width: '100%', p: 1 }}>
@@ -16,7 +16,7 @@ const [open, setOpen] = React.useState(false);
       <Divider />
       <Box>Fullscreen Dialog</Box>
       <Button variant='contained' onClick={() => setOpen(true)}>Open dialog</Button>
-      <TaskOps.FullscreenDialog backgroundColor='uiElements.main' children={<>djrlaurluar</>} onClose={() => setOpen(false)} open={open} title='Fullscreen dialog'/>
+      <TaskOps.FullscreenDialog onClose={() => setOpen(false)} open={open} children={<>CHILDREN</>} headerToolbar={<>HEADER TOOLBAR</>} />
 
     </Box>);
 }
