@@ -5,6 +5,7 @@ export interface Task {
   readonly created: string;
   readonly updated: string;
   readonly archived: string | undefined;
+  readonly startDate: string | undefined;
   readonly dueDate: string | undefined;
 
   readonly parentId: string | undefined;
@@ -64,8 +65,8 @@ export interface TaskCommand {
 
 export type TaskCommandType =
   'CreateTask' | 'ChangeTaskStatus' | 'ChangeTaskPriority' | 'AssignTaskReporter' | 'ArchiveTask' |
-  'CommentOnTask' | 'ChangeTaskComment' | 'AssignTaskRoles' | 'AssignTask' | 'ChangeTaskDueDate' | 'AssignTaskParent' |
-  'ChangeTaskInfo' | 'CreateTaskExtension' | 'ChangeTaskExtension';
+  'CommentOnTask' | 'ChangeTaskComment' | 'AssignTaskRoles' | 'AssignTask' | 'ChangeTaskStartDate' | 'ChangeTaskDueDate' | 
+  'AssignTaskParent' | 'ChangeTaskInfo' | 'CreateTaskExtension' | 'ChangeTaskExtension';
 
 export interface TaskUpdateCommand<T extends TaskCommandType> extends TaskCommand {
   taskId: TaskId;
@@ -78,6 +79,7 @@ export interface CreateTask extends TaskCommand {
   assigneeIds: string[];
   reporterId: string;
   status: TaskStatus | undefined;
+  startDate: string | undefined;
   dueDate: string | undefined;
   title: string;
   description: string;
@@ -123,6 +125,10 @@ export interface AssignTaskRoles extends TaskUpdateCommand<'AssignTaskRoles'> {
 
 export interface AssignTask extends TaskUpdateCommand<'AssignTask'> {
   assigneeIds: string[];
+}
+
+export interface ChangeTaskStartDate extends TaskUpdateCommand<'ChangeTaskStartDate'> {
+  startDate: string;
 }
 
 export interface ChangeTaskDueDate extends TaskUpdateCommand<'ChangeTaskDueDate'> {
