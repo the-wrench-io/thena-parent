@@ -72,7 +72,7 @@ public interface TaskCommand extends Serializable {
   
   enum TaskCommandType {
     CreateTask, ChangeTaskStatus, ChangeTaskPriority, AssignTaskReporter, 
-    ArchiveTask, CommentOnTask, ChangeTaskComment, AssignTaskRoles, AssignTask,
+    ArchiveTask, CommentOnTask, ChangeTaskComment, AssignTaskRoles, AssignTask, ChangeTaskStartDate,
     ChangeTaskDueDate, ChangeTaskInfo, CreateTaskExtension, ChangeTaskExtension, AssignTaskParent
   }
 
@@ -83,6 +83,7 @@ public interface TaskCommand extends Serializable {
     String getReporterId();
     
     @Nullable Status getStatus();
+    @Nullable LocalDate getStartDate();
     @Nullable LocalDate getDueDate();
     String getTitle();
     String getDescription();
@@ -110,10 +111,11 @@ public interface TaskCommand extends Serializable {
     @Type(value = ImmutableChangeTaskComment.class, name = "ChangeTaskComment"),
     @Type(value = ImmutableAssignTaskRoles.class, name = "AssignTaskRoles"),
     @Type(value = ImmutableAssignTask.class, name = "AssignTask"),
-    
+
+    @Type(value = ImmutableChangeTaskStartDate.class, name = "ImmutableChangeTaskStartDate"),
     @Type(value = ImmutableChangeTaskDueDate.class, name = "ChangeTaskDueDate"),
     @Type(value = ImmutableChangeTaskInfo.class, name = "ChangeTaskInfo"),
-      @Type(value = ImmutableCreateTaskExtension.class, name = "CreateTaskExtension"),
+    @Type(value = ImmutableCreateTaskExtension.class, name = "CreateTaskExtension"),
     @Type(value = ImmutableChangeTaskExtension.class, name = "ChangeTaskExtension"),
     @Type(value = ImmutableAssignTaskParent.class, name = "AssignTaskParent"),
   })
@@ -181,7 +183,12 @@ public interface TaskCommand extends Serializable {
     List<String> getAssigneeIds();
     @Override default TaskCommandType getCommandType() { return TaskCommandType.AssignTask; }
   }
-  
+
+  @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskStartDate.class) @JsonDeserialize(as = ImmutableChangeTaskStartDate.class)
+  interface ChangeTaskStartDate extends TaskUpdateCommand {
+    Optional<LocalDate> getStartDate();
+    @Override default TaskCommandType getCommandType() { return TaskCommandType.ChangeTaskStartDate; }
+  }
   
   @Value.Immutable @JsonSerialize(as = ImmutableChangeTaskDueDate.class) @JsonDeserialize(as = ImmutableChangeTaskDueDate.class)
   interface ChangeTaskDueDate extends TaskUpdateCommand {

@@ -31,6 +31,7 @@ import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskReporter;
 import io.resys.thena.tasks.client.api.model.ImmutableAssignTaskRoles;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskComment;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskDueDate;
+import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskStartDate;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTaskExtension;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskExtension;
 import io.resys.thena.tasks.client.api.model.ImmutableChangeTaskInfo;
@@ -98,7 +99,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updatePriority.txt");
   }
 
@@ -116,7 +116,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateReporter.txt");
   }
 
@@ -133,7 +132,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/archiveTaskViaUpdate.txt");
   }
 
@@ -187,7 +185,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateComment.txt");
   }
 
@@ -205,7 +202,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateRoles.txt");
   }
 
@@ -223,8 +219,24 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateAssignees.txt");
+  }
+
+  @org.junit.jupiter.api.Test
+  public void updateStartDate() {
+    final var repoName = TaskUpdateTest.class.getSimpleName() + "UpdateStartDate";
+    final var client = getClient().repo().query().repoName(repoName).createIfNot().await().atMost(atMost);
+    final var task = createTaskForUpdating(client);
+
+    client.tasks().updateTask().updateOne(ImmutableChangeTaskStartDate.builder()
+            .userId("tester-bob")
+            .taskId(task.getId())
+            .targetDate(getTargetDate().plusDays(1).plusHours(1))
+            .startDate(getTargetDate().plusDays(1).toLocalDate())
+            .build())
+        .await().atMost(atMost);
+
+    assertRepo(client, "update-test-cases/updateStartDate.txt");
   }
 
   @org.junit.jupiter.api.Test
@@ -241,7 +253,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateDueDate.txt");
   }
 
@@ -260,7 +271,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateTaskInfo.txt");
   }
 
@@ -340,7 +350,6 @@ public class TaskUpdateTest extends TaskTestCase {
             .build())
         .await().atMost(atMost);
 
-    log.debug(super.printRepo(client));
     assertRepo(client, "update-test-cases/updateParentTask.txt");
   }
 

@@ -42,6 +42,7 @@ import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskExtension;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTaskExtension;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskInfo;
 import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskDueDate;
+import io.resys.thena.tasks.client.api.model.TaskCommand.ChangeTaskStartDate;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTask;
 import io.resys.thena.tasks.client.api.model.TaskCommand.AssignTaskRoles;
 import io.resys.thena.tasks.client.api.model.TaskCommand.CommentOnTask;
@@ -98,6 +99,8 @@ public class TaskCommandVisitor {
         return visitChangeTaskInfo((ChangeTaskInfo) command);
       case ChangeTaskDueDate:
         return visitChangeTaskDueDate((ChangeTaskDueDate) command);
+      case ChangeTaskStartDate:
+        return visitChangeTaskStartDate((ChangeTaskStartDate) command);
       case AssignTask:
         return visitAssignTask((AssignTask) command);
       case AssignTaskRoles:
@@ -215,6 +218,13 @@ public class TaskCommandVisitor {
   private Task visitAssignTask(AssignTask command) {
     this.current = this.current
         .withAssigneeIds(command.getAssigneeIds().stream().distinct().sorted().toList())
+        .withUpdated(requireTargetDate(command.getTargetDate()));
+    return this.current;
+  }
+
+  private Task visitChangeTaskStartDate(ChangeTaskStartDate command) {
+    this.current = this.current
+        .withStartDate(command.getStartDate().orElse(null))
         .withUpdated(requireTargetDate(command.getTargetDate()));
     return this.current;
   }
