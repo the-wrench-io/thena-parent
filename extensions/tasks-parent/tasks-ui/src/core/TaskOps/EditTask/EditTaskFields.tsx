@@ -1,7 +1,7 @@
 import React from 'react';
-import { TextField, Typography, Stack, Box } from '@mui/material';
+import { TextField, Typography, Stack, Box, IconButton, useTheme } from '@mui/material';
 import { FormattedMessage, useIntl } from 'react-intl';
-
+import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import Burger from '@the-wrench-io/react-burger';
 import TaskClient from '@taskclient';
 
@@ -16,7 +16,7 @@ const Section: React.FC<{ children: React.ReactNode, title: string, actions: Rea
   return (
     <>
       <Stack direction='row' spacing={1} alignItems='center'>
-        <Box sx={{minWidth: "50%"}}>
+        <Box sx={{ minWidth: "50%" }}>
           <Typography><FormattedMessage id={title} /></Typography>
         </Box>
         {actions}
@@ -33,20 +33,20 @@ const Title: React.FC<{}> = () => {
   const { state } = TaskClient.useTaskEdit();
   const intl = useIntl();
 
-  return (<TextField 
-    placeholder={intl.formatMessage({ id: 'core.taskOps.editTask.taskTitle' })} 
-    InputProps={{ sx: { fontSize: '20pt' } }} 
+  return (<TextField
+    placeholder={intl.formatMessage({ id: 'core.taskOps.editTask.taskTitle' })}
+    InputProps={{ sx: { fontSize: '20pt' } }}
     fullWidth
     value={state.task.title}
-    />);
+  />);
 }
 
 const Description: React.FC<{}> = () => {
   const { state } = TaskClient.useTaskEdit();
   const intl = useIntl();
 
-  return (<TextField placeholder={intl.formatMessage({ id: 'core.taskOps.editTask.taskDescription' })} multiline rows={4} maxRows={6} fullWidth 
-    value={state.task.description}/>);
+  return (<TextField placeholder={intl.formatMessage({ id: 'core.taskOps.editTask.taskDescription' })} multiline rows={4} maxRows={6} fullWidth
+    value={state.task.description} />);
 }
 
 const Subtasks: React.FC<{}> = () => {
@@ -92,12 +92,21 @@ const Options: React.FC<{}> = () => {
   return (<Box>Options</Box>)
 }
 
-const StartDate: React.FC<{}> = () => {
-  return (<Box>StartDate</Box>)
+
+const StartDate: React.FC<{ onClick: () => void }> = ({ onClick }) => {
+
+  return (
+    <Box textAlign='center'>
+      <Typography><FormattedMessage id='core.taskOps.editTask.startDate' /></Typography>
+      <IconButton onClick={onClick} color='secondary'><DateRangeOutlinedIcon /></IconButton>
+    </Box>);
 }
 
-const DueDate: React.FC<{}> = () => {
-  return (<Box>DueDate</Box>)
+const DueDate: React.FC<{ dueDate: string }> = ({ dueDate }) => {
+  return (<Box>
+    <Typography><FormattedMessage id='core.taskOps.editTask.dueDate' /></Typography>
+    <Typography variant='caption'>{dueDate}</Typography>
+  </Box>)
 }
 
 

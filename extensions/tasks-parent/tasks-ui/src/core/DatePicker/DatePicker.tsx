@@ -106,7 +106,7 @@ function handleDateChangeForField(args: DateChangeProps): void {
   }
 }
 
-const DatePicker: React.FC = () => {
+const DatePicker: React.FC<{}> = () => {
 
   const [startDate, setStartDate] = React.useState<Date | string | null>(null);
   const [startDateError, setStartDateError] = React.useState<string | null>(null);

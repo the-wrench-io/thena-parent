@@ -1,8 +1,8 @@
 import React from 'react';
-import { Box, Stack, List } from '@mui/material';
+import { Box, Stack, List, Dialog } from '@mui/material';
 
 import TaskClient from '@taskclient';
-
+import { DatePicker } from '../../DatePicker/DatePicker';
 import { StyledFullScreenDialog } from './StyledFullScreenDialog';
 import Fields from './EditTaskFields';
 import Events from './TaskEvents';
@@ -31,18 +31,23 @@ const Right: React.FC<{}> = () => {
 
 
 const Header: React.FC<{}> = () => {
-  return (<Box display='flex'>
-    <Stack spacing={2} direction='row' minWidth={'50%'}>
-      <Fields.Status />
-      <Fields.Assignee />
-      <Fields.Priority />
-      <Fields.Options />
-    </Stack>
-    <Stack spacing={2} direction='row'>
-      <Fields.StartDate />
-      <Fields.DueDate />
-    </Stack>
-  </Box>
+
+  const [datePickerOpen, setDatePickerOpen] = React.useState(false);
+
+  return (
+    <Box display='flex'>
+      <Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)}><DatePicker /></Dialog>
+      <Stack spacing={2} direction='row' minWidth={'50%'}>
+        <Fields.Status />
+        <Fields.Assignee />
+        <Fields.Priority />
+        <Fields.Options />
+      </Stack>
+      <Stack spacing={2} direction='row'>
+        <Fields.StartDate onClick={() => setDatePickerOpen(true)} />
+        <Fields.DueDate dueDate='08/31/2023' />
+      </Stack>
+    </Box>
   )
 }
 
