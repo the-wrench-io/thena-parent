@@ -38,6 +38,8 @@ const Main: React.FC<{}> = () => {
       return (<Box sx={root}><Core.MyWork /></Box>);  
     } else if (active.id === 'dev') {
       return (<Box sx={root}><Core.Dev /></Box>);  
+    } else if (active.id === 'teamSpace') {
+      return (<Box sx={root}><Core.TeamSpace /></Box>)
     }
     
     

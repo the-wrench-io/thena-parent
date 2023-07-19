@@ -6,8 +6,6 @@ import {
 
 import * as TaskTableStyles from './StyledTaskTable';
 
-import StyledCheckList, * as Checklist from './StyledChecklist';
-
 
 declare namespace Styles {
   export type { StyledCardsProps, StyledCardItemProps };
@@ -17,7 +15,6 @@ declare namespace Styles {
 
 namespace Styles {
   export const Cards = StyledCards;
-  export const Checklist = StyledCheckList;
   export const TaskTable = { 
     TableCell: TaskTableStyles.StyledTableCell,
     TableBody: TaskTableStyles.StyledTableBody,

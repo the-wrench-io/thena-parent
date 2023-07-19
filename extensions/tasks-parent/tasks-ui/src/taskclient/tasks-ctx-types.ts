@@ -1,5 +1,10 @@
 import { Task, TaskPriority, TaskStatus, TaskExtension } from './task-types';
 
+export interface AvatarCode {
+  twoletters: string; 
+  value: string; 
+}
+
 export interface TaskDescriptor {
   entry: Task;
   created: Date;
@@ -13,7 +18,9 @@ export interface TaskDescriptor {
   subject: string;
   dialobId: string;
   description: string;
-  uploads: TaskExtension[]
+  uploads: TaskExtension[];
+  rolesAvatars: AvatarCode[];
+  ownersAvatars: AvatarCode[];
 }
 
 export interface PalleteType {

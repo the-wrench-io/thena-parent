@@ -1,15 +1,12 @@
 import { CreateTaskView } from './CreateTaskView';
-import EditTaskDialog from './EditTaskDialog';
-import { FullscreenDialog as FullscreenDialogAs }  from './FullscreenDialog';
+import EditTaskDialog  from './EditTask';
 
 const ChangeTaskView = CreateTaskView;
 const ChangeTasksView = CreateTaskView;
 const ArchiveTaskView = CreateTaskView;
-const FullscreenDialog = FullscreenDialogAs;
-const EditTask = EditTaskDialog;
 
 
 
-const result = { CreateTaskView, ChangeTaskView, ArchiveTaskView, ChangeTasksView, EditTask, FullscreenDialog };
+const result = { CreateTaskView, ChangeTaskView, ArchiveTaskView, ChangeTasksView, EditTaskDialog };
 
 export default result;

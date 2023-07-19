@@ -84,10 +84,10 @@ public class TestResource {
       .build();
       bulk.add(newTask);
     }
-    
+    final var response = HeadState.builder().created(true).build();
     return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
         .onItem().transformToUni(created -> {
-          return Uni.createFrom().item(HeadState.builder().created(true).build());
+          return client.tasks().createTask().createMany(bulk).onItem().transform((data) -> response);
         });
   }
   

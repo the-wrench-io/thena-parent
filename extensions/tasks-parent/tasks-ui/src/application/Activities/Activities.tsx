@@ -1,5 +1,4 @@
 import React from 'react';
-import { Typography, Box } from '@mui/material';
 import { FormattedMessage } from 'react-intl';
 
 import Burger from '@the-wrench-io/react-burger';
@@ -25,14 +24,14 @@ const createActivities: (props: {
     }
   },
 
-  { id: "group", 
-    title: "activities.group.title",
+  { id: "teamSpace", 
+    title: "activities.teamSpace.title",
     content: {
-      label: "activities.group.desc"
+      label: "activities.teamSpace.desc"
     },
     primary: { 
       label: "buttons.view", 
-      onClick: () => actions.handleTabAdd({id: 'group', label: <FormattedMessage id="activities.group.title"/>}) 
+      onClick: () => actions.handleTabAdd({id: 'teamSpace', label: <FormattedMessage id="activities.teamSpace.title"/>}) 
     }
   },
 

@@ -8,6 +8,8 @@ import { TasksContext } from './tasks-ctx';
 import { TasksContextType } from './tasks-ctx-types';
 import { OrgContext } from './org-ctx';
 import { OrgContextType } from './org-ctx-types';
+import { TaskEditContextType } from './task-edit-ctx-types';
+import { TaskEditContext } from './task-edit-ctx'
 
 
 const isDocumentSaved = (entity: Document, ide: ComposerContextType): boolean => {
@@ -49,6 +51,11 @@ const findTabInLayout = (article: Document, layout: Burger.TabsContextType): Tab
   return undefined;
 }
 
+
+export const useTaskEdit = () => {
+  const result: TaskEditContextType = React.useContext(TaskEditContext);
+  return result;
+}
 export const useTasks = () => {
   const result: TasksContextType = React.useContext(TasksContext);
   return result;

@@ -75,7 +75,7 @@ const Secondary: React.FC<{}> = () => {
 
   function handleActive(_event: React.SyntheticEvent, newValue: string) { setActive(newValue) }
   function handleTasks() { actions.handleTabAdd({ id: 'tasks', label: <FormattedMessage id="activities.tasks.title" /> }) }
-  function handleGroup() { actions.handleTabAdd({ id: 'group', label: <FormattedMessage id="activities.group.title" /> }) }
+  function handleGroup() { actions.handleTabAdd({ id: 'teamSpace', label: <FormattedMessage id="activities.teamSpace.title" /> }) }
   function handleMyTasks() { actions.handleTabAdd({ id: 'mytasks', label: <FormattedMessage id="activities.mytasks.title" /> }) }
 
   function handleMyHistory() { actions.handleTabAdd({ id: 'myhistory', label: <FormattedMessage id="activities.myhistory.title" /> }) }
@@ -96,7 +96,7 @@ const Secondary: React.FC<{}> = () => {
         <StyledExplorerTab value='' icon={<DashboardIcon />} label={<FormattedMessage id="activities.title" />} onClick={handleDashboard} />
         <StyledExplorerTab value='explorer.search' icon={<SearchIcon />} label={<FormattedMessage id="activities.search.title" />} onClick={handleSearch} />
         <StyledExplorerTab value='explorer.tasks' icon={<AppsIcon />} label={<FormattedMessage id="activities.tasks.title" />} onClick={handleTasks} />
-        <StyledExplorerTab value='explorer.group' icon={<CircleNotificationsIcon />} label={<FormattedMessage id="activities.group.title" />} onClick={handleGroup} />
+        <StyledExplorerTab value='explorer.teamSpace' icon={<CircleNotificationsIcon />} label={<FormattedMessage id="activities.teamSpace.title" />} onClick={handleGroup} />
         <StyledExplorerTab value='explorer.mytasks' icon={<PersonIcon />} label={<FormattedMessage id="activities.mytasks.title" />} onClick={handleMyTasks} />
         <StyledExplorerTab value='explorer.myhistory' icon={<HistoryIcon />} label={<FormattedMessage id="activities.myhistory.title" />} onClick={handleMyHistory} />
         <StyledExplorerTab value='explorer.reporting' icon={<PieChartIcon />} label={<FormattedMessage id="activities.reporting.title" />} onClick={handleReporting} />

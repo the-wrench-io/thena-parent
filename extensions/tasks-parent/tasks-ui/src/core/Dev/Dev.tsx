@@ -2,6 +2,8 @@ import React from 'react';
 
 import { Box, Divider, Button } from '@mui/material';
 import TaskOps from '../TaskOps';
+import TestTask from './test_task_1.json';
+
 
 const Dev: React.FC = () => {
 
@@ -14,9 +16,11 @@ const Dev: React.FC = () => {
       <Divider />
 
       <Divider />
-      <Box>Fullscreen Dialog</Box>
+      <Box>Edit task dialog</Box>
       <Button variant='contained' onClick={() => setOpen(true)}>Open dialog</Button>
-      <TaskOps.FullscreenDialog onClose={() => setOpen(false)} open={open} children={<>CHILDREN</>} headerToolbar={<>HEADER TOOLBAR</>} />
+      
+      
+      <TaskOps.EditTaskDialog onClose={() => setOpen(false)} open={open} task={TestTask as any} />
 
     </Box>);
 }

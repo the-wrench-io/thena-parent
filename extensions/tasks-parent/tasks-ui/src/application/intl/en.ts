@@ -6,9 +6,14 @@ const en = {
   'buttons.copy': "Copy",
   'buttons.edit': "Edit",
   'buttons.view': "View",
+  'buttons.add': "Add",
   'buttons.download': "Download",
   
-  'customDialog.title.tasks.createNew': 'Create new task',
+  'core.taskOps.editTask.taskTitle': "Task title",
+  'core.taskOps.editTask.taskDescription': "Task description",
+  'core.taskOps.editTask.subtasks': "Subtasks",
+  'core.taskOps.editTask.checklists': "Checklists",
+  'core.taskOps.editTask.attachments': "Attachments",
   
   '_nobody_': 'Unassigned',
 
