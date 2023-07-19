@@ -45,7 +45,7 @@ const Header: React.FC<{}> = () => {
       </Stack>
       <Stack spacing={2} direction='row'>
         <Fields.StartDate onClick={() => setDatePickerOpen(true)} />
-        <Fields.DueDate dueDate='08/31/2023' />
+        <Fields.DueDate onClick={() => setDatePickerOpen(true)} dueDate='08/31/2023' />
       </Stack>
     </Box>
   )

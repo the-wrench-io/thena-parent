@@ -102,11 +102,12 @@ const StartDate: React.FC<{ onClick: () => void }> = ({ onClick }) => {
     </Box>);
 }
 
-const DueDate: React.FC<{ dueDate: string }> = ({ dueDate }) => {
-  return (<Box>
-    <Typography><FormattedMessage id='core.taskOps.editTask.dueDate' /></Typography>
-    <Typography variant='caption'>{dueDate}</Typography>
-  </Box>)
+const DueDate: React.FC<{ dueDate: string, onClick: () => void }> = ({ dueDate, onClick }) => {
+  return (
+    <Box onClick={onClick}>
+      <Typography><FormattedMessage id='core.taskOps.editTask.dueDate' /></Typography>
+      <Typography variant='caption'>{dueDate}</Typography>
+    </Box>)
 }
 
 
