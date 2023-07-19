@@ -1,7 +1,7 @@
 import {
   Task, TaskCommand, TaskCommandType, CreateTask, AssignTaskReporter, ArchiveTask, ChangeTaskStatus, ChangeTaskPriority,
   AssignTaskParent, CommentOnTask, ChangeTaskComment, AssignTaskRoles, AssignTask, ChangeTaskDueDate, ChangeTaskInfo,
-  CreateTaskExtension, ChangeTaskExtension
+  CreateTaskExtension, ChangeTaskExtension, ChangeTaskStartDate
 } from './task-types';
 
 
@@ -13,7 +13,7 @@ export interface SingleEventBody<T extends TaskCommandType, C extends TaskComman
   commandType: T;
 }
 
-
+export interface ChangeTaskStartDateEventBody extends SingleEventBody<"ChangeTaskStartDate", ChangeTaskStartDate> {}
 export interface CreateTaskEventBody extends SingleEventBody<"CreateTask", CreateTask> {}
 export interface AssignTaskReporterEventBody extends SingleEventBody<"AssignTaskReporter", AssignTaskReporter> {}
 export interface ArchiveTaskEventBody extends SingleEventBody<"ArchiveTask", ArchiveTask> {}
@@ -36,18 +36,19 @@ export interface ChangeTaskExtensionEventBody extends SingleEventBody<"ChangeTas
 export interface SingleEvent {
   type: "SINGLE";
   body: CreateTaskEventBody | 
-    AssignTaskReporterEventBody|
-    ArchiveTaskEventBody|
-    ChangeTaskStatusEventBody|
-    ChangeTaskPriorityEventBody|
+    ChangeTaskStartDateEventBody |
+    AssignTaskReporterEventBody |
+    ArchiveTaskEventBody |
+    ChangeTaskStatusEventBody |
+    ChangeTaskPriorityEventBody |
     AssignTaskParentEventBody|
-    CommentOnTaskEventBody|
-    ChangeTaskCommentEventBody|
-    AssignTaskRolesEventBody|
-    AssignTaskEventBody|
-    ChangeTaskDueDateEventBody|
-    ChangeTaskInfoEventBody|
-    CreateTaskExtensionEventBody|
+    CommentOnTaskEventBody |
+    ChangeTaskCommentEventBody |
+    AssignTaskRolesEventBody |
+    AssignTaskEventBody |
+    ChangeTaskDueDateEventBody | 
+    ChangeTaskInfoEventBody |
+    CreateTaskExtensionEventBody |
     ChangeTaskExtensionEventBody;
 }
 
