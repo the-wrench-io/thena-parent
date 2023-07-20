@@ -36,7 +36,8 @@ const Tasks: React.FC<{}> = () => {
       <React.Fragment key={group.id}>
         {index > 0 ? <Box sx={{ p: 2 }} /> : null}
         <TasksTable def={group} loading={loading} />
-      </React.Fragment>))}
+      </React.Fragment>
+      ))}
   </>
   </Tools>);
 }

@@ -1,17 +1,18 @@
 import React from 'react';
-import { Box, Avatar } from '@mui/material';
-
-import client from '@taskclient';
+import { Box, Avatar, IconButton, Dialog } from '@mui/material';
+import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
+import AssistantPhotoTwoToneIcon from '@mui/icons-material/AssistantPhotoTwoTone';
 import { useIntl } from 'react-intl';
+
+import { DatePicker } from '../DatePicker/DatePicker';
+import client from '@taskclient';
 
 import { TasksTableCell } from './TasksTableCell';
 
 interface CellProps {
-  maxWidth?: string;
   row: client.TaskDescriptor;
   def: client.Group;
 }
-
 
 
 const Roles: React.FC<CellProps> = ({ row, def }) => {
@@ -27,7 +28,7 @@ const Roles: React.FC<CellProps> = ({ row, def }) => {
 
   return (<TasksTableCell id={row.id + "/Roles"} name={<Box flexDirection="row" display="flex">{avatars}</Box>} />);
 }
-const Owners: React.FC<CellProps> = ({ row, def }) => {
+const Assignees: React.FC<CellProps> = ({ row, def }) => {
   const { state } = client.useTasks();
   const avatars = row.assigneesAvatars.map((entry, index) => {
     return (<Avatar key={index} sx={{
@@ -38,29 +39,44 @@ const Owners: React.FC<CellProps> = ({ row, def }) => {
       fontSize: 10
     }}>{entry.twoletters}</Avatar>);
   });
-  return (<TasksTableCell id={row.id + "/Owners"} name={<Box flexDirection="row" display="flex">{avatars}</Box>} />);
+  return (<TasksTableCell id={row.id + "/Assignees"} name={<Box flexDirection="row" display="flex">{avatars}</Box>} />);
 }
 
 const Desc: React.FC<CellProps> = ({ row }) => {
   return (<TasksTableCell id={row.id + "/Desc"} name={row.description} />);
 }
 const DueDate: React.FC<CellProps> = ({ row }) => {
-  return (<TasksTableCell id={row.id + "/DueDate"} name={row.dueDate + ""} />);
+
+  const [datePickerOpen, setDatePickerOpen] = React.useState(false);
+
+  return (<>
+    <Dialog open={datePickerOpen} onClose={() => setDatePickerOpen(false)}><DatePicker /></Dialog>
+    <TasksTableCell id={row.id + "/DueDate"} name={
+      <IconButton onClick={() => setDatePickerOpen(true)} color='inherit'><DateRangeOutlinedIcon sx={{ fontSize: 'small' }} /></IconButton>} />
+  </>
+  );
 }
 const Status: React.FC<CellProps> = ({ row }) => {
   const intl = useIntl();
   const value = intl.formatMessage({ id: `tasktable.header.spotlight.status.${row.status}` }).toUpperCase();
   return (<TasksTableCell id={row.id + "/Status"} name={value} />);
 }
-const Priority: React.FC<CellProps> = ({ row }) => {
+
+const Priority: React.FC<CellProps & { color?: string }> = ({ row, color }) => {
   const intl = useIntl();
   const value = intl.formatMessage({ id: `tasktable.header.spotlight.priority.${row.priority}` }).toUpperCase();
-  return (<TasksTableCell id={row.id + "/Priority"} name={value} />);
+  return (<TasksTableCell id={row.id + "/Priority"} name={<IconButton><AssistantPhotoTwoToneIcon sx={{ fontSize: 'medium', color }} /></IconButton>} />);
 }
-const Subject: React.FC<CellProps> = ({ row, maxWidth }) => {
-  return (<TasksTableCell id={row.id + "/Subject"} name={row.title} maxWidth={maxWidth}/>);
+
+
+const Menu: React.FC<CellProps> = ({ row }) => {
+  return (<TasksTableCell id={row.id + "/Menu"} name={<></>} />);
+}
+
+const Subject: React.FC<CellProps & { maxWidth: string }> = ({ row, maxWidth }) => {
+  return (<TasksTableCell id={row.id + "/Subject"} name={row.title} maxWidth={maxWidth} />);
 }
 
 export type { CellProps }
-export { Subject, Priority, Status, Owners, DueDate, Roles, Desc };
+export { Subject, Priority, Status, Assignees, DueDate, Roles, Desc, Menu };
 

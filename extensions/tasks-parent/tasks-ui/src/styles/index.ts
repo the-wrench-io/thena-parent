@@ -6,6 +6,8 @@ import {
 
 import * as TaskTableStyles from './StyledTaskTable';
 
+import StyledSpotlightLabel from './StyledSpotlightLabel';
+
 
 declare namespace Styles {
   export type { StyledCardsProps, StyledCardItemProps };
@@ -15,6 +17,7 @@ declare namespace Styles {
 
 namespace Styles {
   export const Cards = StyledCards;
+  export const SpotlightLabel = StyledSpotlightLabel;
   export const TaskTable = { 
     TableCell: TaskTableStyles.StyledTableCell,
     TableBody: TaskTableStyles.StyledTableBody,

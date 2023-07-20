@@ -1,11 +1,12 @@
 import React from 'react';
-import { TableRow, SxProps } from '@mui/material';
+import { TableRow, SxProps, Box, Button, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { FormattedMessage } from 'react-intl';
 
 import client from '@taskclient';
 import Styles from '@styles';
 import * as Cells from './TasksTableCells';
-
-
+import { HoverOptions, HoverMenu } from './HoverOptions';
 
 function getStatus(def: client.Group): SxProps | undefined {
   if (!def.color) {
@@ -29,13 +30,6 @@ function getPriority(def: client.Group): SxProps | undefined {
   return undefined;
 }
 
-function getRoles(def: client.Group): SxProps | undefined {
-  if (!def.color) {
-    return undefined;
-  }
-
-  return undefined;
-}
 
 function getOwners(def: client.Group): SxProps | undefined {
   if (!def.color) {
@@ -51,12 +45,24 @@ const DescriptorTableRow: React.FC<{
   def: client.Group
 }> = ({ row, def }) => {
 
-  return (<TableRow hover tabIndex={-1} key={row.id}>
-    <Styles.TaskTable.TableCell width="300px"><Cells.Subject maxWidth="300px" row={row} def={def} /></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="150px" sx={getOwners(def)}><Cells.Owners row={row} def={def} /></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell><Cells.DueDate row={row} def={def} /></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="150px" sx={getPriority(def)}><Cells.Priority row={row} def={def} /></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="200px" sx={getStatus(def)}><Cells.Status row={row} def={def} /></Styles.TaskTable.TableCell>
+  const [hoverItemsActive, setHoverItemsActive] = React.useState(false);
+
+  return (<TableRow hover tabIndex={-1} key={row.id} onMouseEnter={() => setHoverItemsActive(true)} onMouseLeave={() => setHoverItemsActive(false)}>
+    <Styles.TaskTable.TableCell width="500px">
+      <Box width='500px' justifyContent='left' display='flex'>
+        <Cells.Subject maxWidth="500px" row={row} def={def} />
+        {hoverItemsActive && <HoverOptions active={hoverItemsActive} />}
+      </Box>
+    </Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="150px" sx={getOwners(def)}><Cells.Assignees row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="100px"><Cells.DueDate row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="50px" sx={getPriority(def)}><Cells.Priority row={row} def={def} color={def?.color} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="100px" sx={getStatus(def)}><Cells.Status row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="35px">
+      <Box width="35px" justifyContent='center'> {/* Box is needed to prevent table cell resize on hover */}
+        {hoverItemsActive && <><Cells.Menu row={row} def={def} /><HoverMenu active={hoverItemsActive} /></>}
+      </Box>
+    </Styles.TaskTable.TableCell>
   </TableRow>);
 }
 
@@ -65,11 +71,14 @@ const Rows: React.FC<{
   def: client.Group,
   loading: boolean
 }> = ({ content, def, loading }) => {
-  return (
+  return (<>
     <Styles.TaskTable.TableBody>
       {content.entries.map((row, rowId) => (<DescriptorTableRow key={row.id} rowId={rowId} row={row} def={def} />))}
       <Styles.TaskTable.TableRowEmpty content={content} loading={loading} plusColSpan={5} />
-    </Styles.TaskTable.TableBody>)
+    </Styles.TaskTable.TableBody>
+    <Button startIcon={<AddIcon />} sx={{ color: 'inherit', fontSize: 10 }}><FormattedMessage id='core.teamSpace.task.create' /></Button>
+  </>
+  )
 }
 
 export default Rows;

@@ -17,8 +17,6 @@ const headCells: readonly HeadCell[] = [
 ];
 
 
-
-
 const StyledSpotLight: React.FC<{ value: client.Group }> = ({ value }) => {
   const intl = useIntl();
   const sx = { borderRadius: '8px 8px 0px 0px', boxShadow: "unset" };
@@ -53,17 +51,15 @@ const DescriptorTableHeader: React.FC<{
   def: client.Group
 }> = ({ content, setContent, def }) => {
 
+
   return (
     <TableHead>
       <TableRow>
         <TableCell align='left' padding='none'>
           <StyledSpotLight value={def} />
+          <Styles.SpotlightLabel values={def.records.length} message='core.teamSpace.taskCount'/>
         </TableCell>
         {headCells.map((headCell) => (<Styles.TaskTable.TableHeaderSortable key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
-
-        <TableCell align='left' padding='none'>
-          MENU
-        </TableCell>
       </TableRow>
     </TableHead>
   );

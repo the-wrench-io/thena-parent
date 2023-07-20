@@ -17,6 +17,9 @@ const en = {
 
   'core.taskOps.editTask.dueDate': 'Due date',
   'core.taskOps.editTask.startDate': 'Start date',
+  
+  'core.teamSpace.taskCount': '{values} Tasks',
+  'core.teamSpace.task.create': 'Create new task',
 
   '_nobody_': 'Unassigned',
 

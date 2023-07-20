@@ -25,14 +25,20 @@ const Info: React.FC<{ id: string, content: React.ReactNode }> = ({ id, content 
 }
 
 
-const TasksTableCell: React.FC<{ id: string, name?: React.ReactNode, tag?: string, info?: React.ReactNode, maxWidth?: string }> = ({ id, name, tag, info, maxWidth }) => {
+const TasksTableCell: React.FC<{
+  id: string,
+  name?: React.ReactNode,
+  tag?: string,
+  info?: React.ReactNode,
+  maxWidth?: string
+}> = ({ id, name, tag, info, maxWidth }) => {
   const { setState } = client.useTable();
   const handleClick = React.useCallback((event: React.MouseEvent<HTMLElement>) => {
     setState(prev => prev.withPopperOpen(id, !prev.popperOpen, event.currentTarget))
   }, [setState, id]);
 
   if (!name) {
-    return <>-</> 
+    return <>-</>
   }
 
   return (<Box display='flex'>

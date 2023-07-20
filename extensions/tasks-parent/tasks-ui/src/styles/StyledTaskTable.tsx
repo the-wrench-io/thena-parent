@@ -36,8 +36,9 @@ const StyledTableCell = styled(TableCell)<TableCellProps & { rowType?: 'large'}>
   fontWeight: '400',
   height: (rowType === 'large' ? lineHeightLarge : lineHeight) + 'px',
 
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
+  paddingLeft: theme.spacing(1),
+  paddingRight: theme.spacing(1),
+  
   paddingTop: theme.spacing(0),
   paddingBottom: theme.spacing(0),
 }));

@@ -1,5 +1,5 @@
 import React from 'react';
-import { TextField, Typography, Stack, Box, IconButton, useTheme } from '@mui/material';
+import { TextField, Typography, Stack, Box, IconButton } from '@mui/material';
 import { FormattedMessage, useIntl } from 'react-intl';
 import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import Burger from '@the-wrench-io/react-burger';
