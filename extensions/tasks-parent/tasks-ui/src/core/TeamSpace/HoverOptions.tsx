@@ -1,5 +1,5 @@
 import React from 'react';
-import { SxProps, Box, IconButton } from '@mui/material';
+import { SxProps, Box, IconButton, Tooltip } from '@mui/material';
 import NotesIcon from '@mui/icons-material/Notes';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SubdirectoryArrowRightOutlinedIcon from '@mui/icons-material/SubdirectoryArrowRightOutlined';
@@ -21,7 +21,7 @@ const IconButtonWrapper: React.FC<{ children: React.ReactNode, active: boolean }
 const HoverOptions: React.FC<{ active: boolean }> = ({ active }) => {
   return (
     <Box display='flex' sx={boxSx}>
-      <IconButtonWrapper active={active}><NotesIcon fontSize='small' /></IconButtonWrapper>
+      <IconButtonWrapper active={active}><Tooltip title="View description" placement="top" arrow><NotesIcon fontSize='small' /></Tooltip></IconButtonWrapper>
       <IconButtonWrapper active={active}><EditOutlinedIcon fontSize='small' /></IconButtonWrapper>
       <IconButtonWrapper active={active}><SubdirectoryArrowRightOutlinedIcon fontSize='small' /></IconButtonWrapper>
     </Box>
