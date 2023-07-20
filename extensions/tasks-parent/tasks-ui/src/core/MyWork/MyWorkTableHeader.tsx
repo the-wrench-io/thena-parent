@@ -11,7 +11,7 @@ interface HeadCell {
 }
 
 const headCells: readonly HeadCell[] = [
-  { id: 'subject' },
+  { id: 'title' },
   { id: 'description' },
   { id: 'dueDate' }
 ];

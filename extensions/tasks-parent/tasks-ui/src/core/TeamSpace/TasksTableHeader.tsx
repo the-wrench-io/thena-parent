@@ -10,12 +10,10 @@ interface HeadCell {
 }
 
 const headCells: readonly HeadCell[] = [
+  { id: 'assignees' },
+  { id: 'dueDate' },
   { id: 'priority' },
   { id: 'status' },
-  { id: 'owners' },
-  { id: 'roles' },
-  { id: 'dueDate' },
-  //{ id: 'subject' },
 ];
 
 
@@ -62,6 +60,10 @@ const DescriptorTableHeader: React.FC<{
           <StyledSpotLight value={def} />
         </TableCell>
         {headCells.map((headCell) => (<Styles.TaskTable.TableHeaderSortable key={headCell.id} id={headCell.id} content={content} setContent={setContent} />))}
+
+        <TableCell align='left' padding='none'>
+          MENU
+        </TableCell>
       </TableRow>
     </TableHead>
   );

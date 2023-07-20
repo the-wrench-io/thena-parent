@@ -52,12 +52,11 @@ const DescriptorTableRow: React.FC<{
 }> = ({ row, def }) => {
 
   return (<TableRow hover tabIndex={-1} key={row.id}>
-    <Styles.TaskTable.TableCell width="300px"><Cells.Subject maxWidth="300px" row={row} def={def}/></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="150px" sx={getPriority(def)}><Cells.Priority row={row} def={def}/></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="200px" sx={getStatus(def)}><Cells.Status row={row} def={def}/></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="150px" sx={getOwners(def)}><Cells.Owners row={row} def={def}/></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell sx={getRoles(def)}><Cells.Roles row={row} def={def}/></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell><Cells.DueDate row={row} def={def}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="300px"><Cells.Subject maxWidth="300px" row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="150px" sx={getOwners(def)}><Cells.Owners row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell><Cells.DueDate row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="150px" sx={getPriority(def)}><Cells.Priority row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="200px" sx={getStatus(def)}><Cells.Status row={row} def={def} /></Styles.TaskTable.TableCell>
   </TableRow>);
 }
 

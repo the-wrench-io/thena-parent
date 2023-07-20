@@ -13,14 +13,14 @@ export interface TaskDescriptor {
   priority: TaskPriority;
   dueDate?: Date;
   roles: string[];
-  owners: string[];
+  assignees: string[];
   labels: string[];
-  subject: string;
+  title: string;
   dialobId: string;
   description: string;
   uploads: TaskExtension[];
   rolesAvatars: AvatarCode[];
-  ownersAvatars: AvatarCode[];
+  assigneesAvatars: AvatarCode[];
 }
 
 export interface PalleteType {

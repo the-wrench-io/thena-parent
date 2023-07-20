@@ -28,8 +28,8 @@ const en = {
   'activities.tasks.title': 'Admin board',
   'activities.tasks.desc': 'See and manage everything',
 
-  'activities.group.title': 'Group Todo',
-  'activities.group.desc': 'See all tasks that are assigned to my group but nobody is working on',
+  'activities.teamSpace.title': 'Team space',
+  'activities.teamSpace.desc': 'See and manage all tasks assigned to my group',
 
   'activities.mytasks.title': 'My Work',
   'activities.mytasks.desc': 'All of my tasks that I am working on',
@@ -66,7 +66,7 @@ const en = {
   'tasktable.header.subject': 'Subject',
   'tasktable.header.priority': 'Priority',
   'tasktable.header.status': 'Status',
-  'tasktable.header.owners': 'Owners',
+  'tasktable.header.assignees': 'Assignees',
   'tasktable.header.roles': 'Roles',
   'tasktable.header.dueDate': 'Due Date',
 

@@ -344,8 +344,8 @@ class GroupVisitor {
     if (this._groupBy === 'none') {
       this._groups[this._groupBy].records.push(task);
     } else if (this._groupBy === 'owners') {
-      if (task.owners.length) {
-        task.owners.forEach(o => this._groups[o].records.push(task));
+      if (task.assignees.length) {
+        task.assignees.forEach(o => this._groups[o].records.push(task));
       } else {
         this._groups[_nobody_].records.push(task);
       }
@@ -391,13 +391,13 @@ class TaskDescriptorImpl implements TaskDescriptor {
   get status() { return this._entry.status }
   get priority() { return this._entry.priority }
   get roles() { return this._entry.roles }
-  get owners() { return this._entry.assigneeIds }
+  get assignees() { return this._entry.assigneeIds }
   get labels() { return this._entry.labels }
-  get subject() { return this._entry.title }
+  get title() { return this._entry.title }
   get description() { return this._entry.description }
   get uploads() { return this._uploads }
   get rolesAvatars() {return this._rolesAvatars }
-  get ownersAvatars() {return this._ownersAvatars }
+  get assigneesAvatars() {return this._ownersAvatars }
 
   getAvatar(values: string[]): { twoletters: string, value: string }[] {
     return values.map(role => {
@@ -434,17 +434,17 @@ function applyDescFilters(desc: TaskDescriptor, filters: FilterBy[]): boolean {
 
 function applySearchString(desc: TaskDescriptor, searchString: string): boolean {
   const description: boolean = desc.description?.toLowerCase().indexOf(searchString) > -1;
-  return desc.subject.toLowerCase().indexOf(searchString) > -1 || description;
+  return desc.title.toLowerCase().indexOf(searchString) > -1 || description;
 }
 
 function applyDescFilter(desc: TaskDescriptor, filter: FilterBy): boolean {
   switch (filter.type) {
     case 'FilterByOwners': {
       for (const owner of filter.owners) {
-        if (desc.owners.length === 0 && owner === _nobody_) {
+        if (desc.assignees.length === 0 && owner === _nobody_) {
           continue;
         }
-        if (!desc.owners.includes(owner)) {
+        if (!desc.assignees.includes(owner)) {
           return false;
         }
       }

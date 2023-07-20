@@ -46,7 +46,7 @@ const Roles: React.FC<CellProps> = ({ row, def }) => {
 }
 const Owners: React.FC<CellProps> = ({ row, def }) => {
   const { state } = client.useTasks();
-  const avatars = getAvatar(row.owners).map((entry, index) => {
+  const avatars = getAvatar(row.assignees).map((entry, index) => {
     return (<Avatar key={index} sx={{
       mr: 1,
       bgcolor: state.pallette.owners[entry.value],
@@ -75,7 +75,7 @@ const Priority: React.FC<CellProps> = ({ row }) => {
   return (<TasksTableCell id={row.id + "/Priority"} name={value} />);
 }
 const Subject: React.FC<CellProps> = ({ row, maxWidth }) => {
-  return (<TasksTableCell id={row.id + "/Subject"} name={row.subject} maxWidth={maxWidth}/>);
+  return (<TasksTableCell id={row.id + "/Subject"} name={row.title} maxWidth={maxWidth}/>);
 }
 
 export type { CellProps }
