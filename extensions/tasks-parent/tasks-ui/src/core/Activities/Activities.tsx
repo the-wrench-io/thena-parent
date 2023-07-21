@@ -81,6 +81,27 @@ const createActivities: (props: {
   },
 
   
+  { id: "migration", 
+    title: "activities.migration.title",
+    content: {
+      label: "activities.migration.desc"
+    },
+    primary: { 
+      label: "buttons.view", 
+      onClick: () => actions.handleTabAdd({id: 'migration', label: <FormattedMessage id="activities.migration.title"/>}) 
+    }
+  },
+  
+  { id: "archive", 
+    title: "activities.archive.title",
+    content: {
+      label: "activities.archive.desc"
+    },
+    primary: { 
+      label: "buttons.view", 
+      onClick: () => actions.handleTabAdd({id: 'archive', label: <FormattedMessage id="activities.archive.title"/>}) 
+    }
+  },
   
 ]);
 

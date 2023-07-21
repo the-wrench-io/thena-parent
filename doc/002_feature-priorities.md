@@ -7,6 +7,7 @@
 - View assigned tasks and task details (personal worker board)
 - Admin board
 - Audit logging
+- Historization
 - Error handling
 - Messaging / communication / notification module
 - File sharing / attachments
@@ -16,6 +17,8 @@
 - Historization
 - Search
 - Data export for reporting
+- Data export for backup / migration
+- Data import for restoring backup / migration
 - Task linking / dependencies
 
 ### Priority 3 (P3) - Could have

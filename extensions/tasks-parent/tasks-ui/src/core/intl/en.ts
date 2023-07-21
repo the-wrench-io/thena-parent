@@ -27,13 +27,19 @@ const en = {
 
   'activities.myhistory.title': 'My history',
   'activities.myhistory.desc': 'See everything I have ever done',
-  
+
   'activities.search.title': 'Search...',
   'activities.search.desc': 'Search from everything ever done',
-  
+
   'activities.reporting.title': 'Reporting',
   'activities.reporting.desc': 'Generate json report of data. Allows grouping and filtering.',
-  
+
+  'activities.migration.title': 'Migration',
+  'activities.migration.desc': 'Migrate project from one to another, or to an entirely new environment using JSON file.',
+
+  'activities.archive.title': 'Archive',
+  'activities.archive.desc': 'View all tasks that have ever existed which have been deleted',
+
   'mywork.button.review': 'Review Form',
 
   'project.dialog.requireProject.createdMessage': 'Project successfully created',
@@ -46,7 +52,7 @@ const en = {
 
   'explorer.title': 'Digiexpress task managment',
   'explorer.tasks': "View and search tasks",
-  
+
   'mywork.table.header': 'My Work',
   'mywork.table.header.subject': 'Subject',
   'mywork.table.header.description': 'Description',
@@ -67,7 +73,7 @@ const en = {
   'tasktable.header.spotlight.priority.MEDIUM': 'Medium',
   'tasktable.header.spotlight.priority.LOW': 'Low',
   'tasktable.header.spotlight.priority.HIGH': 'High',
-  
+
   'tasktable.header.spotlight.no_group': 'All tasks',
 };
 
