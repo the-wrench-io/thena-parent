@@ -30,11 +30,11 @@ const StyledTableBody = styled(TableBody)`
   `};
 `;
 
-const StyledTableCell = styled(TableCell)<TableCellProps & { rowType?: 'large'}>(({rowType, theme}) => ({
+const StyledTableCell = styled(TableCell)<TableCellProps & { rowtype?: 'large'}>(({rowtype, theme}) => ({
   textAlign: 'left',
   fontSize: "13px",
   fontWeight: '400',
-  height: (rowType === 'large' ? lineHeightLarge : lineHeight) + 'px',
+  height: (rowtype === 'large' ? lineHeightLarge : lineHeight) + 'px',
 
   paddingLeft: theme.spacing(1),
   paddingRight: theme.spacing(1),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Avatar, IconButton, Dialog } from '@mui/material';
+import { Box, Avatar, AvatarGroup, IconButton, Dialog, Stack } from '@mui/material';
 import DateRangeOutlinedIcon from '@mui/icons-material/DateRangeOutlined';
 import AssistantPhotoTwoToneIcon from '@mui/icons-material/AssistantPhotoTwoTone';
 import { useIntl } from 'react-intl';
@@ -15,31 +15,39 @@ interface CellProps {
 }
 
 
-const Roles: React.FC<CellProps> = ({ row, def }) => {
-  const { state } = client.useTasks();
-
-  const avatars = row.rolesAvatars.map((entry, index) => <Avatar key={index} sx={{
-    mr: 0.5,
-    bgcolor: state.pallette.roles[entry.value],
-    width: 24,
-    height: 24,
-    fontSize: 10
-  }}>{entry.twoletters}</Avatar>);
-
-  return (<TasksTableCell id={row.id + "/Roles"} name={<Box flexDirection="row" display="flex">{avatars}</Box>} />);
+const AssignAvatar: React.FC = () => {
+  return (
+    <Stack direction="row">
+      <Avatar sx={{
+        width: 24,
+        height: 24,
+        fontSize: 10,
+        ':hover': {
+          cursor: 'pointer'
+        }
+      }} />
+    </Stack>
+  );
 }
+
 const Assignees: React.FC<CellProps> = ({ row, def }) => {
   const { state } = client.useTasks();
   const avatars = row.assigneesAvatars.map((entry, index) => {
-    return (<Avatar key={index} sx={{
-      mr: 1,
-      bgcolor: state.pallette.owners[entry.value],
-      width: 24,
-      height: 24,
-      fontSize: 10
-    }}>{entry.twoletters}</Avatar>);
+    return (
+      <Avatar key={index} sx={{
+        bgcolor: state.pallette.owners[entry.value],
+        width: 24,
+        height: 24,
+        fontSize: 10,
+        ':hover': {
+          cursor: 'pointer'
+        }
+      }}>{entry.twoletters}</Avatar>
+    );
   });
-  return (<TasksTableCell id={row.id + "/Assignees"} name={<Box flexDirection="row" display="flex">{avatars}</Box>} />);
+  return (<TasksTableCell id={row.id + "/Assignees"} name={<Box flexDirection="row" display="flex">
+    {avatars.length ? <AvatarGroup spacing='small'>{avatars}</AvatarGroup> : <AssignAvatar />}
+  </Box>} />);
 }
 
 const Desc: React.FC<CellProps> = ({ row }) => {
@@ -78,5 +86,5 @@ const Subject: React.FC<CellProps & { maxWidth: string }> = ({ row, maxWidth }) 
 }
 
 export type { CellProps }
-export { Subject, Priority, Status, Assignees, DueDate, Roles, Desc, Menu };
+export { Subject, Priority, Status, Assignees, DueDate, Desc, Menu };
 

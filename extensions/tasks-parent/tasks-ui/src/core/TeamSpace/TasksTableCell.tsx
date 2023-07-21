@@ -41,15 +41,16 @@ const TasksTableCell: React.FC<{
     return <>-</>
   }
 
-  return (<Box display='flex'>
-    <Info id={id} content={info} />
-    {tag && <Box sx={{ mr: 0, minWidth: '50px', alignSelf: "center" }}>
-      <Chip label={tag} color="primary" variant="outlined" size="small" onClick={handleClick} />
-    </Box>}
-    {typeof name === 'string' ? <Box alignSelf="center" textOverflow="ellipsis" maxWidth={maxWidth}>
-      <Typography noWrap={true} fontSize="13px" fontWeight="400">{name}</Typography>
-    </Box> : name}
-  </Box>);
+  return (
+    <Box display='flex'>
+      <Info id={id} content={info} />
+      {tag && <Box sx={{ mr: 0, minWidth: '50px', alignSelf: "center" }}>
+        <Chip label={tag} color="primary" variant="outlined" size="small" onClick={handleClick} />
+      </Box>}
+      {typeof name === 'string' ? <Box alignSelf="center" textOverflow="ellipsis" maxWidth={maxWidth}>
+        <Typography noWrap={true} fontSize="13px" fontWeight="400">{name}</Typography>
+      </Box> : name}
+    </Box>);
 }
 export { TasksTableCell };
 

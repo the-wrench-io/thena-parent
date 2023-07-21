@@ -18,7 +18,7 @@ const DescriptorTableRow: React.FC<{
     <Styles.TaskTable.TableCell width="50px"><Cells.Tools maxWidth="100px" row={row}/></Styles.TaskTable.TableCell>
     <Styles.TaskTable.TableCell width="300px"><Cells.Subject maxWidth="300px" row={row}/></Styles.TaskTable.TableCell>
     <Styles.TaskTable.TableCell width="450px"><Cells.Desc maxWidth="450px" row={row} /></Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell rowType={row.uploads.length === 0 ? undefined : 'large'}><Cells.DueDate row={row}/></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell rowtype={row.uploads.length === 0 ? undefined : 'large'}><Cells.DueDate row={row}/></Styles.TaskTable.TableCell>
   </TableRow>);
 }
 

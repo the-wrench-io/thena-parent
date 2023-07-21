@@ -1,5 +1,5 @@
 import React from 'react';
-import { TableRow, SxProps, Box, Button, Typography } from '@mui/material';
+import { TableRow, SxProps, Box, Button } from '@mui/material';
 import AddIcon from '@mui/icons-material/Add';
 import { FormattedMessage } from 'react-intl';
 
@@ -31,7 +31,7 @@ function getPriority(def: client.Group): SxProps | undefined {
 }
 
 
-function getOwners(def: client.Group): SxProps | undefined {
+function getAssignees(def: client.Group): SxProps | undefined {
   if (!def.color) {
     return undefined;
   }
@@ -54,7 +54,7 @@ const DescriptorTableRow: React.FC<{
         {hoverItemsActive && <HoverOptions active={hoverItemsActive} />}
       </Box>
     </Styles.TaskTable.TableCell>
-    <Styles.TaskTable.TableCell width="150px" sx={getOwners(def)}><Cells.Assignees row={row} def={def} /></Styles.TaskTable.TableCell>
+    <Styles.TaskTable.TableCell width="150px" sx={getAssignees(def)}><Cells.Assignees row={row} def={def} /></Styles.TaskTable.TableCell>
     <Styles.TaskTable.TableCell width="100px"><Cells.DueDate row={row} def={def} /></Styles.TaskTable.TableCell>
     <Styles.TaskTable.TableCell width="50px" sx={getPriority(def)}><Cells.Priority row={row} def={def} color={def?.color} /></Styles.TaskTable.TableCell>
     <Styles.TaskTable.TableCell width="100px" sx={getStatus(def)}><Cells.Status row={row} def={def} /></Styles.TaskTable.TableCell>
