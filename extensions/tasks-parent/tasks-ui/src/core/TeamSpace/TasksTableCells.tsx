@@ -15,7 +15,7 @@ interface CellProps {
 }
 
 
-const AssignAvatar: React.FC = () => {
+const AssignPerson: React.FC = () => {
   return (
     <Stack direction="row">
       <Avatar sx={{
@@ -46,7 +46,7 @@ const Assignees: React.FC<CellProps> = ({ row, def }) => {
     );
   });
   return (<TasksTableCell id={row.id + "/Assignees"} name={<Box flexDirection="row" display="flex">
-    {avatars.length ? <AvatarGroup spacing='small'>{avatars}</AvatarGroup> : <AssignAvatar />}
+    {avatars.length ? <AvatarGroup spacing='small'>{avatars}</AvatarGroup> : <AssignPerson />}
   </Box>} />);
 }
 

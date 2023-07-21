@@ -1,11 +1,7 @@
 import React from 'react';
 import { Box } from '@mui/material';
-
 import client from '@taskclient';
 import Tools from '../TaskTools';
-
-
-
 import TableHeader from './TasksTableHeader';
 import TableRows from './TasksTableRow';
 
@@ -24,7 +20,6 @@ const TasksTable: React.FC<{ def: client.Group, loading: boolean }> = (props) =>
     />
   );
 }
-
 
 
 const Tasks: React.FC<{}> = () => {
