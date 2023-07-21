@@ -3,7 +3,7 @@ import {
   StyledCardsProps,
   StyledCardItemProps
 } from './StyledCards';
-
+import { StyledProgressBar } from './StyledProgressBar';
 import * as TaskTableStyles from './StyledTaskTable';
 
 import StyledSpotlightLabel from './StyledSpotlightLabel';
@@ -26,6 +26,7 @@ namespace Styles {
     lineHeight: TaskTableStyles.lineHeight,
     lineHeightLarge: TaskTableStyles.lineHeightLarge,
   }
+  export const ProgressBar = StyledProgressBar;
 }
 
 export default Styles;
