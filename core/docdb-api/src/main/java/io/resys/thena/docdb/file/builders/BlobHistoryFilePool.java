@@ -27,16 +27,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.models.ImmutableBlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.file.FileBuilder;
 import io.resys.thena.docdb.file.tables.Table.FileMapper;
 import io.resys.thena.docdb.file.tables.Table.FilePool;
 import io.resys.thena.docdb.file.tables.TreeItemTable.TreeItemTableRow;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
 import io.resys.thena.docdb.spi.ClientQuery.BlobHistoryQuery;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
@@ -48,15 +48,15 @@ public class BlobHistoryFilePool implements BlobHistoryQuery {
   private final FilePool client;
   private final FileMapper mapper;
   private final FileBuilder builder;
-  private final List<BlobCriteria> criteria = new ArrayList<>();
+  private final List<MatchCriteria> criteria = new ArrayList<>();
   private boolean latestOnly;
   private String name;
 
 
   @Override public BlobHistoryQuery latestOnly(boolean latestOnly) { this.latestOnly = latestOnly; return this; }
   @Override public BlobHistoryQuery blobName(String name) { this.name = name; return this; }
-  @Override public BlobHistoryQuery criteria(List<BlobCriteria> criteria) { this.criteria.addAll(criteria); return this; }
-  @Override public BlobHistoryQuery criteria(BlobCriteria... criteria) { this.criteria.addAll(Arrays.asList(criteria)); return this; }
+  @Override public BlobHistoryQuery criteria(List<MatchCriteria> criteria) { this.criteria.addAll(criteria); return this; }
+  @Override public BlobHistoryQuery criteria(MatchCriteria... criteria) { this.criteria.addAll(Arrays.asList(criteria)); return this; }
   
   @Override
   public Multi<BlobHistory> find() {
@@ -88,7 +88,7 @@ public class BlobHistoryFilePool implements BlobHistoryQuery {
     private List<Blob> blobs;
     private boolean latestOnly;
     private String name;
-    private List<BlobCriteria> criteria;
+    private List<MatchCriteria> criteria;
   }
   
   @lombok.Data @lombok.Builder

@@ -21,55 +21,49 @@ package io.resys.thena.docdb.api.actions;
  */
 
 import java.util.List;
-import java.util.Map;
 
 import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
 import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.ObjectsResult;
-import io.resys.thena.docdb.api.models.Repo;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObjects.CommitObjects;
 import io.smallrye.mutiny.Uni;
 import io.vertx.core.json.JsonObject;
 
 public interface CommitActions {
-  CommitBuilder builder();
-  CommitQuery query();
-  CommitStateBuilder state();
-  
-  interface CommitQuery {
-    CommitQuery repoName(String repoId); // head GID to what to append
-    Uni<List<Commit>> findAllCommits();
-    Uni<List<Tree>> findAllCommitTrees();
-  }
+  CommitBuilder commitBuilder();
+  CommitQuery commitQuery();
+  Uni<List<Commit>> findAllCommits(String repoId);  // head GID to what to append
+  Uni<List<Tree>> findAllCommitTrees(String repoId);  // head GID to what to append
   
   interface CommitBuilder {
-    CommitBuilder id(String headGid); // head GID to what to append
+    CommitBuilder id(@Nullable String headGid); // OPTIONAL head GID to what to append
     CommitBuilder parent(String parentCommit); // for validations
-    CommitBuilder parentIsLatest();
-    CommitBuilder head(String repoId, String headName); // head GID to what to append
-    CommitBuilder append(String name, JsonObject blob);
-    CommitBuilder merge(String name, JsonObjectMerge blob);
-    CommitBuilder remove(String name);
-    CommitBuilder remove(List<String> name);
+    CommitBuilder latestCommit();
+    CommitBuilder head(String projectName, String branchName); // head GID to what to append
+    CommitBuilder append(String docId, JsonObject doc);
+    CommitBuilder merge(String docId, JsonObjectMerge doc);
+    CommitBuilder remove(String docId);
+    CommitBuilder remove(List<String> docId);
     CommitBuilder author(String author);
     CommitBuilder message(String message);
-    Uni<CommitResult> build();
+    Uni<CommitResultEnvelope> build();
   }
   
   // build REF world state, no blobs by default
-  interface CommitStateBuilder {
-    CommitStateBuilder repo(String repoName);
-    CommitStateBuilder anyId(String refOrCommitOrTag);
-    CommitStateBuilder blobs();
-    CommitStateBuilder blobs(boolean load);
-    CommitStateBuilder blobCriteria(List<BlobCriteria> blobCriteria);
-    Uni<ObjectsResult<CommitObjects>> build();
+  interface CommitQuery {
+    CommitQuery projectName(String projectName);
+    CommitQuery branchNameOrCommitOrTag(String branchNameOrCommitOrTag);
+    CommitQuery docsIncluded();
+    CommitQuery docsIncluded(boolean load);
+    CommitQuery matchBy(List<MatchCriteria> matchCriteria);
+    Uni<QueryEnvelope<CommitObjects>> get();
   }
 
   @FunctionalInterface
@@ -77,23 +71,14 @@ public interface CommitActions {
     JsonObject apply(JsonObject previousState);
   }
   
-  enum CommitStatus { OK, ERROR, CONFLICT }
+  enum CommitResultStatus { OK, ERROR, CONFLICT }
   
   @Value.Immutable
-  interface CommitResult {
+  interface CommitResultEnvelope extends ThenaEnvelope {
     String getGid(); // repo/head
     @Nullable
     Commit getCommit();
-    CommitStatus getStatus();
+    CommitResultStatus getStatus();
     List<Message> getMessages();
   }
-  
-  @Value.Immutable
-  interface CommitObjects {
-    Repo getRepo();
-    Commit getCommit();
-    Tree getTree();
-    Map<String, Blob> getBlobs(); //only if loaded
-  }
-
 }

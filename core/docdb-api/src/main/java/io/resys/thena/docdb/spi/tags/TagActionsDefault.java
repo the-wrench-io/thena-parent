@@ -29,12 +29,12 @@ public class TagActionsDefault implements TagActions {
   private final ClientState state;
 
   @Override
-  public TagBuilder create() {
+  public TagBuilder tagBuilder() {
     return new CreateTagBuilder(state);
   }
 
   @Override
-  public TagQuery query() {
+  public TagQuery tagQuery() {
     return new AnyTagQuery(state);
   }
 }

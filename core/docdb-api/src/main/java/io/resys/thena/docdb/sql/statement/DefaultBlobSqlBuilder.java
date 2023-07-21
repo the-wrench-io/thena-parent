@@ -27,10 +27,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.models.Objects.Blob;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
 import io.resys.thena.docdb.spi.ClientCollections;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
 import io.resys.thena.docdb.sql.ImmutableSqlTupleList;
@@ -90,7 +90,7 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple findByTree(String treeId, List<BlobCriteria> criteria) {
+  public SqlTuple findByTree(String treeId, List<MatchCriteria> criteria) {
     final var conditions = createWhereCriteria(criteria);
     final var props = new LinkedList<>(conditions.getProps());
     final var treeIdPos = props.size() + 1;
@@ -111,7 +111,7 @@ public class DefaultBlobSqlBuilder implements BlobSqlBuilder {
         .build();
   }
   @Override
-  public SqlTuple findByTree(String treeId, List<String> blobNames, List<BlobCriteria> criteria) {
+  public SqlTuple findByTree(String treeId, List<String> blobNames, List<MatchCriteria> criteria) {
     final var conditions = createWhereCriteria(criteria);
     final var props = new LinkedList<>(conditions.getProps());
     final var treeIdPos = props.size() + 1;
@@ -207,7 +207,7 @@ WHERE blobs.value LIKE $1
 
    */
   @Override
-  public SqlTuple find(String name, boolean latestOnly, List<BlobCriteria> criteria) {
+  public SqlTuple find(String name, boolean latestOnly, List<MatchCriteria> criteria) {
 
     final String sql;
     final var conditions = createWhereCriteria(criteria);
@@ -242,7 +242,7 @@ WHERE blobs.value LIKE $1
     private final List<Object> props;
   }
   
-  protected WhereSqlFragment createWhereCriteria(List<BlobCriteria> criteria) {
+  protected WhereSqlFragment createWhereCriteria(List<MatchCriteria> criteria) {
     final var where = new StringBuilder();
     
     int paramIndex = 1;
@@ -256,7 +256,7 @@ WHERE blobs.value LIKE $1
           .append("\"").append(entry.getKey()).append("\"")
           .append(":");
       
-      if(entry.getType() == CriteriaType.LIKE) {
+      if(entry.getType() == MatchCriteriaType.LIKE) {
         param.append("\"%").append(entry.getValue()).append("%\"");
       } else {
         param.append("\"").append(entry.getValue()).append("\"");

@@ -59,7 +59,7 @@ public class RandomDataProvider {
       ); 
   
   
-  private final Map<Integer, String> OWNERS = Map.of(
+  private final Map<Integer, String> ASSIGNEES = Map.of(
       1, "sam vimes",
       2, "lord vetinari",
       3, "lady sybil vimes",
@@ -91,7 +91,7 @@ public class RandomDataProvider {
     return SSN.get(nextInt(1, SSN.size()));
   }
   
-  public String getSubject() {
+  public String getTitle() {
     return SUBJECTS.get(nextInt(1, SUBJECTS.size()));
   }
 
@@ -112,23 +112,27 @@ public class RandomDataProvider {
   }
 
   
-  public List<String> getOwners() {
-    final var owners = new ArrayList<String>();
-    final var groups = nextInt(1, OWNERS.size()) -1;
+  public List<String> getAssigneeIds() {
+    final var assignees = new ArrayList<String>();
+    final var groups = nextInt(1, ASSIGNEES.size()) -1;
     for(var index = 0; index < groups; index++) {
       boolean defined = false;
       do {
-        final var ownerId = OWNERS.get(nextInt(1, OWNERS.size()));
-        defined = owners.contains(ownerId);
+        final var ownerId = ASSIGNEES.get(nextInt(1, ASSIGNEES.size()));
+        defined = assignees.contains(ownerId);
         if(!defined) {
-          owners.add(ownerId);
+          assignees.add(ownerId);
         }
       } while(defined);
     }
-    return owners;
+    return assignees;
+  }
+
+  public String getReporterId() {
+    return ASSIGNEES.get(nextInt(1, ASSIGNEES.size()));
   }
   
-  public List<TaskComment> getExtComments() {
+  public List<TaskComment> getComments() {
     if(nextInt(1, 2) == 2) {
       final var result = new ArrayList<TaskComment>();
       final var total = nextInt(1, 5);
@@ -145,22 +149,7 @@ public class RandomDataProvider {
     return Collections.emptyList();    
   }
   
-  public List<TaskComment> getIntComments() {
-    if(nextInt(1, 2) == 2) {
-      final var result = new ArrayList<TaskComment>();
-      final var total = nextInt(1, 3);
-      for(var index = 0; index < total; index++) {
-        result.add(ImmutableTaskComment.builder()
-            .created(LocalDateTime.now())
-            .username("random-data-gen")
-            .id(UUID.randomUUID().toString())
-            .commentText("Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap into electronic typesetting, remaining essentially unchanged. It was popularised in the 1960s with the release of Letraset sheets containing Lorem Ipsum passages, and more recently with desktop publishing software like Aldus PageMaker including versions of Lorem Ipsum.")
-            .build());
-      }
-    }
-    
-    return Collections.emptyList();
-  }
+
   
   public List<TaskExtension> getExtensions() {
     final var dialob = ImmutableTaskExtension.builder()

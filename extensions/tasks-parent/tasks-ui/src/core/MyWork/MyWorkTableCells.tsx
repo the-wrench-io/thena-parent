@@ -32,7 +32,7 @@ const DueDate: React.FC<CellProps> = ({ row }) => {
   return (<TasksTableCell id={row.id + "/DueDate"} name={row.dueDate ? row.dueDate.toISOString() : undefined} />);
 }
 const Subject: React.FC<CellProps> = ({ row, maxWidth }) => {
-  return (<TasksTableCell id={row.id + "/Subject"} name={row.subject} maxWidth={maxWidth} />);
+  return (<TasksTableCell id={row.id + "/Subject"} name={row.title} maxWidth={maxWidth} />);
 }
 const Tools: React.FC<CellProps> = ({ row, maxWidth }) => {
   const { pallette } = client.useTasks();

@@ -1,4 +1,9 @@
-import { Task, TaskPriority, TaskStatus, TaskExtension } from './client-types';
+import { Task, TaskPriority, TaskStatus, TaskExtension } from './task-types';
+
+export interface AvatarCode {
+  twoletters: string; 
+  value: string; 
+}
 
 export interface TaskDescriptor {
   entry: Task;
@@ -8,12 +13,14 @@ export interface TaskDescriptor {
   priority: TaskPriority;
   dueDate?: Date;
   roles: string[];
-  owners: string[];
+  assignees: string[];
   labels: string[];
-  subject: string;
+  title: string;
   dialobId: string;
   description: string;
-  uploads: TaskExtension[]
+  uploads: TaskExtension[];
+  rolesAvatars: AvatarCode[];
+  assigneesAvatars: AvatarCode[];
 }
 
 export interface PalleteType {

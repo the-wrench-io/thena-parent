@@ -20,7 +20,7 @@ package io.resys.thena.tasks.client.api.actions;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.model.Statistics.StatisticsDump;
+import io.resys.thena.tasks.client.api.model.Statistics.StatisticsSummary;
 import io.smallrye.mutiny.Uni;
 
 public interface StatisticsActions {
@@ -29,6 +29,6 @@ public interface StatisticsActions {
 
   
   interface StatisticsQuery {
-    Uni<StatisticsDump> dump();
+    Uni<StatisticsSummary> summary();
   }
 }

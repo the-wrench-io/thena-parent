@@ -26,19 +26,19 @@ import java.util.List;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.smallrye.mutiny.Uni;
 
 public interface ClientInsertBuilder {
   
   Uni<InsertResult> tag(Tag tag);
   Uni<UpsertResult> blob(Blob blob);
-  Uni<UpsertResult> ref(Ref ref, Commit commit);
+  Uni<UpsertResult> ref(Branch ref, Commit commit);
   Uni<UpsertResult> tree(Tree tree);
   Uni<UpsertResult> commit(Commit commit);
   Uni<Batch> batch(Batch output);
@@ -62,7 +62,7 @@ public interface ClientInsertBuilder {
   @Value.Immutable
   interface BatchRef {
     Boolean getCreated(); 
-    Ref getRef();
+    Branch getRef();
   }
   
   

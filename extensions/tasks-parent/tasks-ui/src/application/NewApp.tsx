@@ -7,9 +7,9 @@ import { useSnackbar } from 'notistack';
 import Burger, { siteTheme } from '@the-wrench-io/react-burger';
 
 import TaskClient from '@taskclient';
-import AppCore from '../core';
-
 import Connection from './Connection';
+import messages from './intl';
+import Views from './Views';
 
 
 interface Csrf { key: string, value: string }
@@ -39,24 +39,24 @@ const store: TaskClient.Store = new TaskClient.DefaultStore({
 });
 const backend = new TaskClient.ServiceImpl(store);
 
-const Apps: React.FC<{ services: TaskClient.HeadState }> = ({ services }) => {
+const Apps: React.FC<{ services: TaskClient.Profile }> = ({ services }) => {
   // eslint-disable-next-line 
   const serviceComposer: Burger.App<TaskClient.ComposerContextType> = React.useMemo(() => ({
     id: "service-composer",
-    components: { primary: AppCore.Main, secondary: AppCore.Secondary, toolbar: AppCore.Toolbar },
+    components: { primary: Views.Main, secondary: Views.Secondary, toolbar: Views.Toolbar },
     state: [
-      (children: React.ReactNode, restorePoint?: Burger.AppState<TaskClient.ComposerContextType>) => (<>{children}</>),
+      (children: React.ReactNode, _restorePoint?: Burger.AppState<TaskClient.ComposerContextType>) => (<>{children}</>),
       () => ({})
     ]
-  }), [AppCore]);
+  }), []);
 
-  return (<TaskClient.Provider service={backend} head={services}>
+  return (<TaskClient.Provider service={backend} profile={services}>
     <Burger.Provider children={[serviceComposer]} secondary="toolbar.activities" drawerOpen />
   </TaskClient.Provider>)
 }
 
 const LoadApps = React.lazy(async () => {
-  const head = await backend.head();
+  const head = await backend.profile.getProfile();
   if (head.contentType === 'NO_CONNECTION') {
     const Result: React.FC<{}> = () => <Connection.Down client={backend} />;
     return ({ default: Result })
@@ -72,7 +72,7 @@ const LoadApps = React.lazy(async () => {
         const msg = intl.formatMessage({ id: 'init.loaded' }, { name: head.name });
         snackbar.enqueueSnackbar(msg, { variant: 'success' })
       }
-    }, [head.name]);
+    }, [intl, snackbar]);
     return <Apps services={head} />
   };
   return ({ default: Result })
@@ -85,9 +85,10 @@ const theme: Theme = {
   }
 };
 const locale = 'en';
+console.log("theme ", theme);
 
 const NewApp: React.FC<{}> = () => (
-  <IntlProvider locale={locale} messages={AppCore.messages[locale]}>
+  <IntlProvider locale={locale} messages={messages[locale]}>
     <StyledEngineProvider injectFirst>
       <ThemeProvider theme={theme}>
         <SnackbarProvider>

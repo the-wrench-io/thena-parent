@@ -28,41 +28,42 @@ import javax.annotation.Nullable;
 import org.immutables.value.Value;
 
 import io.resys.thena.docdb.api.models.Message;
-import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
 public interface TagActions {
 
-  TagBuilder create();
-  TagQuery query();
+  TagBuilder tagBuilder();
+  TagQuery tagQuery();
   
   interface TagQuery {
-    TagQuery repo(String repoId);
+    TagQuery projectName(String projectName);
     TagQuery tagName(String tagName);
     
-    Multi<Tag> find();
+    Multi<Tag> findAll();
     Uni<Optional<Tag>> get();
     Uni<Optional<Tag>> delete();
   }
   
   interface TagBuilder {
     TagBuilder tagName(String name);
-    TagBuilder repo(String repoIdOrName, String commitIdOrHead);
+    TagBuilder head(String projectName, String branchNameOrCommitOrTag);
     TagBuilder author(String author);
     TagBuilder message(String message);    
     Uni<TagResult> build();
   }
 
-  enum TagStatus {
+  enum TagResultStatus {
     OK, ERROR
   }
 
   @Value.Immutable
-  interface TagResult {
+  interface TagResult extends ThenaEnvelope {
     @Nullable
     Tag getTag();
-    TagStatus getStatus();
+    TagResultStatus getStatus();
     List<Message> getMessages();
   }
 }

@@ -32,7 +32,7 @@ function getComparator<T>(
 }
 
 function stableSort<T>(init: readonly T[], comparator: (a: T, b: T) => number) {
-  const array = [...init];
+  const array = [...(init ? init : [])];
   const stabilizedThis = array.map((el, index) => [el, index] as [T, number]);
   stabilizedThis.sort((a, b) => {
     const aValue = a[0];

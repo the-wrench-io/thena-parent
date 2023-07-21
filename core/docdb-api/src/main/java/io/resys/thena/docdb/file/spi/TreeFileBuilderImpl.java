@@ -1,13 +1,10 @@
 package io.resys.thena.docdb.file.spi;
 
-import java.util.Arrays;
-import java.util.stream.Collectors;
-
 /*-
  * #%L
- * thena-docdb-pgsql
+ * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +20,10 @@ import java.util.stream.Collectors;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Tree;
+import java.util.Arrays;
+import java.util.stream.Collectors;
+
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.file.FileBuilder.TreeFileBuilder;
 import io.resys.thena.docdb.file.tables.ImmutableFileStatement;
 import io.resys.thena.docdb.file.tables.ImmutableFileTuple;

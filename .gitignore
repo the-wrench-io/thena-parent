@@ -85,3 +85,9 @@ local.properties
 *.iml
 .idea/
 .factorypath
+
+######################
+# VS Code
+######################
+
+.vscode/

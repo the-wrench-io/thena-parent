@@ -23,7 +23,7 @@ package io.resys.thena.docdb.spi.tags;
 import java.util.Optional;
 
 import io.resys.thena.docdb.api.actions.TagActions.TagQuery;
-import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.support.RepoAssert;
 import io.smallrye.mutiny.Multi;
@@ -36,31 +36,31 @@ import lombok.experimental.Accessors;
 @Data @Accessors(fluent = true)
 public class AnyTagQuery implements TagQuery {
   private final ClientState state;
-  private String repo; //repoId
+  private String projectName; //repoId
   private String tagName;
   
   @Override
-  public Multi<Tag> find() {
-    RepoAssert.notEmpty(repo, () -> "repo can't be empty!");
+  public Multi<Tag> findAll() {
+    RepoAssert.notEmpty(projectName, () -> "projectName can't be empty!");
 
-    return state.query(repo)
+    return state.query(projectName)
         .onItem().transformToMulti(f -> f.tags().name(tagName).find());
   }
   @Override
   public Uni<Optional<Tag>> get() {
-    RepoAssert.notEmpty(repo, () -> "repo can't be empty!");
+    RepoAssert.notEmpty(projectName, () -> "projectName can't be empty!");
     RepoAssert.notEmpty(tagName, () -> "tagName can't be empty!");
     
-    return state.query(repo)
+    return state.query(projectName)
         .onItem().transformToUni(f -> f.tags().name(tagName).getFirst())
         .onItem().transform(tag -> Optional.ofNullable(tag));
   }
   @Override
   public Uni<Optional<Tag>> delete() {
-    RepoAssert.notEmpty(repo, () -> "repo can't be empty!");
+    RepoAssert.notEmpty(projectName, () -> "projectName can't be empty!");
     RepoAssert.notEmpty(tagName, () -> "tagName can't be empty!");
     
-    return state.query(repo)
+    return state.query(projectName)
     .onItem().transformToUni(query -> 
       query.tags().name(tagName).getFirst().onItem().transformToUni(tag -> {
         if(tag == null) {

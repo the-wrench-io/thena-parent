@@ -2,9 +2,9 @@ package io.resys.thena.docdb.sql.statement;
 
 /*-
  * #%L
- * thena-docdb-pgsql
+ * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ package io.resys.thena.docdb.sql.statement;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;

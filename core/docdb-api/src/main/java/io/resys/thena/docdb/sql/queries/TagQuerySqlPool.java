@@ -1,12 +1,10 @@
 package io.resys.thena.docdb.sql.queries;
 
-import io.resys.thena.docdb.api.LogConstants;
-
 /*-
  * #%L
- * thena-docdb-pgsql
+ * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +20,8 @@ import io.resys.thena.docdb.api.LogConstants;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Tag;
+import io.resys.thena.docdb.api.LogConstants;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
 import io.resys.thena.docdb.spi.ClientQuery.DeleteResult;
 import io.resys.thena.docdb.spi.ClientQuery.TagQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;

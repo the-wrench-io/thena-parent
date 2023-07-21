@@ -29,30 +29,31 @@ import org.immutables.value.Value;
 import io.resys.thena.docdb.api.models.Diff;
 import io.resys.thena.docdb.api.models.Message;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaEnvelope;
 import io.smallrye.mutiny.Uni;
 
 public interface DiffActions {
 
-  DiffBuilder builder();
+  DiffQuery diffQuery();
   
-  interface DiffBuilder {
-    DiffBuilder repo(String repoIdOrName);
-    DiffBuilder left(String headOrCommitOrTag);
-    DiffBuilder right(String headOrCommitOrTag);
-    Uni<DiffResult<Diff>> build();
+  interface DiffQuery {
+    DiffQuery projectName(String projectName);
+    DiffQuery left(String headOrCommitOrTag);
+    DiffQuery right(String headOrCommitOrTag);
+    Uni<DiffResult<Diff>> get();
   }
   
-  enum DiffStatus {
+  enum DiffResultStatus {
     OK, ERROR
   }
   
   @Value.Immutable
-  interface DiffResult<T> {
+  interface DiffResult<T> extends ThenaEnvelope {
     @Nullable
     Repo getRepo();    
     @Nullable
     T getObjects();
-    DiffStatus getStatus();
+    DiffResultStatus getStatus();
     List<Message> getMessages();
   }
 }

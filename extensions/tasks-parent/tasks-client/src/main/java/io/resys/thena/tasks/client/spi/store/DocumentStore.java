@@ -1,5 +1,7 @@
 package io.resys.thena.tasks.client.spi.store;
 
+import io.resys.thena.docdb.api.models.Repo;
+
 /*-
  * #%L
  * thena-tasks-client
@@ -23,16 +25,16 @@ package io.resys.thena.tasks.client.spi.store;
 import io.smallrye.mutiny.Uni;
 
 public interface DocumentStore {
-  RepositoryQuery repo();
+  DocumentRepositoryQuery query();
   DocumentConfig getConfig();
+  Uni<Repo> getRepo();
   
-  
-  interface RepositoryQuery {
-    RepositoryQuery repoName(String repoName);
-    RepositoryQuery headName(String headName);
-    Uni<DocumentStore> create();    
+  interface DocumentRepositoryQuery {
+    DocumentRepositoryQuery repoName(String repoName);
+    DocumentRepositoryQuery headName(String headName);    
     DocumentStore build();
-    Uni<Boolean> createIfNot();
+    Uni<DocumentStore> create();
+    Uni<DocumentStore> createIfNot();
   } 
   
 

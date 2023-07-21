@@ -2,9 +2,9 @@ package io.resys.thena.docdb.sql.statement;
 
 /*-
  * #%L
- * thena-docdb-pgsql
+ * thena-docdb-api
  * %%
- * Copyright (C) 2021 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ package io.resys.thena.docdb.sql.statement;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.ImmutableSql;
 import io.resys.thena.docdb.sql.ImmutableSqlTuple;
@@ -79,7 +79,7 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
   }
 
   @Override
-  public SqlTuple insertOne(Ref ref) {
+  public SqlTuple insertOne(Branch ref) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("INSERT INTO ").append(options.getRefs())
@@ -90,7 +90,7 @@ public class DefaultRefSqlBuilder implements RefSqlBuilder {
   }
 
   @Override
-  public SqlTuple updateOne(Ref ref, Commit commit) {
+  public SqlTuple updateOne(Branch ref, Commit commit) {
     return ImmutableSqlTuple.builder()
         .value(new SqlStatement()
         .append("UPDATE ").append(options.getRefs())

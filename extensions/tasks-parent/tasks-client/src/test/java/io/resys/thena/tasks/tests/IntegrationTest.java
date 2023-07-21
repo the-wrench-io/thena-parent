@@ -46,18 +46,21 @@ public class IntegrationTest extends TaskTestCase {
   
   @Test
   public void createAndReadTheTask() throws JsonProcessingException, JSONException {
-    final var client = getClient().repo().repoName("integration-test").create().await().atMost(atMost);
+    final var client = getClient().repo().query().repoName("integration-test").create().await().atMost(atMost);
     
-    client.changes().create(ImmutableCreateTask.builder()
+    client.tasks().createTask().createOne(ImmutableCreateTask.builder()
         .targetDate(getTargetDate())
-        .subject("very important subject")
+        .title("very important title")
         .description("first task ever")
         .priority(Priority.LOW)
         .addRoles("admin-users", "view-only-users")
         .userId("user-1")
-        .build()).await().atMost(atMost);
+        .reporterId("reporter-1")
+        .build())
+    .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
+    .await().atMost(atMost);
     
-    final var allActive = client.query().active().findAll().collect().asList().await().atMost(atMost);
+    final var allActive = client.tasks().queryActiveTasks().findAll().await().atMost(atMost);
     Assertions.assertEquals(1, allActive.size());
     
     final var created = JsonObject.mapFrom(allActive.get(0))
@@ -66,7 +69,7 @@ public class IntegrationTest extends TaskTestCase {
     final var actual = created.encode();
     log.debug(actual);
     JSONAssert.assertEquals(
-        "{\"documentType\":\"TASK\",\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":null,\"actions\":[],\"roles\":[\"admin-users\",\"view-only-users\"],\"owners\":[],\"dueDate\":null,\"subject\":\"very important subject\",\"description\":\"first task ever\",\"status\":\"CREATED\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"externalComments\":[],\"internalComments\":[]}"
-        , actual, true);
+        "{\"id\":\"\",\"version\":\"\",\"created\":[2023,1,1,1,1],\"updated\":[2023,1,1,1,1],\"archived\":null,\"startDate\":null,\"dueDate\":null,\"parentId\":null,\"transactions\":[{\"id\":\"1\",\"commands\":[{\"commandType\":\"CreateTask\",\"userId\":\"user-1\",\"targetDate\":[2023,1,1,1,1],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"reporterId\":\"reporter-1\",\"status\":null,\"startDate\":null,\"dueDate\":null,\"title\":\"very important title\",\"description\":\"first task ever\",\"priority\":\"LOW\",\"labels\":[],\"extensions\":[],\"comments\":[]}]}],\"roles\":[\"admin-users\",\"view-only-users\"],\"assigneeIds\":[],\"reporterId\":\"reporter-1\",\"title\":\"very important title\",\"description\":\"first task ever\",\"priority\":\"LOW\",\"status\":\"CREATED\",\"labels\":[],\"extensions\":[],\"comments\":[],\"documentType\":\"TASK\"}",
+        actual, true);
   }
 }

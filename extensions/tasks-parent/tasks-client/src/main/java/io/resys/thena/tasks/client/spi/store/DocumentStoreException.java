@@ -23,17 +23,19 @@ package io.resys.thena.tasks.client.spi.store;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.immutables.value.Value;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObject;
-import io.resys.thena.docdb.api.actions.ObjectsActions.BlobObjects;
-import io.resys.thena.docdb.api.models.ObjectsResult;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
+import io.resys.thena.docdb.api.models.QueryEnvelope;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObject;
+import io.resys.thena.docdb.api.models.ThenaObjects.PullObjects;
 import io.vertx.core.json.JsonObject;
+import lombok.RequiredArgsConstructor;
 
 
 
@@ -70,7 +72,7 @@ public class DocumentStoreException extends RuntimeException {
   public JsonObject getTarget() { return target; }  
   
  
-  public static DocumentExceptionMsg convertMessages(CommitResult commit) {
+  public static DocumentExceptionMsg convertMessages(CommitResultEnvelope commit) {
     return ImmutableDocumentExceptionMsg.builder()
         .id(commit.getGid())
         .value("") //TODO
@@ -78,17 +80,41 @@ public class DocumentStoreException extends RuntimeException {
         .build();
   }
 
-  public static DocumentExceptionMsg convertMessages1(ObjectsResult<BlobObject> state) {
+  public static DocumentExceptionMsg convertMessages1(QueryEnvelope<PullObject> state) {
     return ImmutableDocumentExceptionMsg.builder()
         .id("STATE_FAIL")
         .value("")
         .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
         .build();
   }
-  public static DocumentExceptionMsg convertMessages2(ObjectsResult<BlobObjects> state) {
+  public static DocumentExceptionMsg convertMessages2(QueryEnvelope<PullObjects> state) {
     return ImmutableDocumentExceptionMsg.builder()
         .addAllArgs(state.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()))
         .build();
   }
 
+  public static Builder builder(String msgId) {
+    return new Builder(msgId);
+  }
+  
+  @RequiredArgsConstructor
+  public static class Builder {
+    private final String id;
+    private final ImmutableDocumentExceptionMsg.Builder msg = ImmutableDocumentExceptionMsg.builder();
+    
+    public Builder add(DocumentConfig config, QueryEnvelope<?> envelope) {
+      msg.id(envelope.getRepo() == null ? config.getProjectName() : envelope.getRepo().getName())
+      .value(envelope.getRepo() == null ? "no-repo" : envelope.getRepo().getId())
+      .addAllArgs(envelope.getMessages().stream().map(message->message.getText()).collect(Collectors.toList()));
+      return this;
+    }
+    public Builder add(Consumer<ImmutableDocumentExceptionMsg.Builder> callback) {
+      callback.accept(msg);
+      return this;
+    }
+    
+    public DocumentStoreException build() {
+      return new DocumentStoreException(id, msg.build());
+    }
+  }
 }

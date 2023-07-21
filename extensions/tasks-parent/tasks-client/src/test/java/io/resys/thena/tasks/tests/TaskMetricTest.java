@@ -30,10 +30,10 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task.Priority;
-import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
+import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
 import io.resys.thena.tasks.tests.config.TaskPgProfile;
 import io.resys.thena.tasks.tests.config.TaskTestCase;
 import lombok.extern.slf4j.Slf4j;
@@ -47,17 +47,17 @@ public class TaskMetricTest extends TaskTestCase {
   //@org.junit.jupiter.api.Test
   
   public void createAndReadTheTask() throws JsonProcessingException, JSONException {
-    final var client = getClient().repo().repoName("init-test").create().await().atMost(atMost);
+    final var client = getClient().repo().query().repoName("init-test").create().await().atMost(atMost);
     
     runInserts(client, 1000);
     select(client);
   }
   
   
-  private void select(TasksClient client) {
+  private void select(TaskClient client) {
     final var start = System.currentTimeMillis();
     
-    final var blobs = client.query().active().findAll().collect().asList().await().atMost(Duration.ofMinutes(1));
+    final var blobs = client.tasks().queryActiveTasks().findAll().await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
     
     log.debug("total time for selecting: {} entries is: {} millis", blobs.size(), end-start);
@@ -65,18 +65,19 @@ public class TaskMetricTest extends TaskTestCase {
   
   
   
-  private void runInserts(TasksClient client, int total) {
+  private void runInserts(TaskClient client, int total) {
     var start = System.currentTimeMillis();
     
     List<CreateTask> bulk = new ArrayList<>();
     for(int index = 0; index < total; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(getTargetDate())
-      .subject("very important subject no: " + index)
+      .title("very important title no: " + index)
       .description("first task ever no: "  + index)
       .priority(Priority.LOW)
       .addRoles("admin-users", "view-only-users")
       .userId("user-1")
+      .reporterId("reporter-1")
       .build();
       bulk.add(newTask);
     }
@@ -85,7 +86,7 @@ public class TaskMetricTest extends TaskTestCase {
     
     start = System.currentTimeMillis();
     
-    client.changes().create(bulk).await().atMost(atMost);
+    client.tasks().createTask().createMany(bulk).await().atMost(atMost);
     end = System.currentTimeMillis();
     log.debug("total time for inserting: {} entries is: {} millis, loop time: {}", total, end-start, loopTime);
   }

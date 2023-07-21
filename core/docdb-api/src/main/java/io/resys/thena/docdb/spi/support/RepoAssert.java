@@ -47,13 +47,13 @@ public class RepoAssert {
       throw new RepoException(getMessage(message));
     }
   }
-  public static void isTrue(boolean expression, Supplier<String> message) {
+  public static void isTrue(boolean expression, Supplier<String> message, Object ...args) {
     if (!expression) {
-      throw new RepoException(getMessage(message));
+      throw new RepoException(getMessage(message, args));
     }
   }
-  private static String getMessage(Supplier<String> supplier) {
-    return (supplier != null ? supplier.get() : null);
+  private static String getMessage(Supplier<String> supplier, Object ... args) {
+    return (supplier != null ? supplier.get().formatted(args) : null);
   }
 
 }

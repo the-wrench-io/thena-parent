@@ -20,45 +20,45 @@ package io.resys.thena.tasks.client.spi;
  * #L%
  */
 
-import io.resys.thena.tasks.client.api.TasksClient;
-import io.resys.thena.tasks.client.api.actions.ChangeActions;
-import io.resys.thena.tasks.client.api.actions.QueryActions;
+import io.resys.thena.tasks.client.api.TaskClient;
+import io.resys.thena.tasks.client.api.actions.ExportActions;
+import io.resys.thena.tasks.client.api.actions.MigrationActions;
+import io.resys.thena.tasks.client.api.actions.RepositoryActions;
 import io.resys.thena.tasks.client.api.actions.StatisticsActions;
-import io.resys.thena.tasks.client.spi.changes.ChangeActionsImpl;
-import io.resys.thena.tasks.client.spi.query.QueryActionsImpl;
+import io.resys.thena.tasks.client.api.actions.TaskActions;
+import io.resys.thena.tasks.client.spi.actions.ExportActionsImpl;
+import io.resys.thena.tasks.client.spi.actions.RepositoryActionsImpl;
+import io.resys.thena.tasks.client.spi.actions.TaskActionsImpl;
 import io.resys.thena.tasks.client.spi.store.DocumentStore;
-import io.smallrye.mutiny.Uni;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public class TaskClientImpl implements TasksClient {
+public class TaskClientImpl implements TaskClient {
   private final DocumentStore ctx;
   
   @Override
-  public ChangeActions changes() {
-    return new ChangeActionsImpl(ctx);
+  public TaskActions tasks() {
+    return new TaskActionsImpl(ctx);
   }
-
-  @Override
-  public QueryActions query() {
-    return new QueryActionsImpl(ctx);
-  }
-
   @Override
   public StatisticsActions statistics() {
     // TODO Auto-generated method stub
     return null;
   }
-
   @Override
-  public TaskRepositoryQuery repo() {
-    DocumentStore.RepositoryQuery next = ctx.repo();
-    return new TaskRepositoryQuery() {
-      @Override public TaskRepositoryQuery repoName(String repoName) { next.repoName(repoName); return this; }
-      @Override public TaskRepositoryQuery headName(String headName) { next.headName(headName); return this; }
-      @Override public Uni<Boolean> createIfNot() { return next.createIfNot(); }
-      @Override public Uni<TasksClient> create() { return next.create().onItem().transform(doc -> new TaskClientImpl(doc)); }
-      @Override public TasksClient build() { return new TaskClientImpl(next.build()); }
-    };
+  public MigrationActions migrate() {
+    // TODO Auto-generated method stub
+    return null;
+  }
+  @Override
+  public ExportActions export() {
+    return new ExportActionsImpl(ctx);
+  }
+  @Override
+  public RepositoryActions repo() {
+    return new RepositoryActionsImpl(ctx);
+  }
+  public DocumentStore getCtx() {
+    return ctx;
   }
 }

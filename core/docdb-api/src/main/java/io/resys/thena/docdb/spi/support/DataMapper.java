@@ -4,7 +4,7 @@ package io.resys.thena.docdb.spi.support;
  * #%L
  * thena-docdb-api
  * %%
- * Copyright (C) 2021 - 2022 Copyright 2021 ReSys OÜ
+ * Copyright (C) 2021 - 2023 Copyright 2021 ReSys OÜ
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,15 @@ package io.resys.thena.docdb.spi.support;
  * #L%
  */
 
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.CommitTree;
-import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitTree;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.vertx.mutiny.sqlclient.Row;
 
 public interface DataMapper<T> {
@@ -37,7 +37,7 @@ public interface DataMapper<T> {
   Tree tree(T row);
   TreeValue treeItem(T row);
   Tag tag(T row);
-  Ref ref(T row);
+  Branch ref(T row);
   Blob blob(T row);
   BlobHistory blobHistory(T row);
   CommitTree commitTree(T row);

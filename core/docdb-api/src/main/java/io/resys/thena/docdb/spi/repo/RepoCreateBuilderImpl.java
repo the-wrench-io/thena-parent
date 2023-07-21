@@ -21,9 +21,9 @@ package io.resys.thena.docdb.spi.repo;
  */
 
 import io.resys.thena.docdb.api.actions.ImmutableRepoResult;
-import io.resys.thena.docdb.api.actions.RepoActions;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.ProjectActions;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
 import io.resys.thena.docdb.api.exceptions.RepoException;
 import io.resys.thena.docdb.api.models.ImmutableRepo;
 import io.resys.thena.docdb.api.models.Repo;
@@ -37,7 +37,7 @@ import lombok.experimental.Accessors;
 
 @RequiredArgsConstructor
 @Data @Accessors(fluent = true)
-public class RepoCreateBuilderImpl implements RepoActions.RepoCreateBuilder {
+public class RepoCreateBuilderImpl implements ProjectActions.ProjectBuilder {
 
   private final ClientState state;
   private String name;
@@ -48,7 +48,7 @@ public class RepoCreateBuilderImpl implements RepoActions.RepoCreateBuilder {
     RepoAssert.isName(name, () -> "repo name has invalid charecters!");
     
 
-    return state.repos().getByName(name)
+    return state.project().getByName(name)
       .onItem().transformToUni((Repo existing) -> {
       
       final Uni<RepoResult> result;
@@ -58,7 +58,7 @@ public class RepoCreateBuilderImpl implements RepoActions.RepoCreateBuilder {
             .addMessages(RepoException.builder().nameNotUnique(existing.getName(), existing.getId()))
             .build());
       } else {
-        result = state.repos().findAll()
+        result = state.project().findAll()
         .collect().asList().onItem()
         .transformToUni((allRepos) -> { 
           
@@ -69,7 +69,7 @@ public class RepoCreateBuilderImpl implements RepoActions.RepoCreateBuilder {
               .prefix("nested_" + (allRepos.size() + 10) + "_")
               .build();
           
-          return state.repos().insert(newRepo)
+          return state.project().insert(newRepo)
             .onItem().transform(next -> (RepoResult) ImmutableRepoResult.builder()
                 .repo(next)
                 .status(RepoStatus.OK)

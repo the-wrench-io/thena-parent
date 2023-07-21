@@ -23,8 +23,8 @@ import io.resys.thena.docdb.api.LogConstants;
  */
 
 import io.resys.thena.docdb.api.models.ImmutableTree;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.spi.ClientQuery.TreeQuery;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.sql.SqlBuilder;

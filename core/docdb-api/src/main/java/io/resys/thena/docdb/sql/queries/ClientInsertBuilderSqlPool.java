@@ -21,11 +21,11 @@ package io.resys.thena.docdb.sql.queries;
  */
 
 import io.resys.thena.docdb.api.models.ImmutableMessage;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.spi.ClientInsertBuilder;
 import io.resys.thena.docdb.spi.ErrorHandler;
 import io.resys.thena.docdb.spi.ImmutableBatch;
@@ -96,7 +96,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
         .onFailure().invoke(e -> errorHandler.deadEnd("Can't insert into 'BLOB': '" + blobsInsert.getValue() + "'!", e));
   }
 
-  public Uni<UpsertResult> ref(Ref ref, Commit commit) {
+  public Uni<UpsertResult> ref(Branch ref, Commit commit) {
     final var findByName = sqlBuilder.refs().getByName(ref.getName());
     return wrapper.getClient().preparedQuery(findByName.getValue())
         .mapping(r -> sqlMapper.ref(r))
@@ -112,7 +112,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   
   
   
-  public Uni<UpsertResult> updateRef(Ref ref, Commit commit) {
+  public Uni<UpsertResult> updateRef(Branch ref, Commit commit) {
     final var refInsert = sqlBuilder.refs().updateOne(ref, commit);
     return wrapper.getClient().preparedQuery(refInsert.getValue()).execute(refInsert.getProps())
         .onItem()
@@ -151,7 +151,7 @@ public class ClientInsertBuilderSqlPool implements ClientInsertBuilder {
   }
   
   
-  private Uni<UpsertResult> createRef(Ref ref, Commit commit) {
+  private Uni<UpsertResult> createRef(Branch ref, Commit commit) {
     final var refsInsert = sqlBuilder.refs().insertOne(ref);
     return wrapper.getClient().preparedQuery(refsInsert.getValue()).execute(refsInsert.getProps())
         .onItem()

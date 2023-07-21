@@ -94,18 +94,18 @@ public class DocDBFactorySql implements ClientState {
   }
   @Override
   public Uni<ClientQuery> query(String repoNameOrId) {
-    return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> query(repo));
+    return project().getByNameOrId(repoNameOrId).onItem().transform(repo -> query(repo));
   }
   @Override
   public Uni<ClientInsertBuilder> insert(String repoNameOrId) {
-    return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> insert(repo));
+    return project().getByNameOrId(repoNameOrId).onItem().transform(repo -> insert(repo));
   }
   @Override
   public Uni<ClientRepoState> withRepo(String repoNameOrId) {
-    return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
+    return project().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
   }
   @Override
-  public RepoBuilder repos() {
+  public RepoBuilder project() {
     return new RepoBuilderSqlPool(pool, null, ctx, sqlSchema.apply(ctx), sqlMapper.apply(ctx), sqlBuilder.apply(ctx), handler);
   }
   @Override

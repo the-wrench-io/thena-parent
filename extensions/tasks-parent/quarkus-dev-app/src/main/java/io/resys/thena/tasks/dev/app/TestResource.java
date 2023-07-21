@@ -32,10 +32,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import io.quarkus.vertx.http.Compressed;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableCreateTask;
 import io.resys.thena.tasks.client.api.model.Task;
-import io.resys.thena.tasks.client.api.model.TaskAction.CreateTask;
+import io.resys.thena.tasks.client.api.model.TaskCommand.CreateTask;
+import io.resys.thena.tasks.dev.app.BeanFactory.CurrentProject;
 import io.smallrye.mutiny.Uni;
 import io.vertx.mutiny.core.Vertx;
 import lombok.Builder;
@@ -47,8 +48,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TestResource {
   @Inject Vertx vertx;
-  @Inject TasksClient client;
-
+  @Inject TaskClient client;
+  @Inject CurrentProject currentProject;
+  
   //http://localhost:8080/portal/active/tasks
   @Jacksonized @Data @Builder
   public static class HeadState {
@@ -69,27 +71,23 @@ public class TestResource {
     for(int index = 0; index < count; index++) {
       final var newTask = ImmutableCreateTask.builder()
       .targetDate(targetDate)
-      .subject(provider.getSubject())
+      .title(provider.getTitle())
       .description(provider.getDescription())
       .priority(provider.getPriority())
       .roles(provider.getRoles())
-      .owners(provider.getOwners())
+      .assigneeIds(provider.getAssigneeIds())
+      .reporterId(provider.getReporterId())
       .status(provider.getStatus())
       .userId("demo-gen-1")
       .addAllExtensions(provider.getExtensions())
-      .addAllExternalComments(provider.getExtComments())
-      .addAllInternalComments(provider.getIntComments())
+      .comments(provider.getComments())
       .build();
       bulk.add(newTask);
     }
-    
-    return client.repo().createIfNot()
+    final var response = HeadState.builder().created(true).build();
+    return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
         .onItem().transformToUni(created -> {
-          if(created) {
-            return client.changes().create(bulk)
-                .onItem().transform(tasks -> HeadState.builder().created(created).build());
-          }
-          return Uni.createFrom().item(HeadState.builder().created(created).build());
+          return client.tasks().createTask().createMany(bulk).onItem().transform((data) -> response);
         });
   }
   
@@ -97,13 +95,12 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("demo/clear")
   public Uni<HeadState> clear() {
-    return client.repo().createIfNot()
+    return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
         .onItem().transformToUni(created -> {
-          if(created) {
-            return client.query().delete().deleteAll().collect().asList()
-                .onItem().transform(tasks -> HeadState.builder().created(created).build());
-          }
-          return Uni.createFrom().item(HeadState.builder().created(created).build());
+          
+            return client.tasks().queryActiveTasks().deleteAll("", LocalDateTime.now())
+                .onItem().transform(tasks -> HeadState.builder().created(true).build());
+          
         });
   }
   
@@ -112,8 +109,8 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("init")
   public Uni<HeadState> init() {
-    return client.repo().createIfNot()
-        .onItem().transform(created -> HeadState.builder().created(created).build());
+    return client.repo().query().repoName(currentProject.getProjectId()).headName(currentProject.getHead()).createIfNot()
+        .onItem().transform(created -> HeadState.builder().created(true).build());
   }
   
   @Compressed
@@ -121,6 +118,6 @@ public class TestResource {
   @Produces(MediaType.APPLICATION_JSON)
   @Path("active/tasks")
   public Uni<List<Task>> findAllActiveTasks() {
-    return client.query().active().findAll().collect().asList();
+    return client.tasks().queryActiveTasks().findAll();
   }
 }

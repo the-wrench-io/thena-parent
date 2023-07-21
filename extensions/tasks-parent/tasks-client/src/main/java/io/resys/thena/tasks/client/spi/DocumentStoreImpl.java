@@ -26,7 +26,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.resys.thena.docdb.api.DocDB;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
+import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.spi.OidUtils;
 import io.resys.thena.docdb.spi.pgsql.DocDBFactoryPgSql;
 import io.resys.thena.docdb.spi.pgsql.PgErrors;
@@ -56,33 +57,40 @@ import lombok.extern.slf4j.Slf4j;
 public class DocumentStoreImpl implements DocumentStore {
   private final DocumentConfig config;
   
+
+  @Override
+  public Uni<Repo> getRepo() {
+    final var client = config.getClient();
+    return client.project().projectsQuery().id(config.getProjectName()).get();
+  }
   @Override public DocumentConfig getConfig() { return config; }
-  @Override public RepositoryQuery repo() {
-    return new RepositoryQuery() {
+  @Override public DocumentRepositoryQuery query() {
+    return new DocumentRepositoryQuery() {
       private String repoName, headName;
-      @Override public RepositoryQuery repoName(String repoName) { this.repoName = repoName; return this; }
-      @Override public RepositoryQuery headName(String headName) { this.headName = headName; return this; }
+      @Override public DocumentRepositoryQuery repoName(String repoName) { this.repoName = repoName; return this; }
+      @Override public DocumentRepositoryQuery headName(String headName) { this.headName = headName; return this; }
       @Override public Uni<DocumentStore> create() { return createRepo(repoName, headName); }
       @Override public DocumentStore build() { return createClientStore(repoName, headName); }
-      @Override public Uni<Boolean> createIfNot() { return createRepoOrGetRepo(); }
+      @Override public Uni<DocumentStore> createIfNot() { return createRepoOrGetRepo(repoName, headName); }
     };
   }
   
-  private Uni<Boolean> createRepoOrGetRepo() {
+  private Uni<DocumentStore> createRepoOrGetRepo(String repoName, String headName) {
     final var client = config.getClient();
     
-    return client.repo().query().id(config.getRepoName()).get().onItem().transformToUni(repo -> {
-      if(repo == null) {
-        return client.repo().create().name(config.getRepoName()).build().onItem().transform(newRepo -> true); 
-      }
-      return Uni.createFrom().item(true);
+    return client.project().projectsQuery().id(repoName).get()
+        .onItem().transformToUni(repo -> {        
+          if(repo == null) {
+            return createRepo(repoName, headName); 
+          }
+          return Uni.createFrom().item(createClientStore(repoName, headName));
     });
   }
   
   private Uni<DocumentStore> createRepo(String repoName, String headName) {
     RepoAssert.notNull(repoName, () -> "repoName must be defined!");
     final var client = config.getClient();
-    final var newRepo = client.repo().create().name(repoName).build();
+    final var newRepo = client.project().projectBuilder().name(repoName).build();
     return newRepo.onItem().transform((repoResult) -> {
       if(repoResult.getStatus() != RepoStatus.OK) {
         throw new DocumentStoreException("REPO_CREATE_FAIL", 
@@ -101,7 +109,7 @@ public class DocumentStoreImpl implements DocumentStore {
     RepoAssert.notNull(repoName, () -> "repoName must be defined!");
     return new DocumentStoreImpl(ImmutableDocumentConfig.builder()
         .from(config)
-        .repoName(repoName)
+        .projectName(repoName)
         .headName(headName == null ? config.getHeadName() : headName)
         .build());
     
@@ -191,11 +199,12 @@ public class DocumentStoreImpl implements DocumentStore {
       }
       
       final DocumentConfig config = ImmutableDocumentConfig.builder()
-          .client(thena).repoName(repoName).headName(headName)
+          .client(thena).projectName(repoName).headName(headName)
           .gid(getGidProvider())
           .author(getAuthorProvider())
           .build();
       return new DocumentStoreImpl(config);
     }
   }
+
 }

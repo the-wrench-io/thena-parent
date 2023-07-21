@@ -1,8 +1,8 @@
-import { Task, TaskExtension, TaskPriority, TaskStatus } from './client-types';
+import { Task, TaskExtension, TaskPriority, TaskStatus } from './task-types';
 import {
   PalleteType, TasksState, TasksMutatorBuilder, TaskDescriptor, FilterBy, Group, GroupBy,
   RoleUnassigned, OwnerUnassigned, TasksStatePallette,
-  FilterByOwners, FilterByPriority, FilterByRoles, FilterByStatus
+  FilterByOwners, FilterByPriority, FilterByRoles, FilterByStatus, AvatarCode
 } from './tasks-ctx-types';
 
 
@@ -88,35 +88,35 @@ class TasksStateBuilder implements TasksMutatorBuilder {
     const roles: string[] = [_nobody_];
     const owners: string[] = [_nobody_];
     const tasksByOwner: Record<string, TaskDescriptor[]> = {};
-    
+
     input.forEach(task => {
       const item = new TaskDescriptorImpl(task);
       tasks.push(item);
-      
+
       task.roles.forEach(role => {
         if (!roles.includes(role)) {
           roles.push(role)
         }
       });
-      task.owners.forEach(owner => {
+      task.assigneeIds.forEach(owner => {
         if (!owners.includes(owner)) {
           owners.push(owner)
         }
-        
-        if(!tasksByOwner[owner]) {
+
+        if (!tasksByOwner[owner]) {
           tasksByOwner[owner] = [];
         }
         tasksByOwner[owner].push(item);
-        
+
       });
-      
-      if(task.owners.length === 0) {
-        if(!tasksByOwner[_nobody_]) {
+
+      if (task.assigneeIds.length === 0) {
+        if (!tasksByOwner[_nobody_]) {
           tasksByOwner[_nobody_] = [];
         }
         tasksByOwner[_nobody_].push(item);
       }
-      
+
     });
 
     owners.sort();
@@ -160,7 +160,7 @@ class TasksStateBuilder implements TasksMutatorBuilder {
       if (!applyDescFilters(value, this._filterBy)) {
         continue;
       }
-      if(!applySearchString(value, cleaned)) {
+      if (!applySearchString(value, cleaned)) {
         continue;
       }
       filtered.push(value);
@@ -234,8 +234,8 @@ class TasksStateBuilder implements TasksMutatorBuilder {
     for (const v of this._filterBy) {
       if (v.type === input.type) {
         const merged = this.mergeFilters(v, input);
-        if(merged) {
-          result.push(merged);          
+        if (merged) {
+          result.push(merged);
         }
       } else {
         result.push(v);
@@ -344,8 +344,8 @@ class GroupVisitor {
     if (this._groupBy === 'none') {
       this._groups[this._groupBy].records.push(task);
     } else if (this._groupBy === 'owners') {
-      if (task.owners.length) {
-        task.owners.forEach(o => this._groups[o].records.push(task));
+      if (task.assignees.length) {
+        task.assignees.forEach(o => this._groups[o].records.push(task));
       } else {
         this._groups[_nobody_].records.push(task);
       }
@@ -369,13 +369,18 @@ class TaskDescriptorImpl implements TaskDescriptor {
   private _dialobId: string;
   private _dueDate: Date | undefined;
   private _uploads: TaskExtension[];
-  
+  private _rolesAvatars: AvatarCode[];
+  private _ownersAvatars: AvatarCode[];
+
   constructor(entry: Task) {
     this._entry = entry;
     this._created = new Date(entry.created);
     this._dueDate = entry.dueDate ? new Date(entry.dueDate) : undefined;
     this._dialobId = entry.extensions.find(t => t.type === 'dialob')!.body;
     this._uploads = entry.extensions.filter(t => t.type === 'upload');
+    this._rolesAvatars = this.getAvatar(entry.roles);
+    this._ownersAvatars = this.getAvatar(entry.assigneeIds);
+    
   }
   get id() { return this._entry.id }
   get dialobId() { return this._dialobId }
@@ -386,11 +391,32 @@ class TaskDescriptorImpl implements TaskDescriptor {
   get status() { return this._entry.status }
   get priority() { return this._entry.priority }
   get roles() { return this._entry.roles }
-  get owners() { return this._entry.owners }
+  get assignees() { return this._entry.assigneeIds }
   get labels() { return this._entry.labels }
-  get subject() { return this._entry.subject }
+  get title() { return this._entry.title }
   get description() { return this._entry.description }
   get uploads() { return this._uploads }
+  get rolesAvatars() {return this._rolesAvatars }
+  get assigneesAvatars() {return this._ownersAvatars }
+
+  getAvatar(values: string[]): { twoletters: string, value: string }[] {
+    return values.map(role => {
+      const words: string[] = role.replaceAll("-", " ").replaceAll("_", " ").replace(/([A-Z])/g, ' $1').replaceAll("  ", " ").trim().split(" ");
+
+      const result: string[] = [];
+      for (const word of words) {
+        if (result.length >= 2) {
+          break;
+        }
+
+        if (word && word.length) {
+          const firstLetter = word.substring(0, 1);
+          result.push(firstLetter.toUpperCase());
+        }
+      }
+      return { twoletters: result.join(""), value: role };
+    });
+  }
 }
 
 function applyDescFilters(desc: TaskDescriptor, filters: FilterBy[]): boolean {
@@ -408,17 +434,17 @@ function applyDescFilters(desc: TaskDescriptor, filters: FilterBy[]): boolean {
 
 function applySearchString(desc: TaskDescriptor, searchString: string): boolean {
   const description: boolean = desc.description?.toLowerCase().indexOf(searchString) > -1;
-  return desc.subject.toLowerCase().indexOf(searchString) > -1 || description;
+  return desc.title.toLowerCase().indexOf(searchString) > -1 || description;
 }
 
 function applyDescFilter(desc: TaskDescriptor, filter: FilterBy): boolean {
   switch (filter.type) {
     case 'FilterByOwners': {
       for (const owner of filter.owners) {
-        if (desc.owners.length === 0 && owner === _nobody_) {
+        if (desc.assignees.length === 0 && owner === _nobody_) {
           continue;
         }
-        if (!desc.owners.includes(owner)) {
+        if (!desc.assignees.includes(owner)) {
           return false;
         }
       }

@@ -23,20 +23,20 @@ import io.resys.thena.docdb.api.actions.CommitActions;
  */
 
 import io.resys.thena.docdb.api.actions.DiffActions;
-import io.resys.thena.docdb.api.actions.ObjectsActions;
-import io.resys.thena.docdb.api.actions.RepoActions;
+import io.resys.thena.docdb.api.actions.ProjectActions;
+import io.resys.thena.docdb.api.actions.PullActions;
 import io.resys.thena.docdb.spi.ClientState;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class DiffActionsImpl implements DiffActions {
   private final ClientState state;
-  private final ObjectsActions objects;
+  private final PullActions objects;
   private final CommitActions commits;
-  private final RepoActions repos;
+  private final ProjectActions repos;
   
   @Override
-  public DiffBuilder builder() {
-    return new DiffBuilderImpl(state, objects, commits, repos);
+  public DiffQuery diffQuery() {
+    return new DiffQueryImpl(state, objects, commits, repos);
   }
 }

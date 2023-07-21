@@ -29,6 +29,7 @@ import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
@@ -36,43 +37,65 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 public interface Task extends Document {
 
   LocalDateTime getCreated();
-  @Nullable LocalDateTime getUpdated();  
-  
-  List<TaskAction> getActions(); 
-  
-  List<String> getRoles();
-  List<String> getOwners();
-  
+  LocalDateTime getUpdated();
+  @Nullable LocalDateTime getArchived();
+  @Nullable LocalDate getStartDate();
   @Nullable LocalDate getDueDate();
-  String getSubject();
+  
+  @Nullable String getParentId(); //for task linking/grouping 
+  List<TaskTransaction> getTransactions(); 
+  List<String> getRoles();
+  List<String> getAssigneeIds();
+  String getReporterId();
+  
+ 
+  String getTitle();
   String getDescription();
   Priority getPriority();
   Status getStatus();
-  
   List<String> getLabels();
   List<TaskExtension> getExtensions();
-
-  List<TaskComment> getExternalComments();
-  List<TaskComment> getInternalComments();
+  List<TaskComment> getComments();
+  
+  @Value.Default
+  default DocumentType getDocumentType() {
+    return DocumentType.TASK;
+  }
   
   enum Status { CREATED, IN_PROGRESS, COMPLETED, REJECTED }
   enum Priority { LOW, MEDIUM, HIGH }  
   
-  @Value.Immutable @JsonSerialize(as = ImmutableTaskExtension.class) @JsonDeserialize(as = ImmutableTaskExtension.class)
-  interface TaskExtension extends Serializable {
+  @Value.Immutable @JsonSerialize(as = ImmutableTaskTransaction.class) @JsonDeserialize(as = ImmutableTaskTransaction.class)
+  interface TaskTransaction extends Serializable {
     String getId();
-    String getType();
+    List<TaskCommand> getCommands(); 
+  }
+
+  interface TaskItem {
+    String getId();
+  }
+  
+  @Value.Immutable @JsonSerialize(as = ImmutableTaskExtension.class) @JsonDeserialize(as = ImmutableTaskExtension.class)
+  interface TaskExtension extends Serializable, TaskItem {
+    String getType(); //attachment, dialob, etc.
     String getName();
     String getBody();
   }
   
   @Value.Immutable @JsonSerialize(as = ImmutableTaskComment.class) @JsonDeserialize(as = ImmutableTaskComment.class)
-  interface TaskComment {
-    String getId();
+  interface TaskComment extends TaskItem {
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     LocalDateTime getCreated();
     @Nullable String getReplyToId();
     String getCommentText();
     String getUsername();
   }
 
+  @Value.Immutable @JsonSerialize(as = ImmutableTaskHistory.class) @JsonDeserialize(as = ImmutableTaskHistory.class)
+  interface TaskHistory {
+    String getId();
+    List<Task> getVersions();
+  }
+
+  
 }

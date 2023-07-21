@@ -112,8 +112,8 @@ public class RepoException extends DocDBException {
         .text(new StringBuilder()
         .append("Repo with name: '").append(repo.getName()).append("'")
         .append(", tag, ref or commit with id: ").append(" '").append(refCriteria).append("'")
-        .append(" and tree: ").append(tree)
-        .append(" does not contain a blob with name: ").append("'").append(blobName).append("'").append("!")
+        .append(" and tree: '").append(tree).append("'")
+        .append(" does not contain a blob with name: ").append("'").append(String.join(",", blobName)).append("'").append("!")
         .toString())
         .build();
     }

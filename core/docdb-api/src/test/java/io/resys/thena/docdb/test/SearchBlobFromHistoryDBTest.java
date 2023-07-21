@@ -29,8 +29,8 @@ import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.spi.ClientQuery.CriteriaType;
-import io.resys.thena.docdb.spi.ImmutableBlobCriteria;
+import io.resys.thena.docdb.api.actions.ImmutableMatchCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteriaType;
 import io.resys.thena.docdb.test.config.DbTestTemplate;
 import io.resys.thena.docdb.test.config.PgProfile;
 import io.vertx.core.json.JsonArray;
@@ -47,7 +47,7 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
   public SearchBlobFromHistoryDBTest() {
     super((client, repo) -> {
       
-      client.commit().builder()
+      client.commit().commitBuilder()
           .head(repo.getName(), "main")
           .append("ID-1", new JsonObject(Map.of(
               "type", "person",
@@ -76,7 +76,7 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
   public void addSamVimesChanges(int changes, String id) {
     final var client = getClient();
     for(int index = 0; index < changes; index++) { 
-      client.commit().builder()
+      client.commit().commitBuilder()
       .head(getRepo().getName(), "main")
       .append(id, JsonObject.of(
         "type", "person",
@@ -85,7 +85,7 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
         ))
       .author("tester bob")
       .message("change commit!")
-      .parentIsLatest()
+      .latestCommit()
       .build()
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
@@ -95,7 +95,7 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
   public void addCassandraChaseChanges(int changes, String id) {
     final var client = getClient();
     for(int index = 0; index < changes; index++) { 
-      client.commit().builder()
+      client.commit().commitBuilder()
       .head(getRepo().getName(), "main")
       .append(id, JsonObject.of(
         "type", "person",
@@ -104,7 +104,7 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
         ))
       .author("tester bob")
       .message("change commit!")
-      .parentIsLatest()
+      .latestCommit()
       .build()
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
@@ -117,17 +117,17 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
     addSamVimesChanges(20, "ID-1");
     addCassandraChaseChanges(20, "ID-2");
     
-    final var history = getClient().history().blob()
-      .repo(getRepo().getName(), "main")
-      .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.EXACT).key("name").value("sam").build())
+    final var history = getClient().history().blobQuery()
+      .head(getRepo().getName(), "main")
+      .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.EQUALS).key("name").value("sam").build())
       .latestOnly()
-      .build()
+      .get()
       .await().atMost(Duration.ofMinutes(1));
     
     log.debug("Found type=person from history, body: {}", JsonArray.of(history).toString());
-    Assertions.assertEquals(1, history.getValues().size());
+    Assertions.assertEquals(1, history.getObjects().getValues().size());
     
-    final var first = history.getValues().get(0);
+    final var first = history.getObjects().getValues().get(0);
     Assertions.assertEquals("ID-1", first.getTreeValueName());
     Assertions.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode());
   }
@@ -137,17 +137,17 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
     addSamVimesChanges(20, "ID-1");
     addCassandraChaseChanges(20, "ID-2");
     
-    final var history = getClient().history().blob()
-      .repo(getRepo().getName(), "main")
-      .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.LIKE).key("name").value("sam").build())
+    final var history = getClient().history().blobQuery()
+      .head(getRepo().getName(), "main")
+      .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.LIKE).key("name").value("sam").build())
       .latestOnly()
-      .build()
+      .get()
       .await().atMost(Duration.ofMinutes(1));
     
     log.debug("Found type=person from history, body: {}", JsonArray.of(history).toString());
-    Assertions.assertEquals(1, history.getValues().size());
+    Assertions.assertEquals(1, history.getObjects().getValues().size());
     
-    final var first = history.getValues().get(0);
+    final var first = history.getObjects().getValues().get(0);
     Assertions.assertEquals("ID-1", first.getTreeValueName());
     Assertions.assertEquals("{\"type\":\"person\",\"name\":\"sam\",\"lastName\":\"vimes\",\"change id\":\"20 of changes: 20\"}", first.getBlob().getValue().encode());
   }
@@ -159,22 +159,24 @@ public class SearchBlobFromHistoryDBTest extends DbTestTemplate {
     addCassandraChaseChanges(20, "ID-2");
     
     
-    var history = getClient().history().blob()
-      .repo(getRepo().getName(), "main")
-      .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.LIKE).key("name").value("sam").build())
+    var history = getClient().history().blobQuery()
+      .head(getRepo().getName(), "main")
+      .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.LIKE).key("name").value("sam").build())
       .latestOnly(false)
-      .build()
+      .get()
       .await().atMost(Duration.ofMinutes(1));
     
-    Assertions.assertEquals(41, history.getValues().size());
+    Assertions.assertEquals(41, history.getObjects().getValues().size());
+    log.debug("Found 41 historic entries: \r\n {}", JsonArray.of(history).encodePrettily());
     
-    history = getClient().history().blob()
-        .repo(getRepo().getName(), "main")
-        .criteria(ImmutableBlobCriteria.builder().type(CriteriaType.EXACT).key("name").value("sam").build())
+    
+    history = getClient().history().blobQuery()
+        .head(getRepo().getName(), "main")
+        .matchBy(ImmutableMatchCriteria.builder().type(MatchCriteriaType.EQUALS).key("name").value("sam").build())
         .latestOnly(false)
-        .build()
+        .get()
         .await().atMost(Duration.ofMinutes(1));
       
-    Assertions.assertEquals(41, history.getValues().size());
+    Assertions.assertEquals(41, history.getObjects().getValues().size());
   }
 }

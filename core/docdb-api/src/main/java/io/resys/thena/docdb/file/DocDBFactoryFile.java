@@ -46,14 +46,14 @@ public class DocDBFactoryFile {
     return new ClientState() {
       @Override
       public <R> Uni<R> withTransaction(String repoId, String headName, TransactionFunction<R> callback) {
-        return repos().getByNameOrId(repoId).onItem().transformToUni(repo -> {
+        return project().getByNameOrId(repoId).onItem().transformToUni(repo -> {
           final ClientRepoState repoState = withRepo(repo);
           return callback.apply(repoState);
         });
       }
       @Override
       public Uni<ClientRepoState> withRepo(String repoNameOrId) {
-        return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
+        return project().getByNameOrId(repoNameOrId).onItem().transform(repo -> withRepo(repo));
       }
       @Override
       public ErrorHandler getErrorHandler() {
@@ -64,12 +64,12 @@ public class DocDBFactoryFile {
         return ctx;
       }
       @Override
-      public RepoBuilder repos() {
+      public RepoBuilder project() {
         return new RepoBuilderFilePool(client, ctx, sqlMapper(ctx), sqlBuilder(ctx), handler);
       }
       @Override
       public Uni<ClientInsertBuilder> insert(String repoNameOrId) {
-        return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> insert(repo));
+        return project().getByNameOrId(repoNameOrId).onItem().transform(repo -> insert(repo));
       }
       @Override
       public ClientInsertBuilder insert(Repo repo) {
@@ -82,7 +82,7 @@ public class DocDBFactoryFile {
       }
       @Override
       public Uni<ClientQuery> query(String repoNameOrId) {
-        return repos().getByNameOrId(repoNameOrId).onItem().transform(repo -> query(repo));
+        return project().getByNameOrId(repoNameOrId).onItem().transform(repo -> query(repo));
       }
       @Override
       public ClientQuery query(Repo repo) {

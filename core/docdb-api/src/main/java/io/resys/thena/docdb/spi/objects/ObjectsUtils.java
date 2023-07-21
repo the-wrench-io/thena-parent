@@ -24,10 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
 import io.smallrye.mutiny.Uni;
 import lombok.extern.slf4j.Slf4j;
@@ -68,7 +68,7 @@ public class ObjectsUtils {
   }
   
 
-  public static Uni<Map<String, Blob>> getBlobs(Tree tree, List<BlobCriteria> blobCriteria, ClientRepoState ctx) {
+  public static Uni<Map<String, Blob>> getBlobs(Tree tree, List<MatchCriteria> blobCriteria, ClientRepoState ctx) {
     return ctx.query().blobs().findAll(tree.getId(), blobCriteria).collect().asList().onItem()
         .transform(blobs -> blobs.stream().collect(Collectors.toMap(r -> r.getId(), r -> r)));
   }

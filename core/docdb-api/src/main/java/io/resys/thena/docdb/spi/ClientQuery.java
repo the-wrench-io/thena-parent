@@ -26,13 +26,14 @@ import javax.annotation.Nullable;
 
 import org.immutables.value.Value;
 
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.CommitLock;
-import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLock;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
 import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 
@@ -46,17 +47,17 @@ public interface ClientQuery {
   
   
   interface RefQuery {
-    Uni<Ref> name(String name);
-    Uni<Ref> nameOrCommit(String refNameOrCommit);
-    Uni<Ref> get();
-    Multi<Ref> findAll();
+    Uni<Branch> name(String name);
+    Uni<Branch> nameOrCommit(String refNameOrCommit);
+    Uni<Branch> get();
+    Multi<Branch> findAll();
   }
   
   interface BlobHistoryQuery {
     BlobHistoryQuery latestOnly(boolean latestOnly);
     BlobHistoryQuery blobName(String name);
-    BlobHistoryQuery criteria(BlobCriteria ... criteria);
-    BlobHistoryQuery criteria(List<BlobCriteria> criteria);
+    BlobHistoryQuery criteria(MatchCriteria ... criteria);
+    BlobHistoryQuery criteria(List<MatchCriteria> criteria);
     Multi<BlobHistory> find();
   }
   
@@ -64,8 +65,8 @@ public interface ClientQuery {
     Uni<Blob> getById(String blobId);
     
     Multi<Blob> findAll();
-    Multi<Blob> findAll(String treeId, List<String> blobNames, List<BlobCriteria> criteria);
-    Multi<Blob> findAll(String treeId, List<BlobCriteria> criteria);
+    Multi<Blob> findAll(String treeId, List<String> docIds, List<MatchCriteria> matchBy);
+    Multi<Blob> findAll(String treeId, List<MatchCriteria> criteria);
   }
   interface CommitQuery {
     Uni<Commit> getById(String commitId);
@@ -93,16 +94,5 @@ public interface ClientQuery {
   @Value.Immutable
   interface DeleteResult {
     long getDeletedCount();
-  }
-  
-  @Value.Immutable  
-  interface BlobCriteria {
-    CriteriaType getType();
-    String getKey();
-    String getValue();
-  }
-  
-  enum CriteriaType {
-    EXACT, LIKE
   }
 }

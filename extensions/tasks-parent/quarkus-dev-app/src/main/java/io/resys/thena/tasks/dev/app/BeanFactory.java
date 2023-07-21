@@ -31,7 +31,7 @@ import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.quarkus.runtime.annotations.RegisterForReflection;
 import io.resys.thena.docdb.spi.jackson.VertexExtModule;
-import io.resys.thena.tasks.client.api.TasksClient;
+import io.resys.thena.tasks.client.api.TaskClient;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskComment;
 import io.resys.thena.tasks.client.api.model.ImmutableTaskExtension;
@@ -42,6 +42,8 @@ import io.vertx.core.json.jackson.VertxModule;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.pgclient.PgConnectOptions;
 import io.vertx.sqlclient.PoolOptions;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Dependent
 @RegisterForReflection(targets = {
@@ -69,11 +71,23 @@ public class BeanFactory {
   @ConfigProperty(name = "tasks.db.pg.pgPass")
   String pgPass;
 
-
+  @ConfigProperty(name = "tasks.project.id")
+  String projectId;
+  
+  @Data @RequiredArgsConstructor
+  public static class CurrentProject {
+    private final String projectId;
+    private final String head = "main";
+  }
+  
+  @Produces 
+  public CurrentProject currentProject() {
+    return new CurrentProject(projectId);
+  }
   
   
   @Produces
-  public TasksClient client(Vertx vertx, ObjectMapper om) {
+  public TaskClient client(Vertx vertx, ObjectMapper om) {
     final var modules = new com.fasterxml.jackson.databind.Module[] {
       new JavaTimeModule(), 
       new Jdk8Module(), 
@@ -93,7 +107,7 @@ public class BeanFactory {
     final var pgPool = io.vertx.mutiny.pgclient.PgPool.pool(vertx, connectOptions, poolOptions);
       
     final var store = DocumentStoreImpl.builder()
-        .repoName(repositoryName)
+        .repoName(projectId)
         .pgPool(pgPool)
         .pgDb(pgDb)
         .pgPoolSize(pgPoolSize)

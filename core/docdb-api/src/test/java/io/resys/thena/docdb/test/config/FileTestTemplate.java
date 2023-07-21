@@ -36,7 +36,7 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import io.resys.thena.docdb.api.DocDB;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
 import io.resys.thena.docdb.api.models.Repo;
 import io.resys.thena.docdb.file.DocDBFactoryFile;
 import io.resys.thena.docdb.file.FileErrors;
@@ -96,7 +96,7 @@ public class FileTestTemplate {
         .errorHandler(new FileErrors())
         .build();
     
-    repo = this.client.repo().create().name("junit" + index.incrementAndGet()).build().await().atMost(Duration.ofSeconds(10)).getRepo();
+    repo = this.client.project().projectBuilder().name("junit" + index.incrementAndGet()).build().await().atMost(Duration.ofSeconds(10)).getRepo();
     if(callback != null) {
       callback.accept(client, repo);
     }
@@ -109,7 +109,7 @@ public class FileTestTemplate {
     
   public RepoResult createRepo(String name) {
     
-    RepoResult repo = client.repo().create()
+    RepoResult repo = client.project().projectBuilder()
         .name(name)
         .build()
         .await().atMost(Duration.ofMinutes(1));

@@ -31,10 +31,10 @@ import org.slf4j.LoggerFactory;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
 import io.resys.thena.docdb.test.config.DbTestTemplate;
 import io.resys.thena.docdb.test.config.PgProfile;
 import io.vertx.core.json.JsonObject;
@@ -55,7 +55,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
   @Test
   public void crateRepoAddAndDeleteFile() {
     // create project
-    RepoResult repo = getClient().repo().create()
+    RepoResult repo = getClient().project().projectBuilder()
         .name("crateRepoAddAndDeleteFile")
         .build()
         .await().atMost(Duration.ofMinutes(1));
@@ -63,7 +63,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().builder()
+    CommitResultEnvelope commit_0 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .author("same vimes")
@@ -73,11 +73,11 @@ public class SaveAndGetDBTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
 
     LOGGER.debug("created commit {}", commit_0);
-    Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
+    Assertions.assertEquals(CommitResultStatus.OK, commit_0.getStatus());
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().builder()
+    CommitResultEnvelope commit_1 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .remove("readme.md")
@@ -88,14 +88,14 @@ public class SaveAndGetDBTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
     
     LOGGER.debug("created commit 1 {}", commit_1);
-    Assertions.assertEquals(CommitStatus.OK, commit_1.getStatus());
+    Assertions.assertEquals(CommitResultStatus.OK, commit_1.getStatus());
     super.printRepo(repo.getRepo());
   }
   
   @Test
   public void crateRepoWithOneCommit() {
     // create project
-    RepoResult repo = getClient().repo().create()
+    RepoResult repo = getClient().project().projectBuilder()
         .name("project-x")
         .build()
         .await().atMost(Duration.ofMinutes(1));
@@ -103,7 +103,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().builder()
+    CommitResultEnvelope commit_0 = getClient().commit().commitBuilder()
       .head("project-x", "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .append("file1.json", JsonObject.of("content", ""))
@@ -116,7 +116,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
 
     LOGGER.debug("created commit {}", commit_0);
-    Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
+    Assertions.assertEquals(CommitResultStatus.OK, commit_0.getStatus());
     super.printRepo(repo.getRepo());
   }
   
@@ -124,7 +124,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
   @Test
   public void createRepoWithTwoCommits() {
     // create project
-    RepoResult repo = getClient().repo().create()
+    RepoResult repo = getClient().project().projectBuilder()
         .name("project-xy")
         .build()
         .await().atMost(Duration.ofMinutes(1));
@@ -132,7 +132,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
     Assertions.assertEquals(RepoStatus.OK, repo.getStatus());
     
     // Create head and first commit
-    CommitResult commit_0 = getClient().commit().builder()
+    CommitResultEnvelope commit_0 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .append("readme.md", JsonObject.of("content", "readme content"))
       .append("file1.json", JsonObject.of("content", ""))
@@ -144,11 +144,11 @@ public class SaveAndGetDBTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
 
     LOGGER.debug("created commit 0 {}", commit_0);
-    Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
+    Assertions.assertEquals(CommitResultStatus.OK, commit_0.getStatus());
     
     
     // Create head and first commit
-    CommitResult commit_1 = getClient().commit().builder()
+    CommitResultEnvelope commit_1 = getClient().commit().commitBuilder()
       .head(repo.getRepo().getName(), "main")
       .parent(commit_0.getCommit().getId())
       .append("readme.md", JsonObject.of("content", "readme content"))
@@ -161,7 +161,7 @@ public class SaveAndGetDBTest extends DbTestTemplate {
       .await().atMost(Duration.ofMinutes(1));
     
     LOGGER.debug("created commit 1 {}", commit_1);
-    Assertions.assertEquals(CommitStatus.OK, commit_1.getStatus());
+    Assertions.assertEquals(CommitResultStatus.OK, commit_1.getStatus());
     
     super.printRepo(repo.getRepo());
   }

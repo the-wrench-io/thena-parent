@@ -25,8 +25,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import io.resys.thena.docdb.api.LogConstants;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.spi.ClientQuery.BlobCriteria;
+import io.resys.thena.docdb.api.actions.PullActions.MatchCriteria;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
 import io.resys.thena.docdb.spi.ClientQuery.BlobHistoryQuery;
 import io.resys.thena.docdb.sql.factories.ClientQuerySqlPool.ClientQuerySqlContext;
 import io.smallrye.mutiny.Multi;
@@ -41,12 +41,12 @@ public class BlobHistoryQuerySqlPool implements BlobHistoryQuery {
   private final ClientQuerySqlContext context;
   private boolean latestOnly;
   private String name;
-  private List<BlobCriteria> criteria = new ArrayList<>();
+  private List<MatchCriteria> criteria = new ArrayList<>();
 
   @Override public BlobHistoryQuery latestOnly(boolean latestOnly) { this.latestOnly = latestOnly; return this; }
   @Override public BlobHistoryQuery blobName(String name) { this.name = name; return this; }
-  @Override public BlobHistoryQuery criteria(List<BlobCriteria> criteria) { this.criteria.addAll(criteria); return this; }
-  @Override public BlobHistoryQuery criteria(BlobCriteria... criteria) { this.criteria.addAll(Arrays.asList(criteria)); return this; }
+  @Override public BlobHistoryQuery criteria(List<MatchCriteria> criteria) { this.criteria.addAll(criteria); return this; }
+  @Override public BlobHistoryQuery criteria(MatchCriteria... criteria) { this.criteria.addAll(Arrays.asList(criteria)); return this; }
   
   @Override
   public Multi<BlobHistory> find() {
@@ -63,9 +63,10 @@ public class BlobHistoryQuerySqlPool implements BlobHistoryQuery {
     return (sql.getProps().size() > 0 ? stream.execute(sql.getProps()) : stream.execute())
         .onItem()
         .transformToMulti((RowSet<BlobHistory> rowset) -> Multi.createFrom().iterable(rowset))
-        .onFailure().invoke(e -> context.getErrorHandler().deadEnd(
-          new StringBuilder("Can't find 'BLOB'-s by 'name': '").append(name).append("'!").toString() 
-          , e));
+        .onFailure().invoke(e -> 
+          context.getErrorHandler().deadEnd(new StringBuilder("Can't find 'BLOB'-s by 'name': '{}',\r\nsql props: {},\r\nsql: \r\n {}").toString(), e, name,  
+              sql.getProps().deepToString(), sql.getValue())
+        );
   }
   
 }

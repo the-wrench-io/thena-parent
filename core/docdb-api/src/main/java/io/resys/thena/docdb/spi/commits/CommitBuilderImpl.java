@@ -28,13 +28,13 @@ import java.util.List;
 import java.util.Map;
 
 import io.resys.thena.docdb.api.actions.CommitActions.CommitBuilder;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
 import io.resys.thena.docdb.api.actions.CommitActions.JsonObjectMerge;
-import io.resys.thena.docdb.api.actions.ImmutableCommitResult;
+import io.resys.thena.docdb.api.actions.ImmutableCommitResultEnvelope;
 import io.resys.thena.docdb.api.models.ImmutableMessage;
-import io.resys.thena.docdb.api.models.Objects.CommitLock;
-import io.resys.thena.docdb.api.models.Objects.CommitLockStatus;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLock;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitLockStatus;
 import io.resys.thena.docdb.spi.ClientInsertBuilder.BatchStatus;
 import io.resys.thena.docdb.spi.ClientState;
 import io.resys.thena.docdb.spi.ClientState.ClientRepoState;
@@ -131,12 +131,12 @@ public class CommitBuilderImpl implements CommitBuilder {
     return this;
   }
   @Override
-  public CommitBuilder parentIsLatest() {
+  public CommitBuilder latestCommit() {
     this.parentIsLatest = true;
     return this;
   }
   @Override
-  public Uni<CommitResult> build() {
+  public Uni<CommitResultEnvelope> build() {
     RepoAssert.notEmpty(author, () -> "author can't be empty!");
     RepoAssert.notEmpty(message, () -> "message can't be empty!");
     RepoAssert.isTrue(!appendBlobs.isEmpty() || !deleteBlobs.isEmpty() || !mergeBlobs.isEmpty(), () -> "Nothing to commit, no content!");
@@ -174,9 +174,9 @@ public class CommitBuilderImpl implements CommitBuilder {
     
   }
   
-  private Uni<CommitResult> doInLock(CommitLock lock, ClientRepoState tx) {
+  private Uni<CommitResultEnvelope> doInLock(CommitLock lock, ClientRepoState tx) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);  
-    final var init = CommitTreeState.builder().ref(lock.getRef()).refName(headName).gid(gid).repo(tx.getRepo());
+    final var init = CommitTreeState.builder().ref(lock.getBranch()).refName(headName).gid(gid).repo(tx.getRepo());
     
     if(lock.getStatus() == CommitLockStatus.NOT_FOUND) {
       // nothing to add
@@ -195,7 +195,7 @@ public class CommitBuilderImpl implements CommitBuilder {
         .build();
     
     return tx.insert().batch(batch)
-        .onItem().transform(rsp -> ImmutableCommitResult.builder()
+        .onItem().transform(rsp -> ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .commit(rsp.getCommit())
           .addMessages(rsp.getLog())
@@ -204,12 +204,12 @@ public class CommitBuilderImpl implements CommitBuilder {
           .build());
   }
 
-  private CommitResult validateRepo(CommitLock state, String commitParent) {
+  private CommitResultEnvelope validateRepo(CommitLock state, String commitParent) {
     final var gid = Identifiers.toRepoHeadGid(repoId, headName);
     
     // cant merge on first commit
     if(state.getCommit().isEmpty() && !mergeBlobs.isEmpty()) {
-      return (CommitResult) ImmutableCommitResult.builder()
+      return (CommitResultEnvelope) ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
@@ -218,7 +218,7 @@ public class CommitBuilderImpl implements CommitBuilder {
                   .append(" Your trying to merge objects to non existent head!")
                   .toString())
               .build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
       
     }
@@ -226,7 +226,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     
     // Unknown parent
     if(state.getCommit().isEmpty() && commitParent != null) {
-      return (CommitResult) ImmutableCommitResult.builder()
+      return (CommitResultEnvelope) ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
@@ -236,7 +236,7 @@ public class CommitBuilderImpl implements CommitBuilder {
                   .append(" but remote has no head.").append("'!")
                   .toString())
               .build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
       
     }
@@ -244,7 +244,7 @@ public class CommitBuilderImpl implements CommitBuilder {
     
     // No parent commit defined for existing head
     if(state.getCommit().isPresent() && commitParent == null && !Boolean.TRUE.equals(parentIsLatest)) {
-      return (CommitResult) ImmutableCommitResult.builder()
+      return (CommitResultEnvelope) ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder()
               .text(new StringBuilder()
@@ -254,7 +254,7 @@ public class CommitBuilderImpl implements CommitBuilder {
                   .append(" is: '").append(state.getCommit().get().getId()).append("'!")
                   .toString())
               .build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
     }
     
@@ -270,23 +270,23 @@ public class CommitBuilderImpl implements CommitBuilder {
         .append(" but remote is: '").append(state.getCommit().get().getId()).append("'!")
         .toString();
       
-      return ImmutableCommitResult.builder()
+      return ImmutableCommitResultEnvelope.builder()
           .gid(gid)
           .addMessages(ImmutableMessage.builder().text(text).build())
-          .status(CommitStatus.ERROR)
+          .status(CommitResultStatus.ERROR)
           .build();
     }
 
     return null;
   }
   
-  private static CommitStatus visitStatus(BatchStatus src) {
+  private static CommitResultStatus visitStatus(BatchStatus src) {
     if(src == BatchStatus.OK) {
-      return CommitStatus.OK;
+      return CommitResultStatus.OK;
     } else if(src == BatchStatus.CONFLICT) {
-      return CommitStatus.CONFLICT;
+      return CommitResultStatus.CONFLICT;
     }
-    return CommitStatus.ERROR;
+    return CommitResultStatus.ERROR;
     
   }
 }

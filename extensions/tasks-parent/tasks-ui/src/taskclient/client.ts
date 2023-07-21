@@ -1,4 +1,6 @@
-import { Client, Store, HeadState, CreateBuilder, TaskId, Task, TaskPagination, Org, User } from './client-types';
+import { Client, Store, Org, User } from './client-types';
+import type { TaskId, Task, TaskPagination, TaskStore } from './task-types';
+import type { Profile, ProfileStore } from './profile-types';
 import { } from './client-store';
 
 
@@ -12,10 +14,15 @@ export class ServiceImpl implements Client {
     this._store = store;
   }
 
-  get config() {
-    return this._store.config;
+  get config() { return this._store.config; }
+
+  get profile(): ProfileStore {
+    return {
+      getProfile: () => this.getProfile(),
+      createProfile: () => this.createProfile()
+    }
   }
-  async head(): Promise<HeadState> {
+  async getProfile(): Promise<Profile> {
     try {
       const init = await this._store.fetch<BackendInit>("init", { notFound: () => null });
       if (init === null) {
@@ -24,16 +31,31 @@ export class ServiceImpl implements Client {
 
       return { name: "", contentType: "OK" };
     } catch (error) {
-      console.error(error);
+      console.error("PROFILE, failed to fetch", error);
       return { name: "", contentType: "NO_CONNECTION" };
     }
   }
-  create(): CreateBuilder {
-    const head = () => this._store.fetch<HeadState>("head", { method: "POST", body: JSON.stringify({}) });
-    const migrate: (init: object) => Promise<HeadState> = (init) => this._store.fetch<HeadState>("migrate", { method: "POST", body: JSON.stringify(init) })
-    return { head, migrate };
+
+  createProfile(): Promise<Profile> {
+    return this._store.fetch<Profile>("head", { method: "POST", body: JSON.stringify({}) });
   }
-  task(id: TaskId): Promise<Task> {
+
+  get task(): TaskStore {
+    return {
+      getActiveTasks: () => this.getActiveTasks(),
+      getActiveTask: (id: TaskId) => this.getActiveTask(id)
+    };
+  }
+
+  async getActiveTasks(): Promise<TaskPagination> {
+    const tasks = await this._store.fetch<object[]>(`active/tasks`);
+    return {
+      page: 1,
+      total: { pages: 1, records: tasks.length },
+      records: tasks as any
+    }
+  }
+  getActiveTask(id: TaskId): Promise<Task> {
     return this._store.fetch<Task>(`tasks/${id}`);
   }
   async org(): Promise<{ org: Org, user: User }> {
@@ -62,12 +84,5 @@ export class ServiceImpl implements Client {
     };
   }
 
-  async active(): Promise<TaskPagination> {
-    const tasks = await this._store.fetch<object[]>(`active/tasks`);
-    return {
-      page: 1,
-      total: { pages: 1, records: tasks.length },
-      records: tasks as any
-    }
-  }
+
 }

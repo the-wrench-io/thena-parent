@@ -27,10 +27,10 @@ import org.junit.jupiter.api.Assertions;
 
 import io.quarkus.test.junit.QuarkusTest;
 import io.quarkus.test.junit.TestProfile;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitResult;
-import io.resys.thena.docdb.api.actions.CommitActions.CommitStatus;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoResult;
-import io.resys.thena.docdb.api.actions.RepoActions.RepoStatus;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultEnvelope;
+import io.resys.thena.docdb.api.actions.CommitActions.CommitResultStatus;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoResult;
+import io.resys.thena.docdb.api.actions.ProjectActions.RepoStatus;
 import io.resys.thena.docdb.spi.pgsql.config.PgDbTestTemplate;
 import io.resys.thena.docdb.spi.pgsql.config.PgProfile;
 import io.vertx.core.json.JsonObject;
@@ -45,7 +45,7 @@ public class MetricsDBtest extends PgDbTestTemplate {
 
   //@org.junit.jupiter.api.Test
   public void metrics() {
-    RepoResult repo = getClient().repo().create()
+    RepoResult repo = getClient().project().projectBuilder()
         .name("create repo for metrics")
         .build()
         .await().atMost(Duration.ofMinutes(1));
@@ -67,14 +67,14 @@ public class MetricsDBtest extends PgDbTestTemplate {
   
   private void select(RepoResult repo) {
     final var start = System.currentTimeMillis();
-    final var repoState = getClient().repo().query().id(repo.getRepo().getId()).get().await().atMost(Duration.ofMinutes(1));
+    final var repoState = getClient().project().projectsQuery().id(repo.getRepo().getId()).get().await().atMost(Duration.ofMinutes(1));
     
-    final var blobs = getClient().objects()
-            .refState()
-            .repo(repo.getRepo().getName())
-            .ref("main")
-            .blobs()
-            .build()
+    final var blobs = getClient().branch()
+            .branchQuery()
+            .projectName(repo.getRepo().getName())
+            .branchName("main")
+            .docsIncluded()
+            .get()
         
         .await().atMost(Duration.ofMinutes(1));
     final var end = System.currentTimeMillis();
@@ -85,7 +85,7 @@ public class MetricsDBtest extends PgDbTestTemplate {
   
   private void runInserts(RepoResult repo, int total) {
     
-    final var builder = getClient().commit().builder().parentIsLatest()
+    final var builder = getClient().commit().commitBuilder().latestCommit()
       .head(repo.getRepo().getName(), "main")
       .author("same vimes")
       .message("Commiting!");
@@ -99,10 +99,10 @@ public class MetricsDBtest extends PgDbTestTemplate {
     final var loopTime = end - start;
     
     start = System.currentTimeMillis();
-    CommitResult commit_0 = builder.build()
+    CommitResultEnvelope commit_0 = builder.build()
       .onFailure().invoke(e -> e.printStackTrace()).onFailure().recoverWithNull()
       .await().atMost(Duration.ofMinutes(1));
-    Assertions.assertEquals(CommitStatus.OK, commit_0.getStatus());
+    Assertions.assertEquals(CommitResultStatus.OK, commit_0.getStatus());
     end = System.currentTimeMillis();
     log.debug("total time for inserting: {} entries is: {} millis, loop time: {}", total, end-start, loopTime);
   }

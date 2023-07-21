@@ -25,22 +25,22 @@ import java.util.Optional;
 
 import io.resys.thena.docdb.api.models.ImmutableBlob;
 import io.resys.thena.docdb.api.models.ImmutableBlobHistory;
+import io.resys.thena.docdb.api.models.ImmutableBranch;
 import io.resys.thena.docdb.api.models.ImmutableCommit;
 import io.resys.thena.docdb.api.models.ImmutableCommitTree;
-import io.resys.thena.docdb.api.models.ImmutableRef;
 import io.resys.thena.docdb.api.models.ImmutableRepo;
 import io.resys.thena.docdb.api.models.ImmutableTag;
 import io.resys.thena.docdb.api.models.ImmutableTree;
 import io.resys.thena.docdb.api.models.ImmutableTreeValue;
-import io.resys.thena.docdb.api.models.Objects.Blob;
-import io.resys.thena.docdb.api.models.Objects.BlobHistory;
-import io.resys.thena.docdb.api.models.Objects.Commit;
-import io.resys.thena.docdb.api.models.Objects.CommitTree;
-import io.resys.thena.docdb.api.models.Objects.Ref;
-import io.resys.thena.docdb.api.models.Objects.Tag;
-import io.resys.thena.docdb.api.models.Objects.Tree;
-import io.resys.thena.docdb.api.models.Objects.TreeValue;
 import io.resys.thena.docdb.api.models.Repo;
+import io.resys.thena.docdb.api.models.ThenaObject.Blob;
+import io.resys.thena.docdb.api.models.ThenaObject.BlobHistory;
+import io.resys.thena.docdb.api.models.ThenaObject.Branch;
+import io.resys.thena.docdb.api.models.ThenaObject.Commit;
+import io.resys.thena.docdb.api.models.ThenaObject.CommitTree;
+import io.resys.thena.docdb.api.models.ThenaObject.Tag;
+import io.resys.thena.docdb.api.models.ThenaObject.Tree;
+import io.resys.thena.docdb.api.models.ThenaObject.TreeValue;
 import io.resys.thena.docdb.spi.ClientCollections;
 import io.resys.thena.docdb.sql.SqlMapper;
 import io.vertx.core.json.JsonObject;
@@ -95,8 +95,8 @@ public class SqlMapperImpl implements SqlMapper {
         .build();
   }
   @Override
-  public Ref ref(Row row) {
-    return ImmutableRef.builder()
+  public Branch ref(Row row) {
+    return ImmutableBranch.builder()
         .name(row.getString("name"))
         .commit(row.getString("commit"))
         .build();
@@ -148,7 +148,7 @@ public class SqlMapperImpl implements SqlMapper {
         .commitDateTime(LocalDateTime.parse(row.getString("datetime")))
         .commitMessage(row.getString("message"))
         .commitMerge(row.getString("merge"))
-        .refName(row.getString("ref_name"))
+        .branchName(row.getString("ref_name"))
         .treeValue(blob == null ? Optional.empty() : Optional.of(ImmutableTreeValue.builder()
             .blob(blob)
             .name(blobName)
