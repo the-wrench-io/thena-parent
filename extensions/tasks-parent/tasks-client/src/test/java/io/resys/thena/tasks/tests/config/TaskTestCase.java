@@ -24,7 +24,8 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import javax.inject.Inject;
+import io.vertx.mutiny.sqlclient.Pool;
+import jakarta.inject.Inject;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -59,9 +60,10 @@ public class TaskTestCase {
   private static final AtomicInteger DB_ID = new AtomicInteger();
   private static final LocalDateTime targetDate = LocalDateTime.of(2023, 01, 01, 1, 1);
   private final AtomicInteger id_provider = new AtomicInteger();
-  
+
   @BeforeEach
   public void setUp() {
+    waitUntilPostgresqlAcceptsConnections(pgPool);
     final var db = DB + DB_ID.getAndIncrement();
     store = DocumentStoreImpl.builder()
         .repoName(db).pgPool(pgPool).pgDb(db)
@@ -70,7 +72,7 @@ public class TaskTestCase {
           public String getNextVersion(DocumentType entity) {
             return id_provider.incrementAndGet() + "_" + entity.name();
           }
-          
+
           @Override
           public String getNextId(DocumentType entity) {
             return id_provider.incrementAndGet() + "_" + entity.name();
@@ -79,21 +81,21 @@ public class TaskTestCase {
         .build();
     client = new TaskClientImpl(store);
     objectMapper();
-    
+
   }
-  
+
   public static ObjectMapper objectMapper() {
     final var modules = new com.fasterxml.jackson.databind.Module[] {
-        new JavaTimeModule(), 
-        new Jdk8Module(), 
+        new JavaTimeModule(),
+        new Jdk8Module(),
         new GuavaModule(),
         new VertxModule(),
         new VertexExtModule()
         };
       DatabindCodec.mapper().registerModules(modules);
       DatabindCodec.prettyMapper().registerModules(modules);
-      
-    return DatabindCodec.mapper(); 
+
+    return DatabindCodec.mapper();
   }
 
   public void assertCommits(String repoName) {
@@ -107,6 +109,16 @@ public class TaskTestCase {
   @AfterEach
   public void tearDown() {
     store = null;
+  }
+
+  private void waitUntilPostgresqlAcceptsConnections(Pool pool) {
+    // On some platforms there may be some delay before postgresql starts to respond.
+    // Try until postgresql connection is successfully opened.
+    var connection = pool.getConnection()
+            .onFailure()
+            .retry().withBackOff(Duration.ofMillis(10), Duration.ofSeconds(3)).atMost(20)
+            .await().atMost(Duration.ofSeconds(60));
+    connection.closeAndForget();
   }
 
   public DocumentStoreImpl getStore() {
@@ -128,28 +140,28 @@ public class TaskTestCase {
     final String result = new DocDBPrettyPrinter(state).print(repo);
     return result;
   }
-  
+
   public String toStaticData(TaskClient client) {
     final var config = ((TaskClientImpl) client).getCtx().getConfig();
     final var state = ((DocDBDefault) config.getClient()).getState();
     final var repo = client.repo().getRepo().await().atMost(Duration.ofMinutes(1));
     return new RepositoryToStaticData(state).print(repo);
   }
-  
+
   public static String toExpectedFile(String fileName) {
     return RepositoryToStaticData.toString(TaskTestCase.class, fileName);
   }
-  
+
   public void assertRepo(TaskClient client, String expectedFileName) {
     final var expected = toExpectedFile(expectedFileName);
     final var actual = toStaticData(client);
     Assertions.assertEquals(expected, actual);
-    
+
   }
   public void assertEquals(String expectedFileName, Object actual) {
     final var expected = toExpectedFile(expectedFileName);
     final var actualJson = JsonObject.mapFrom(actual).encodePrettily();
     Assertions.assertEquals(expected, actualJson);
-    
+
   }
 }

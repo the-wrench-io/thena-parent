@@ -25,7 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.enterprise.context.ApplicationScoped;
+import jakarta.enterprise.context.ApplicationScoped;
 
 import io.resys.thena.tasks.client.api.model.ImmutableProject;
 import io.resys.thena.tasks.client.api.model.ImmutableTask;

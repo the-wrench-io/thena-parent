@@ -16,5 +16,12 @@
     <module>tasks-ui</module>
     <module>quarkus-dev-app</module>
   </modules>
-
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <modules>
+        <module>quarkus-dev-app</module>
+      </modules>
+    </profile>
+  </profiles>
 </project>
