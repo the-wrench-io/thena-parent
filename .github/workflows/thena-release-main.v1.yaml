@@ -18,21 +18,21 @@ jobs:
 
     - uses: actions/setup-java@v4
       with:
-        java-version: '11'
+        distribution: 'temurin'
+        java-version: '17'
+        gpg-private-key: ${{ secrets.HDES_GPG_KEY }}
+        gpg-passphrase: GPG_KEY_SEC
+        server-id: oss.sonatype.org
+        server-username: OSSRH_USER
+        server-password: OSSRH_PASS
     
     - name: Maven release
       run: ./thena-build-parent/release.sh
       env:
-        CI: false
         BOT_NAME: olev.mutso
         BOT_EMAIL: olev.mutso@resys.io
-        GITHUB_SHA: ${GITHUB_SHA}
-        GITHUB_REF: ${GITHUB_REF}
-        GITHUB_ACCESS_TOKEN: ${{ secrets.GITHUB_ACCESS_TOKEN }}
-        GPG_KEY_ID: ${{ secrets.GPG_KEY_ID }}
-        GPG_KEY: ${{ secrets.HDES_GPG_KEY }}
-        GPG_KEY_SEC:  ${{ secrets.GPG_KEY_SEC }}
-        OSSRH_PASS: ${{ secrets.OSSRH_PASS }}
+        GPG_KEY_SEC: ${{ secrets.GPG_KEY_SEC }}
         OSSRH_USER: ${{ secrets.OSSRH_USER }}
-        
+        OSSRH_PASS: ${{ secrets.OSSRH_PASS }}
+
         
