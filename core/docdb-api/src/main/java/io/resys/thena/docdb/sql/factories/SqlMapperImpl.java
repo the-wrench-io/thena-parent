@@ -158,6 +158,16 @@ public class SqlMapperImpl implements SqlMapper {
   
   @Override
   public JsonObject jsonObject(Row row, String columnName) {
-    return new JsonObject(row.getString(columnName));
+    try {
+      final var value = row.getValue(columnName);
+      if(value instanceof String) {
+        return new JsonObject((String) value);
+      } else if(value instanceof JsonObject) {
+        return (JsonObject) value;
+      }
+      return row.getJsonObject(columnName);
+    } catch(Exception e) {
+      return new JsonObject(row.getString(columnName));
+    }
   }
 }
